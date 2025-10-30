@@ -12,6 +12,7 @@ import Login from './pages/Auth/Login'
 import Register from './pages/Auth/Register'
 import Categories from './pages/Categories'
 import TreatmentDetail from './pages/TreatmentDetail'
+import QuickBook from './pages/QuickBook'
 import HowItWorks from './pages/HowItWorks'
 import About from './pages/About'
 import Shipping from './pages/Shipping'
@@ -89,6 +90,7 @@ const AppContent = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/categories" element={<Categories />} />
           <Route path="/treatment/:id" element={<TreatmentDetail />} />
+          <Route path="/quick-book/:id" element={<QuickBook />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/about" element={<About />} />
           <Route path="/shipping" element={<Shipping />} />

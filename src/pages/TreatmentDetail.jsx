@@ -142,12 +142,21 @@ const TreatmentDetail = () => {
                 </div>
               </div>
 
-              <Button
-                className="w-full"
-                size="lg"
-                onClick={handleStartConsultation}
-              >
-                Start Consultation
+              <div className="space-y-3">
+                <Button
+                  className="w-full bg-accent-600 hover:bg-accent-700"
+                  size="lg"
+                  onClick={() => navigate(`/quick-book/${treatment.id}`)}
+                >
+                  Book Now - From €{treatment.price.treatment}
+                </Button>
+                <Button
+                  className="w-full"
+                  size="lg"
+                  variant="outline"
+                  onClick={handleStartConsultation}
+                >
+                  Or Start Consultation First
               </Button>
 
               <p className="text-xs text-gray-500 text-center mt-4">

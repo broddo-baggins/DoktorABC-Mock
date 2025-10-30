@@ -73,10 +73,12 @@ const Categories = () => {
         {filteredTreatments.map(treatment => (
           <Card
             key={treatment.id}
-            className="cursor-pointer hover:shadow-lg transition-all duration-200"
-            onClick={() => navigate(`/treatment/${treatment.id}`)}
+            className="hover:shadow-lg transition-all duration-200"
           >
-            <div className="h-40 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center">
+            <div 
+              className="h-40 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center cursor-pointer"
+              onClick={() => navigate(`/treatment/${treatment.id}`)}
+            >
               <span className="text-5xl">
                 {treatment.category === 'aesthetic' && '💉'}
                 {treatment.category === 'mens-health' && '👨'}
@@ -89,7 +91,9 @@ const Categories = () => {
             </div>
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-lg flex-1">{treatment.name}</h3>
+                <h3 className="font-semibold text-lg flex-1 cursor-pointer hover:text-primary-600" onClick={() => navigate(`/treatment/${treatment.id}`)}>
+                  {treatment.name}
+                </h3>
                 {treatment.popular && (
                   <Badge variant="accent" className="ml-2">Popular</Badge>
                 )}
@@ -97,15 +101,21 @@ const Categories = () => {
               <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                 {treatment.description}
               </p>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   <span className="text-sm text-gray-500">From </span>
                   <span className="text-xl font-bold text-primary-600">
-                    €{treatment.price.consultation}
+                    €{treatment.price.treatment}
                   </span>
                 </div>
                 <Badge variant="default">{treatment.duration}</Badge>
               </div>
+              <button
+                onClick={() => navigate(`/quick-book/${treatment.id}`)}
+                className="w-full bg-accent-600 hover:bg-accent-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                Book Now →
+              </button>
             </CardContent>
           </Card>
         ))}
