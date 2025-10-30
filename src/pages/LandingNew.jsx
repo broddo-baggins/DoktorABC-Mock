@@ -310,14 +310,25 @@ const Landing = () => {
             </div>
             
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {[1, 2, 3].map((i) => (
+              {[
+                { before: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=300&fit=crop&q=80', after: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=400&h=300&fit=crop&q=80', area: 'Forehead Lines' },
+                { before: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=400&h=300&fit=crop&q=80', after: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400&h=300&fit=crop&q=80', area: 'Crow\'s Feet' },
+                { before: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400&h=300&fit=crop&q=80', after: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=300&fit=crop&q=80', area: 'Lip Enhancement' }
+              ].map((item, i) => (
                 <div key={i} className="bg-white rounded-xl p-4 shadow-lg">
-                  <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg mb-3 flex items-center justify-center">
-                    <span className="text-4xl">✨</span>
+                  <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-1">Before</p>
+                      <img src={item.before} alt="Before treatment" className="aspect-[4/3] rounded-lg object-cover" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-600 mb-1">After</p>
+                      <img src={item.after} alt="After treatment" className="aspect-[4/3] rounded-lg object-cover" />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                    <div><span className="font-semibold">Before:</span> Fine lines visible</div>
-                    <div><span className="font-semibold">After:</span> Smooth, natural</div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold text-gray-800">{item.area}</p>
+                    <p className="text-xs text-gray-500">3 months results</p>
                   </div>
                 </div>
               ))}
@@ -489,12 +500,22 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {doctors.slice(0, 3).map((doctor) => (
-              <Card key={doctor.id} className="hover:shadow-xl transition-all duration-300 border-2 border-gray-100">
-                <CardContent className="p-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full mx-auto mb-4 flex items-center justify-center border-4 border-white shadow-lg">
-                    <Users className="w-12 h-12 text-primary-600" />
-                  </div>
+            {doctors.slice(0, 3).map((doctor, index) => {
+              const doctorPhotos = [
+                'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&q=80'
+              ]
+              return (
+                <Card key={doctor.id} className="hover:shadow-xl transition-all duration-300 border-2 border-gray-100">
+                  <CardContent className="p-6">
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-primary-100 shadow-lg overflow-hidden">
+                      <img 
+                        src={doctorPhotos[index]} 
+                        alt={doctor.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   
                   <div className="text-center mb-4">
                     <h3 className="text-xl font-bold text-gray-900 mb-1">{doctor.name}</h3>
@@ -538,7 +559,8 @@ const Landing = () => {
                   </Button>
                 </CardContent>
               </Card>
-            ))}
+              )
+            })}
           </div>
 
           <div className="grid md:grid-cols-4 gap-6">
