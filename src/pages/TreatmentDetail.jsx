@@ -157,11 +157,12 @@ const TreatmentDetail = () => {
                   onClick={handleStartConsultation}
                 >
                   Or Start Consultation First
-              </Button>
+                </Button>
 
-              <p className="text-xs text-gray-500 text-center mt-4">
-                Consultation reviewed by qualified doctors. Prescription issued if appropriate.
-              </p>
+                <p className="text-xs text-gray-500 text-center mt-4">
+                  Consultation reviewed by qualified doctors. Prescription issued if appropriate.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
