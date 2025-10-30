@@ -27,12 +27,12 @@ const Landing = () => {
   ]
 
   const categories = [
-    { title: "Men's Health", items: ['Erectile Dysfunction', 'Premature Ejaculation', 'Hair Loss'], color: 'bg-blue-500' },
-    { title: "Women's Health", items: ['Contraceptive Pill', 'Cystitis Treatment', 'Morning-after pill', 'Bacterial Vaginosis', 'Period Delay', 'Facial Hair Removal'], color: 'bg-pink-500' },
+    { title: "Men's Health", items: ['Erectile Dysfunction', 'Premature Ejaculation', 'Hair Loss'], color: 'bg-blue-600' },
+    { title: "Women's Health", items: ['Contraceptive Pill', 'Cystitis Treatment', 'Morning-after pill', 'Bacterial Vaginosis', 'Period Delay', 'Facial Hair Removal'], color: 'bg-purple-500' },
     { title: 'Sexual Health', items: ['Chlamydia', 'Genital Herpes', 'Genital Warts'], color: 'bg-red-500' },
-    { title: 'Travel Health', items: ['Malaria Treatment', "Traveller's Diarrhea"], color: 'bg-green-500' },
+    { title: 'Travel Health', items: ['Malaria Treatment', "Traveller's Diarrhea"], color: 'bg-green-600' },
     { title: 'Chronic', items: ['High Blood Pressure'], color: 'bg-orange-500' },
-    { title: 'Wellbeing', items: ['Quit Smoking'], color: 'bg-teal-500' }
+    { title: 'Wellbeing', items: ['Quit Smoking'], color: 'bg-emerald-600' }
   ]
 
   return (
