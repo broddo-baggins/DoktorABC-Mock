@@ -1,0 +1,48 @@
+[
+  {
+    "id": "rx-001",
+    "patientId": "patient-002",
+    "doctorId": "doctor-002",
+    "medication": "Finasteride",
+    "dosage": "1mg daily",
+    "quantity": 90,
+    "refills": 2,
+    "status": "active",
+    "pharmacyId": "pharmacy-002",
+    "issuedDate": "2025-10-01",
+    "expiryDate": "2026-10-01",
+    "instructions": "Take one tablet daily with or without food. Continue for at least 6 months to see results.",
+    "price": 69
+  },
+  {
+    "id": "rx-002",
+    "patientId": "patient-001",
+    "doctorId": "doctor-001",
+    "medication": "Botulinum Toxin Type A",
+    "dosage": "20 units",
+    "quantity": 1,
+    "refills": 0,
+    "status": "pending",
+    "pharmacyId": "pharmacy-001",
+    "issuedDate": "2025-10-25",
+    "expiryDate": "2025-11-25",
+    "instructions": "For professional administration only. 20 units to forehead area.",
+    "price": 299
+  },
+  {
+    "id": "rx-003",
+    "patientId": "patient-002",
+    "doctorId": "doctor-002",
+    "medication": "Sildenafil",
+    "dosage": "50mg as needed",
+    "quantity": 8,
+    "refills": 3,
+    "status": "filled",
+    "pharmacyId": "pharmacy-002",
+    "issuedDate": "2025-09-15",
+    "expiryDate": "2026-09-15",
+    "instructions": "Take 30-60 minutes before sexual activity. Do not exceed one dose per day.",
+    "price": 89
+  }
+]
+

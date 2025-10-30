@@ -1,0 +1,243 @@
+[
+  {
+    "id": "botox-forehead",
+    "name": "Botox for Forehead Lines",
+    "category": "aesthetic",
+    "subcategory": "facial",
+    "price": {
+      "consultation": 49,
+      "treatment": 299,
+      "subscription": 249
+    },
+    "duration": "3-4 months",
+    "description": "Reduce forehead lines and wrinkles with precision Botox injections. Natural-looking results that last 3-4 months.",
+    "longDescription": "Botox (botulinum toxin) temporarily relaxes facial muscles to smooth out dynamic wrinkles. Our experienced injectors use precise techniques to maintain natural facial expressions while reducing visible lines.",
+    "benefits": [
+      "Smooths forehead lines",
+      "Natural-looking results",
+      "Quick 15-minute procedure",
+      "Minimal downtime",
+      "Results visible in 3-5 days"
+    ],
+    "suitableFor": ["Adults 18-65", "Dynamic wrinkles", "Preventative care"],
+    "imageUrl": "/images/botox-forehead.jpg",
+    "popular": true
+  },
+  {
+    "id": "botox-crowsfeet",
+    "name": "Botox for Crow's Feet",
+    "category": "aesthetic",
+    "subcategory": "facial",
+    "price": {
+      "consultation": 49,
+      "treatment": 279,
+      "subscription": 229
+    },
+    "duration": "3-4 months",
+    "description": "Smooth out crow's feet and laugh lines around the eyes for a refreshed, youthful appearance.",
+    "longDescription": "Crow's feet are dynamic wrinkles that form from repeated facial expressions. Botox injections target these specific muscles to soften lines while preserving your natural smile.",
+    "benefits": [
+      "Reduces eye wrinkles",
+      "Brightens eye area",
+      "Preserves natural expressions",
+      "Fast treatment",
+      "Long-lasting results"
+    ],
+    "suitableFor": ["Adults 25+", "Eye area wrinkles", "Combination treatments"],
+    "imageUrl": "/images/botox-crowsfeet.jpg",
+    "popular": true
+  },
+  {
+    "id": "dermal-fillers-lips",
+    "name": "Dermal Fillers - Lip Enhancement",
+    "category": "aesthetic",
+    "subcategory": "facial",
+    "price": {
+      "consultation": 49,
+      "treatment": 399,
+      "subscription": 349
+    },
+    "duration": "9-12 months",
+    "description": "Add volume, shape, and definition to lips with hyaluronic acid-based dermal fillers.",
+    "longDescription": "Our lip enhancement treatments use premium hyaluronic acid fillers to create natural-looking volume and definition. Customized to your desired look, from subtle to dramatic.",
+    "benefits": [
+      "Natural volume enhancement",
+      "Improved lip symmetry",
+      "Enhanced lip border definition",
+      "Immediate results",
+      "Reversible if needed"
+    ],
+    "suitableFor": ["Adults 21+", "Thin lips", "Asymmetry correction"],
+    "imageUrl": "/images/lip-fillers.jpg",
+    "popular": true
+  },
+  {
+    "id": "erectile-dysfunction",
+    "name": "Erectile Dysfunction Treatment",
+    "category": "mens-health",
+    "subcategory": "sexual-health",
+    "price": {
+      "consultation": 29,
+      "treatment": 89,
+      "subscription": 79
+    },
+    "duration": "As needed",
+    "description": "Effective treatments for erectile dysfunction including Viagra, Cialis, and generic alternatives.",
+    "longDescription": "Our doctors review your medical history and prescribe appropriate ED medications. Choose from various options with different duration and onset times.",
+    "benefits": [
+      "Multiple medication options",
+      "Discreet online consultation",
+      "Fast approval process",
+      "Express delivery available",
+      "Ongoing support"
+    ],
+    "suitableFor": ["Men 18+", "ED symptoms", "Performance concerns"],
+    "imageUrl": "/images/ed-treatment.jpg",
+    "popular": true
+  },
+  {
+    "id": "hair-loss-treatment",
+    "name": "Hair Loss Treatment",
+    "category": "mens-health",
+    "subcategory": "cosmetic",
+    "price": {
+      "consultation": 29,
+      "treatment": 69,
+      "subscription": 59
+    },
+    "duration": "Ongoing",
+    "description": "Clinically proven treatments for male pattern baldness including Finasteride and Minoxidil.",
+    "longDescription": "Combat hair loss with FDA-approved medications. Our doctors create personalized treatment plans based on your hair loss pattern and medical history.",
+    "benefits": [
+      "Clinically proven results",
+      "Prevents further loss",
+      "Promotes regrowth",
+      "Convenient monthly delivery",
+      "Expert monitoring"
+    ],
+    "suitableFor": ["Men 18-65", "Male pattern baldness", "Early intervention"],
+    "imageUrl": "/images/hair-loss.jpg",
+    "popular": true
+  },
+  {
+    "id": "contraceptive-pill",
+    "name": "Contraceptive Pill",
+    "category": "womens-health",
+    "subcategory": "contraception",
+    "price": {
+      "consultation": 19,
+      "treatment": 29,
+      "subscription": 25
+    },
+    "duration": "Monthly",
+    "description": "Convenient access to various contraceptive pills prescribed by our doctors.",
+    "longDescription": "Get your contraceptive pill prescription online and delivered to your door. Choose from various brands and formulations to find what works best for you.",
+    "benefits": [
+      "Multiple brand options",
+      "Convenient delivery",
+      "Regular refills",
+      "Doctor support",
+      "Discreet packaging"
+    ],
+    "suitableFor": ["Women 18-50", "Contraception", "Hormone regulation"],
+    "imageUrl": "/images/contraceptive.jpg",
+    "popular": true
+  },
+  {
+    "id": "morning-after-pill",
+    "name": "Morning After Pill",
+    "category": "womens-health",
+    "subcategory": "emergency-contraception",
+    "price": {
+      "consultation": 15,
+      "treatment": 35,
+      "subscription": null
+    },
+    "duration": "Single use",
+    "description": "Emergency contraception available with fast consultation and express 2-hour delivery in select cities.",
+    "longDescription": "Quick access to emergency contraception when you need it. Our doctors provide rapid consultations and we offer express delivery options.",
+    "benefits": [
+      "Fast consultation",
+      "2-hour express delivery",
+      "Multiple options available",
+      "Discreet service",
+      "Expert guidance"
+    ],
+    "suitableFor": ["Women 18+", "Emergency contraception", "Up to 72 hours"],
+    "imageUrl": "/images/morning-after.jpg",
+    "popular": false
+  },
+  {
+    "id": "high-blood-pressure",
+    "name": "High Blood Pressure Management",
+    "category": "chronic",
+    "subcategory": "cardiovascular",
+    "price": {
+      "consultation": 39,
+      "treatment": 45,
+      "subscription": 39
+    },
+    "duration": "Ongoing",
+    "description": "Ongoing management and medication for high blood pressure with regular doctor monitoring.",
+    "longDescription": "Our doctors provide comprehensive blood pressure management including medication, lifestyle advice, and regular monitoring to keep your BP in healthy ranges.",
+    "benefits": [
+      "Regular monitoring",
+      "Medication management",
+      "Lifestyle guidance",
+      "Blood pressure tracking",
+      "Prevent complications"
+    ],
+    "suitableFor": ["Adults with hypertension", "Ongoing management", "Prevention"],
+    "imageUrl": "/images/blood-pressure.jpg",
+    "popular": false
+  },
+  {
+    "id": "quit-smoking",
+    "name": "Quit Smoking Program",
+    "category": "wellbeing",
+    "subcategory": "lifestyle",
+    "price": {
+      "consultation": 29,
+      "treatment": 79,
+      "subscription": 69
+    },
+    "duration": "12 weeks",
+    "description": "Comprehensive smoking cessation program with medication support and coaching.",
+    "longDescription": "Evidence-based smoking cessation program combining medication (Champix/Zyban) with behavioral support to help you quit for good.",
+    "benefits": [
+      "Proven medications",
+      "Behavioral support",
+      "12-week program",
+      "Relapse prevention",
+      "Health monitoring"
+    ],
+    "suitableFor": ["Smokers ready to quit", "Previous quit attempts", "Support needed"],
+    "imageUrl": "/images/quit-smoking.jpg",
+    "popular": false
+  },
+  {
+    "id": "malaria-prevention",
+    "name": "Malaria Prevention",
+    "category": "travel-health",
+    "subcategory": "prophylaxis",
+    "price": {
+      "consultation": 29,
+      "treatment": 65,
+      "subscription": null
+    },
+    "duration": "Trip duration",
+    "description": "Antimalarial medication prescribed based on your travel destination and duration.",
+    "longDescription": "Get the right malaria prevention for your trip. Our doctors prescribe appropriate antimalarial medication based on your destination, duration, and medical history.",
+    "benefits": [
+      "Destination-specific advice",
+      "Multiple medication options",
+      "Travel health guidance",
+      "Vaccination advice",
+      "Fast turnaround"
+    ],
+    "suitableFor": ["Travelers to endemic areas", "All ages", "Trip planning"],
+    "imageUrl": "/images/malaria.jpg",
+    "popular": false
+  }
+]
+

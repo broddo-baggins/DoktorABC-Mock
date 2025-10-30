@@ -1,0 +1,186 @@
+[
+  {
+    "id": "patient-001",
+    "role": "patient",
+    "email": "sarah.johnson@email.com",
+    "password": "demo123",
+    "name": "Sarah Johnson",
+    "dateOfBirth": "1990-05-15",
+    "phone": "+44 7700 900123",
+    "address": {
+      "street": "123 High Street",
+      "city": "London",
+      "postcode": "SW1A 1AA",
+      "country": "UK"
+    },
+    "profile": {
+      "avatar": null,
+      "memberSince": "2024-01-15",
+      "loyaltyPoints": 250,
+      "subscriptionTier": "premium",
+      "preferredLanguage": "en"
+    },
+    "medicalHistory": {
+      "allergies": ["Penicillin"],
+      "currentMedications": [],
+      "conditions": []
+    }
+  },
+  {
+    "id": "patient-002",
+    "role": "patient",
+    "email": "john.smith@email.com",
+    "password": "demo123",
+    "name": "John Smith",
+    "dateOfBirth": "1985-08-22",
+    "phone": "+44 7700 900124",
+    "address": {
+      "street": "45 Oxford Road",
+      "city": "Manchester",
+      "postcode": "M1 4BT",
+      "country": "UK"
+    },
+    "profile": {
+      "avatar": null,
+      "memberSince": "2023-11-20",
+      "loyaltyPoints": 450,
+      "subscriptionTier": "basic",
+      "preferredLanguage": "en"
+    },
+    "medicalHistory": {
+      "allergies": [],
+      "currentMedications": ["Finasteride 1mg"],
+      "conditions": ["Male pattern baldness"]
+    }
+  },
+  {
+    "id": "doctor-001",
+    "role": "doctor",
+    "email": "dr.emily.watson@doktorabc.com",
+    "password": "demo123",
+    "name": "Dr. Emily Watson",
+    "title": "MBChB, MRCGP",
+    "specialization": ["General Practice", "Aesthetic Medicine", "Sexual Health"],
+    "licenseNumber": "GMC-7654321",
+    "phone": "+44 7700 900200",
+    "profile": {
+      "avatar": null,
+      "bio": "Experienced GP with 12 years in primary care and aesthetic medicine. Passionate about accessible healthcare and natural-looking aesthetic results.",
+      "yearsExperience": 12,
+      "rating": 4.8,
+      "totalConsultations": 2450,
+      "languages": ["English", "French"],
+      "availability": {
+        "inHouse": true,
+        "travel": true,
+        "travelRadius": 50
+      }
+    }
+  },
+  {
+    "id": "doctor-002",
+    "role": "doctor",
+    "email": "dr.james.chen@doktorabc.com",
+    "password": "demo123",
+    "name": "Dr. James Chen",
+    "title": "MBBS, MRCP",
+    "specialization": ["Internal Medicine", "Chronic Disease Management"],
+    "licenseNumber": "GMC-8765432",
+    "phone": "+44 7700 900201",
+    "profile": {
+      "avatar": null,
+      "bio": "Internal medicine specialist focusing on chronic disease management and preventative care. Committed to patient-centered care.",
+      "yearsExperience": 8,
+      "rating": 4.9,
+      "totalConsultations": 1890,
+      "languages": ["English", "Mandarin"],
+      "availability": {
+        "inHouse": true,
+        "travel": false,
+        "travelRadius": 0
+      }
+    }
+  },
+  {
+    "id": "pharmacy-001",
+    "role": "pharmacy",
+    "email": "central.pharmacy@partner.com",
+    "password": "demo123",
+    "name": "Central Pharmacy London",
+    "licenseNumber": "GPhC-9876543",
+    "phone": "+44 20 7946 0958",
+    "address": {
+      "street": "250 Regent Street",
+      "city": "London",
+      "postcode": "W1B 2AA",
+      "country": "UK"
+    },
+    "profile": {
+      "operatingHours": "Mon-Fri: 8am-8pm, Sat: 9am-6pm, Sun: 10am-4pm",
+      "services": ["Prescription dispensing", "Express delivery", "Aesthetic products"],
+      "deliveryZones": ["London", "Greater London"],
+      "expressDelivery": true,
+      "rating": 4.7,
+      "totalOrders": 15420
+    }
+  },
+  {
+    "id": "pharmacy-002",
+    "role": "pharmacy",
+    "email": "manchester.pharmacy@partner.com",
+    "password": "demo123",
+    "name": "Manchester Health Pharmacy",
+    "licenseNumber": "GPhC-8765432",
+    "phone": "+44 161 123 4567",
+    "address": {
+      "street": "78 Market Street",
+      "city": "Manchester",
+      "postcode": "M1 1WA",
+      "country": "UK"
+    },
+    "profile": {
+      "operatingHours": "Mon-Sat: 9am-7pm, Sun: Closed",
+      "services": ["Prescription dispensing", "Standard delivery", "Consultation room"],
+      "deliveryZones": ["Manchester", "Greater Manchester"],
+      "expressDelivery": false,
+      "rating": 4.6,
+      "totalOrders": 8930
+    }
+  },
+  {
+    "id": "support-001",
+    "role": "support",
+    "email": "tech.support@doktorabc.com",
+    "password": "demo123",
+    "name": "Alex Martinez",
+    "title": "Senior Support Engineer",
+    "department": "Technical Support",
+    "phone": "+44 7700 900300",
+    "profile": {
+      "avatar": null,
+      "specialties": ["Platform issues", "Integration debugging", "Performance monitoring"],
+      "shiftSchedule": "Mon-Fri: 9am-6pm",
+      "ticketsResolved": 1250,
+      "averageResponseTime": "15 minutes"
+    }
+  },
+  {
+    "id": "cs-001",
+    "role": "customer-service",
+    "email": "cs.lead@doktorabc.com",
+    "password": "demo123",
+    "name": "Rachel Thompson",
+    "title": "Customer Service Lead",
+    "department": "Customer Support",
+    "phone": "+44 7700 900400",
+    "profile": {
+      "avatar": null,
+      "specialties": ["Patient inquiries", "Booking assistance", "Complaint resolution"],
+      "shiftSchedule": "Mon-Sun: Rotating shifts",
+      "ticketsResolved": 3420,
+      "satisfactionScore": 4.9,
+      "languages": ["English", "Spanish", "German"]
+    }
+  }
+]
+

@@ -1,0 +1,123 @@
+[
+  {
+    "id": "ticket-001",
+    "type": "customer-service",
+    "patientId": "patient-001",
+    "subject": "Question about treatment timing",
+    "category": "General Inquiry",
+    "priority": "medium",
+    "status": "open",
+    "assignedTo": "cs-001",
+    "createdAt": "2025-10-28T09:15:00Z",
+    "updatedAt": "2025-10-28T09:15:00Z",
+    "messages": [
+      {
+        "id": "msg-001",
+        "sender": "patient-001",
+        "timestamp": "2025-10-28T09:15:00Z",
+        "content": "Hi, I have my Botox appointment scheduled for next week. I'm wondering if I need to avoid any activities the day before? I have a gym session planned."
+      }
+    ]
+  },
+  {
+    "id": "ticket-002",
+    "type": "customer-service",
+    "patientId": "patient-002",
+    "subject": "Delivery address change",
+    "category": "Delivery",
+    "priority": "high",
+    "status": "in-progress",
+    "assignedTo": "cs-001",
+    "createdAt": "2025-10-27T14:30:00Z",
+    "updatedAt": "2025-10-28T10:22:00Z",
+    "messages": [
+      {
+        "id": "msg-002",
+        "sender": "patient-002",
+        "timestamp": "2025-10-27T14:30:00Z",
+        "content": "I need to change my delivery address for my upcoming prescription. Can this be done?"
+      },
+      {
+        "id": "msg-003",
+        "sender": "cs-001",
+        "timestamp": "2025-10-28T10:22:00Z",
+        "content": "Hello! Yes, I can help you with that. What's your new delivery address? Please note that we can only change it if the order hasn't been dispatched yet."
+      }
+    ]
+  },
+  {
+    "id": "ticket-003",
+    "type": "support",
+    "reportedBy": "doctor-001",
+    "subject": "Video consultation not loading",
+    "category": "Technical",
+    "priority": "urgent",
+    "status": "resolved",
+    "assignedTo": "support-001",
+    "createdAt": "2025-10-26T11:45:00Z",
+    "updatedAt": "2025-10-26T12:15:00Z",
+    "resolvedAt": "2025-10-26T12:15:00Z",
+    "messages": [
+      {
+        "id": "msg-004",
+        "sender": "doctor-001",
+        "timestamp": "2025-10-26T11:45:00Z",
+        "content": "The video consultation interface isn't loading properly. I have a patient waiting. Browser: Chrome, cleared cache already."
+      },
+      {
+        "id": "msg-005",
+        "sender": "support-001",
+        "timestamp": "2025-10-26T11:50:00Z",
+        "content": "I can see the issue. There's a temporary problem with the video service. Switching you to backup server now."
+      },
+      {
+        "id": "msg-006",
+        "sender": "support-001",
+        "timestamp": "2025-10-26T12:15:00Z",
+        "content": "Issue resolved. You should be able to access the consultation now. Please confirm."
+      }
+    ],
+    "resolution": "Switched to backup video server. Main server restarted."
+  },
+  {
+    "id": "ticket-004",
+    "type": "support",
+    "reportedBy": "pharmacy-001",
+    "subject": "Inventory sync error",
+    "category": "Technical",
+    "priority": "medium",
+    "status": "open",
+    "assignedTo": "support-001",
+    "createdAt": "2025-10-28T08:00:00Z",
+    "updatedAt": "2025-10-28T08:00:00Z",
+    "messages": [
+      {
+        "id": "msg-007",
+        "sender": "pharmacy-001",
+        "timestamp": "2025-10-28T08:00:00Z",
+        "content": "Our inventory levels aren't syncing properly with the platform. Updated stock 2 hours ago but it's still showing old numbers."
+      }
+    ]
+  },
+  {
+    "id": "ticket-005",
+    "type": "customer-service",
+    "patientId": "patient-001",
+    "subject": "Booking cancellation request",
+    "category": "Booking",
+    "priority": "high",
+    "status": "open",
+    "assignedTo": "cs-001",
+    "createdAt": "2025-10-28T10:30:00Z",
+    "updatedAt": "2025-10-28T10:30:00Z",
+    "messages": [
+      {
+        "id": "msg-008",
+        "sender": "patient-001",
+        "timestamp": "2025-10-28T10:30:00Z",
+        "content": "I need to cancel my appointment next week due to a work conflict. What's your cancellation policy?"
+      }
+    ]
+  }
+]
+

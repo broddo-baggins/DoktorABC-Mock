@@ -1,0 +1,66 @@
+[
+  {
+    "id": "appt-001",
+    "patientId": "patient-001",
+    "doctorId": "doctor-001",
+    "treatmentId": "botox-forehead",
+    "type": "consultation",
+    "status": "completed",
+    "datetime": "2025-10-15T10:00:00Z",
+    "duration": 30,
+    "location": "Virtual",
+    "notes": "Patient interested in preventative Botox. Discussed expectations and realistic outcomes.",
+    "outcome": "Approved for treatment"
+  },
+  {
+    "id": "appt-002",
+    "patientId": "patient-001",
+    "doctorId": "doctor-001",
+    "treatmentId": "botox-forehead",
+    "type": "treatment",
+    "status": "scheduled",
+    "datetime": "2025-10-30T14:30:00Z",
+    "duration": 45,
+    "location": "Central Aesthetic Clinic, London",
+    "clinicAddress": {
+      "street": "145 Harley Street",
+      "city": "London",
+      "postcode": "W1G 6BJ",
+      "country": "UK"
+    },
+    "notes": "First Botox treatment. 20 units forehead area.",
+    "preInstructions": [
+      "Avoid alcohol 24 hours before",
+      "Avoid blood thinners 48 hours before",
+      "Arrive with clean face (no makeup)",
+      "Bring ID for verification"
+    ]
+  },
+  {
+    "id": "appt-003",
+    "patientId": "patient-002",
+    "doctorId": "doctor-002",
+    "treatmentId": "hair-loss-treatment",
+    "type": "consultation",
+    "status": "pending",
+    "datetime": "2025-10-31T11:00:00Z",
+    "duration": 20,
+    "location": "Virtual",
+    "notes": "Follow-up consultation for ongoing Finasteride treatment.",
+    "outcome": null
+  },
+  {
+    "id": "appt-004",
+    "patientId": "patient-001",
+    "doctorId": "doctor-001",
+    "treatmentId": "botox-forehead",
+    "type": "follow-up",
+    "status": "pending",
+    "datetime": "2025-11-13T10:00:00Z",
+    "duration": 15,
+    "location": "Virtual",
+    "notes": "2-week post-treatment check-in",
+    "outcome": null
+  }
+]
+

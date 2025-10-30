@@ -1,0 +1,107 @@
+[
+  {
+    "id": "inv-001",
+    "pharmacyId": "pharmacy-001",
+    "productName": "Botox (Botulinum Toxin Type A)",
+    "category": "Aesthetic Injectable",
+    "sku": "BTX-100U-001",
+    "stockLevel": 45,
+    "reorderLevel": 15,
+    "unitPrice": 250,
+    "expiryDate": "2026-03-15",
+    "supplier": "Allergan Aesthetics",
+    "storageRequirements": "Refrigerated 2-8°C"
+  },
+  {
+    "id": "inv-002",
+    "pharmacyId": "pharmacy-001",
+    "productName": "Finasteride 1mg",
+    "category": "Hair Loss",
+    "sku": "FIN-1MG-090",
+    "stockLevel": 450,
+    "reorderLevel": 100,
+    "unitPrice": 0.75,
+    "expiryDate": "2026-12-31",
+    "supplier": "Generic Pharma",
+    "storageRequirements": "Room temperature"
+  },
+  {
+    "id": "inv-003",
+    "pharmacyId": "pharmacy-001",
+    "productName": "Sildenafil 50mg",
+    "category": "Erectile Dysfunction",
+    "sku": "SIL-50MG-008",
+    "stockLevel": 320,
+    "reorderLevel": 80,
+    "unitPrice": 3.50,
+    "expiryDate": "2027-06-30",
+    "supplier": "Pfizer",
+    "storageRequirements": "Room temperature"
+  },
+  {
+    "id": "inv-004",
+    "pharmacyId": "pharmacy-001",
+    "productName": "Juvederm Ultra 2",
+    "category": "Aesthetic Injectable",
+    "sku": "JUV-UL2-001",
+    "stockLevel": 28,
+    "reorderLevel": 10,
+    "unitPrice": 180,
+    "expiryDate": "2026-08-20",
+    "supplier": "Allergan Aesthetics",
+    "storageRequirements": "Room temperature"
+  },
+  {
+    "id": "inv-005",
+    "pharmacyId": "pharmacy-002",
+    "productName": "Finasteride 1mg",
+    "category": "Hair Loss",
+    "sku": "FIN-1MG-090",
+    "stockLevel": 220,
+    "reorderLevel": 100,
+    "unitPrice": 0.75,
+    "expiryDate": "2026-11-15",
+    "supplier": "Generic Pharma",
+    "storageRequirements": "Room temperature"
+  },
+  {
+    "id": "inv-006",
+    "pharmacyId": "pharmacy-002",
+    "productName": "Levonorgestrel 1.5mg (Morning After)",
+    "category": "Emergency Contraception",
+    "sku": "LEV-1.5MG-001",
+    "stockLevel": 85,
+    "reorderLevel": 25,
+    "unitPrice": 15,
+    "expiryDate": "2026-09-30",
+    "supplier": "Bayer",
+    "storageRequirements": "Room temperature"
+  },
+  {
+    "id": "inv-007",
+    "pharmacyId": "pharmacy-001",
+    "productName": "Syringes 1ml (100 pack)",
+    "category": "Medical Supplies",
+    "sku": "SYR-1ML-100",
+    "stockLevel": 15,
+    "reorderLevel": 5,
+    "unitPrice": 25,
+    "expiryDate": "2028-12-31",
+    "supplier": "BD Medical",
+    "storageRequirements": "Room temperature"
+  },
+  {
+    "id": "inv-008",
+    "pharmacyId": "pharmacy-001",
+    "productName": "Needles 30G (100 pack)",
+    "category": "Medical Supplies",
+    "sku": "NDL-30G-100",
+    "stockLevel": 22,
+    "reorderLevel": 8,
+    "unitPrice": 18,
+    "expiryDate": "2028-12-31",
+    "supplier": "BD Medical",
+    "storageRequirements": "Room temperature"
+  }
+]
+
