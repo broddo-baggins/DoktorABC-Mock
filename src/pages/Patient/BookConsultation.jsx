@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { Calendar as CalendarIcon, Clock, Video, User, Star, CheckCircle } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
@@ -6,7 +6,6 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
-import Select from '../../components/ui/Select'
 import Badge from '../../components/ui/Badge'
 
 const BookConsultation = () => {
@@ -23,6 +22,18 @@ const BookConsultation = () => {
   const [selectedDoctor, setSelectedDoctor] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
+
+  // If no treatmentId provided, redirect to categories immediately
+  useEffect(() => {
+    if (!treatmentId) {
+      navigate('/categories', { replace: true })
+    }
+  }, [treatmentId, navigate])
+
+  // Don't render if no treatment
+  if (!treatmentId || !treatment) {
+    return null
+  }
 
   // Generate available dates (next 14 days)
   const availableDates = Array.from({ length: 14 }, (_, i) => {
@@ -48,7 +59,7 @@ const BookConsultation = () => {
     const appointment = createAppointment({
       patientId: user.id,
       doctorId: selectedDoctor,
-      treatmentId,
+      treatmentId: treatmentId,
       type: 'consultation',
       datetime: datetime.toISOString(),
       duration: 30,
@@ -64,9 +75,7 @@ const BookConsultation = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Book Video Consultation</h1>
-        {treatment && (
-          <p className="text-gray-600">For: {treatment.name}</p>
-        )}
+        <p className="text-gray-600">For: {treatment.name}</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -237,7 +246,7 @@ const BookConsultation = () => {
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-semibold">Consultation Fee</span>
                     <span className="text-2xl font-bold text-primary-600">
-                      €{treatment?.price.consultation || 49}
+                      €{treatment.price.consultation}
                     </span>
                   </div>
 

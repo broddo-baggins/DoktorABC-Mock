@@ -18,6 +18,8 @@ import About from './pages/About'
 import Shipping from './pages/Shipping'
 import FAQ from './pages/FAQ'
 import Contact from './pages/Contact'
+import Terms from './pages/Terms'
+import Privacy from './pages/Privacy'
 
 // Patient Pages
 import PatientDashboard from './pages/Patient/Dashboard'
@@ -31,6 +33,7 @@ import TreatmentDay from './pages/Patient/TreatmentDay'
 import Aftercare from './pages/Patient/Aftercare'
 import FollowUp from './pages/Patient/FollowUp'
 import Cart from './pages/Patient/Cart'
+import Settings from './pages/Patient/Settings'
 
 // Doctor Pages
 import DoctorDashboard from './pages/Doctor/Dashboard'
@@ -96,6 +99,8 @@ const AppContent = () => {
           <Route path="/shipping" element={<Shipping />} />
           <Route path="/faq" element={<FAQ />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
 
           {/* Patient Routes */}
           <Route
@@ -183,6 +188,14 @@ const AppContent = () => {
             element={
               <ProtectedRoute allowedRoles={['patient']}>
                 <Cart />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute allowedRoles={['patient']}>
+                <Settings />
               </ProtectedRoute>
             }
           />

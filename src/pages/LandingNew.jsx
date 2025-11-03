@@ -261,7 +261,7 @@ const Landing = () => {
                   Online scheduling with instant slot confirmation. No phone calls, no waiting. Choose your doctor, pick your time, and you're done.
                 </p>
                 <div className="mt-6">
-                  <Button variant="outline" size="sm" onClick={() => navigate('/book-consultation')}>
+                  <Button variant="outline" size="sm" onClick={() => navigate('/categories')}>
                     Schedule Now →
                   </Button>
                 </div>
@@ -554,7 +554,7 @@ const Landing = () => {
                     </div>
                   </div>
 
-                  <Button variant="outline" size="sm" className="w-full hover:bg-primary-600 hover:text-white transition-all" onClick={() => navigate('/book-consultation')}>
+                  <Button variant="outline" size="sm" className="w-full hover:bg-primary-600 hover:text-white transition-all" onClick={() => navigate('/categories')}>
                     Book with {doctor.name.split(' ')[1]} →
                   </Button>
                 </CardContent>

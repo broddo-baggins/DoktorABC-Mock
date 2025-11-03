@@ -25,7 +25,7 @@
 4. **Support Engineer Portal** - 3 pages ✅
 5. **Customer Service Portal** - 2 pages ✅
 
-**Plus 10 public pages** = **36 total pages**
+**Plus 10 public pages** = **36 total pages**=
 
 ### **3. ✅ How to Reach All Portals**
 **NEW: Quick Portal Access Buttons on Login Page!**
