@@ -271,6 +271,7 @@ const PatientDashboard = () => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
+                  onClick={() => navigate('/contact')}
                 >
                   <AlertCircle className="w-4 h-4 mr-2" />
                   Contact Support

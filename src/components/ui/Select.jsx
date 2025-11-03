@@ -17,7 +17,7 @@ const Select = React.forwardRef(({
       )}
       <select
         className={cn(
-          'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white',
+          'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-gray-900',
           error && 'border-red-500 focus:ring-red-500',
           className
         )}

@@ -2,6 +2,12 @@
 
 A comprehensive React-based mobile-first mock application simulating the complete DoktorABC platform treatment funnel across multiple personas (patients, doctors, pharmacies, support engineers, and customer service).
 
+## 🌐 Live Demo
+
+**👉 [View Live Application](https://broddo-baggins.github.io/DoktorABC-Mock/)**
+
+The application is deployed and live on GitHub Pages. No installation required - just click the link above to explore the demo!
+
 > 📚 **Documentation:** All project documentation is organized in the [`docs/`](./docs/) folder. See [`docs/LANDING_PAGE_GUIDE.md`](./docs/LANDING_PAGE_GUIDE.md) for the complete landing page guide and [`docs/DEMO_CREDENTIALS.md`](./docs/DEMO_CREDENTIALS.md) for all login credentials.
 
 ## 🎯 Purpose

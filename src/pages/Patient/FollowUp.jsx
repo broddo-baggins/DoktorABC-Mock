@@ -224,7 +224,7 @@ const FollowUp = () => {
               <p className="text-sm text-gray-600 mb-3">
                 If you have urgent concerns, please contact our 24/7 support line.
               </p>
-              <Button size="sm" variant="outline">
+              <Button size="sm" variant="outline" onClick={() => navigate('/contact')}>
                 Contact Support
               </Button>
             </div>

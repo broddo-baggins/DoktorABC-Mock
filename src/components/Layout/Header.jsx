@@ -43,7 +43,7 @@ const Header = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to={isAuthenticated ? getDashboardPath() : "/"} className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">D</span>
             </div>
@@ -52,20 +52,24 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/how-it-works" className="text-gray-700 hover:text-primary-600 transition-colors">
-              How it works
-            </Link>
-            <Link to="/about" className="text-gray-700 hover:text-primary-600 transition-colors">
-              Medical Advisory Board
-            </Link>
-            <Link to="/shipping" className="text-gray-700 hover:text-primary-600 transition-colors">
-              Shipping
-            </Link>
-            <Link to="/faq" className="text-gray-700 hover:text-primary-600 transition-colors">
-              FAQ
-            </Link>
+            {(!isAuthenticated || user?.role === 'patient') && (
+              <>
+                <Link to="/how-it-works" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  How it works
+                </Link>
+                <Link to="/about" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  Medical Advisory Board
+                </Link>
+                <Link to="/shipping" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  Shipping
+                </Link>
+                <Link to="/faq" className="text-gray-700 hover:text-primary-600 transition-colors">
+                  FAQ
+                </Link>
+              </>
+            )}
             <Link to="/contact" className="text-gray-700 hover:text-primary-600 transition-colors">
-              Customer Service
+              {isAuthenticated && user?.role !== 'patient' ? 'Support' : 'Customer Service'}
             </Link>
           </nav>
 
@@ -214,40 +218,44 @@ const Header = () => {
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <nav className="flex flex-col space-y-4">
-              <Link
-                to="/how-it-works"
-                className="text-gray-700 hover:text-primary-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                How it works
-              </Link>
-              <Link
-                to="/about"
-                className="text-gray-700 hover:text-primary-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Medical Advisory Board
-              </Link>
-              <Link
-                to="/shipping"
-                className="text-gray-700 hover:text-primary-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Shipping
-              </Link>
-              <Link
-                to="/faq"
-                className="text-gray-700 hover:text-primary-600"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                FAQ
-              </Link>
+              {(!isAuthenticated || user?.role === 'patient') && (
+                <>
+                  <Link
+                    to="/how-it-works"
+                    className="text-gray-700 hover:text-primary-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    How it works
+                  </Link>
+                  <Link
+                    to="/about"
+                    className="text-gray-700 hover:text-primary-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Medical Advisory Board
+                  </Link>
+                  <Link
+                    to="/shipping"
+                    className="text-gray-700 hover:text-primary-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Shipping
+                  </Link>
+                  <Link
+                    to="/faq"
+                    className="text-gray-700 hover:text-primary-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    FAQ
+                  </Link>
+                </>
+              )}
               <Link
                 to="/contact"
                 className="text-gray-700 hover:text-primary-600"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Customer Service
+                {isAuthenticated && user?.role !== 'patient' ? 'Support' : 'Customer Service'}
               </Link>
               
               {isAuthenticated ? (

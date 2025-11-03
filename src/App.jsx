@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AppStateProvider } from './contexts/AppStateContext'
 import { ToastProvider } from './components/ui/Toast'
+import ScrollToTop from './components/ScrollToTop'
 import Header from './components/Layout/Header'
 import Footer from './components/Layout/Footer'
 
@@ -84,6 +85,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 const AppContent = () => {
   return (
     <div className="flex flex-col min-h-screen">
+      <ScrollToTop />
       <Header />
       <main className="flex-1">
         <Routes>

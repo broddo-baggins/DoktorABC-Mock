@@ -6,12 +6,17 @@
     "password": "demo123",
     "name": "Sarah Johnson",
     "dateOfBirth": "1990-05-15",
-    "phone": "+44 7700 900123",
+    "phone": "+49 30 12345678",
     "address": {
-      "street": "123 High Street",
-      "city": "London",
-      "postcode": "SW1A 1AA",
-      "country": "UK"
+      "street": "Kurfürstendamm 195",
+      "city": "Berlin",
+      "postcode": "10707",
+      "country": "Germany",
+      "district": "Charlottenburg-Wilmersdorf",
+      "coordinates": {
+        "lat": 52.5025,
+        "lng": 13.3269
+      }
     },
     "profile": {
       "avatar": null,
@@ -33,12 +38,17 @@
     "password": "demo123",
     "name": "John Smith",
     "dateOfBirth": "1985-08-22",
-    "phone": "+44 7700 900124",
+    "phone": "+49 89 98765432",
     "address": {
-      "street": "45 Oxford Road",
-      "city": "Manchester",
-      "postcode": "M1 4BT",
-      "country": "UK"
+      "street": "Maximilianstraße 42",
+      "city": "Munich",
+      "postcode": "80539",
+      "country": "Germany",
+      "district": "Altstadt-Lehel",
+      "coordinates": {
+        "lat": 48.1391,
+        "lng": 11.5802
+      }
     },
     "profile": {
       "avatar": null,
@@ -62,14 +72,21 @@
     "title": "MBChB, MRCGP",
     "specialization": ["General Practice", "Aesthetic Medicine", "Sexual Health"],
     "licenseNumber": "GMC-7654321",
-    "phone": "+44 7700 900200",
+    "phone": "+49 30 87654321",
+    "address": {
+      "street": "Friedrichstraße 95",
+      "city": "Berlin",
+      "postcode": "10117",
+      "country": "Germany",
+      "district": "Mitte"
+    },
     "profile": {
       "avatar": null,
       "bio": "Experienced GP with 12 years in primary care and aesthetic medicine. Passionate about accessible healthcare and natural-looking aesthetic results.",
       "yearsExperience": 12,
       "rating": 4.8,
       "totalConsultations": 2450,
-      "languages": ["English", "French"],
+      "languages": ["English", "French", "German"],
       "availability": {
         "inHouse": true,
         "travel": true,
@@ -86,14 +103,21 @@
     "title": "MBBS, MRCP",
     "specialization": ["Internal Medicine", "Chronic Disease Management"],
     "licenseNumber": "GMC-8765432",
-    "phone": "+44 7700 900201",
+    "phone": "+49 89 23456789",
+    "address": {
+      "street": "Leopoldstraße 139",
+      "city": "Munich",
+      "postcode": "80804",
+      "country": "Germany",
+      "district": "Schwabing-West"
+    },
     "profile": {
       "avatar": null,
       "bio": "Internal medicine specialist focusing on chronic disease management and preventative care. Committed to patient-centered care.",
       "yearsExperience": 8,
       "rating": 4.9,
       "totalConsultations": 1890,
-      "languages": ["English", "Mandarin"],
+      "languages": ["English", "Mandarin", "German"],
       "availability": {
         "inHouse": true,
         "travel": false,
@@ -110,14 +134,21 @@
     "title": "MD, PhD, FRCP, FACOG",
     "specialization": ["Sexual Health", "Reproductive Medicine", "Aesthetic Medicine", "Hormone Therapy"],
     "licenseNumber": "GMC-7123456",
-    "phone": "+44 7700 900202",
+    "phone": "+49 30 55667788",
+    "address": {
+      "street": "Unter den Linden 77",
+      "city": "Berlin",
+      "postcode": "10117",
+      "country": "Germany",
+      "district": "Mitte"
+    },
     "profile": {
       "avatar": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop",
       "bio": "Leading specialist in sexual health and reproductive medicine with dual MD-PhD degrees from Oxford. Former Chief of Sexual Medicine at Royal London Hospital. Published over 60 peer-reviewed papers and pioneered several treatment protocols now used internationally. Passionate about breaking stigmas and providing compassionate, evidence-based care.",
       "yearsExperience": 18,
       "rating": 4.95,
       "totalConsultations": 4280,
-      "languages": ["English", "German", "Spanish", "Italian"],
+      "languages": ["English", "German", "Spanish", "Italian", "French"],
       "awards": [
         "UK Sexual Health Physician of the Year 2022",
         "European Association Excellence Award 2020",
@@ -135,19 +166,20 @@
     "role": "pharmacy",
     "email": "central.pharmacy@partner.com",
     "password": "demo123",
-    "name": "Central Pharmacy London",
+    "name": "Berlin Mitte Pharmacy",
     "licenseNumber": "GPhC-9876543",
-    "phone": "+44 20 7946 0958",
+    "phone": "+49 30 24681357",
     "address": {
-      "street": "250 Regent Street",
-      "city": "London",
-      "postcode": "W1B 2AA",
-      "country": "UK"
+      "street": "Alexanderplatz 1",
+      "city": "Berlin",
+      "postcode": "10178",
+      "country": "Germany",
+      "district": "Mitte"
     },
     "profile": {
       "operatingHours": "Mon-Fri: 8am-8pm, Sat: 9am-6pm, Sun: 10am-4pm",
       "services": ["Prescription dispensing", "Express delivery", "Aesthetic products"],
-      "deliveryZones": ["London", "Greater London"],
+      "deliveryZones": ["Berlin", "Potsdam", "Brandenburg"],
       "expressDelivery": true,
       "rating": 4.7,
       "totalOrders": 15420
@@ -158,19 +190,20 @@
     "role": "pharmacy",
     "email": "manchester.pharmacy@partner.com",
     "password": "demo123",
-    "name": "Manchester Health Pharmacy",
+    "name": "Munich Marienplatz Pharmacy",
     "licenseNumber": "GPhC-8765432",
-    "phone": "+44 161 123 4567",
+    "phone": "+49 89 87654321",
     "address": {
-      "street": "78 Market Street",
-      "city": "Manchester",
-      "postcode": "M1 1WA",
-      "country": "UK"
+      "street": "Marienplatz 8",
+      "city": "Munich",
+      "postcode": "80331",
+      "country": "Germany",
+      "district": "Altstadt-Lehel"
     },
     "profile": {
       "operatingHours": "Mon-Sat: 9am-7pm, Sun: Closed",
       "services": ["Prescription dispensing", "Standard delivery", "Consultation room"],
-      "deliveryZones": ["Manchester", "Greater Manchester"],
+      "deliveryZones": ["Munich", "Augsburg", "Bavaria"],
       "expressDelivery": false,
       "rating": 4.6,
       "totalOrders": 8930

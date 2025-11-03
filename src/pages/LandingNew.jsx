@@ -4,13 +4,17 @@ import { ArrowRight, CheckCircle, Clock, Shield, Star, Calendar, MessageCircle, 
 import Button from '../components/ui/Button'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
+import { useToast } from '../components/ui/Toast'
 import { useAppState } from '../contexts/AppStateContext'
 
 const Landing = () => {
   const navigate = useNavigate()
+  const toast = useToast()
   const { treatments, getDoctors } = useAppState()
   const doctors = getDoctors()
   const [showStickyBooking, setShowStickyBooking] = useState(false)
+  const [selectedDay, setSelectedDay] = useState(3) // Default: day 3 (28th)
+  const [selectedTime, setSelectedTime] = useState('14:30') // Default time
 
   useEffect(() => {
     const handleScroll = () => {
@@ -134,29 +138,82 @@ const Landing = () => {
                       <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
                     </div>
                     <div className="grid grid-cols-7 gap-1">
-                      {[...Array(7)].map((_, i) => (
-                        <button key={i} className={`aspect-square rounded-lg text-sm font-medium transition-all ${
-                          i === 3 ? 'bg-accent-600 text-white shadow-lg' : i < 2 ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 hover:bg-primary-50 text-gray-700'
-                        }`}>
-                          {i + 25}
-                        </button>
-                      ))}
+                      {[...Array(7)].map((_, i) => {
+                        const isPast = i < 2
+                        const isSelected = selectedDay === i
+                        return (
+                          <button 
+                            key={i} 
+                            disabled={isPast}
+                            onClick={() => {
+                              if (!isPast) {
+                                setSelectedDay(i)
+                                const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+                                toast.success(`Selected ${dayNames[i]}, Oct ${25 + i}`)
+                              }
+                            }}
+                            className={`aspect-square rounded-lg text-sm font-medium transition-all ${
+                              isSelected ? 'bg-accent-600 text-white shadow-lg scale-105' : 
+                              isPast ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 
+                              'bg-gray-50 hover:bg-primary-100 text-gray-700 hover:scale-105 cursor-pointer'
+                            }`}
+                          >
+                            {i + 25}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700">Available times today:</p>
+                    <p className="text-sm font-medium text-gray-700">Available times for selected day:</p>
                     <div className="flex gap-2 flex-wrap">
-                      {['10:00', '14:30', '16:00'].map(time => (
-                        <button key={time} className="px-4 py-2 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-600 hover:text-white transition-colors">
-                          {time}
-                        </button>
-                      ))}
+                      {['09:00', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'].map(time => {
+                        const isSelected = selectedTime === time
+                        return (
+                          <button 
+                            key={time} 
+                            onClick={() => {
+                              setSelectedTime(time)
+                              toast.success(`Time slot ${time} selected`)
+                            }}
+                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                              isSelected 
+                                ? 'bg-primary-600 text-white shadow-lg scale-105' 
+                                : 'bg-primary-50 text-primary-700 hover:bg-primary-100 hover:scale-105'
+                            }`}
+                          >
+                            {time}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
-                  <Button className="w-full mt-4" onClick={() => navigate('/categories')}>
-                    Confirm Booking →
+                  <Button 
+                    className="w-full mt-4" 
+                    onClick={() => {
+                      // Get date info for selected day
+                      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+                      const selectedDayName = dayNames[selectedDay]
+                      const selectedDate = `October ${25 + selectedDay}, 2025`
+                      
+                      // Show success toast
+                      toast.success(`Booking confirmed! ${selectedDayName}, ${selectedDate} at ${selectedTime}`)
+                      
+                      // Navigate to categories with booking info in state
+                      setTimeout(() => {
+                        navigate('/categories', { 
+                          state: { 
+                            preselectedTime: selectedTime,
+                            preselectedDay: selectedDayName,
+                            preselectedDate: selectedDate
+                          } 
+                        })
+                      }, 800)
+                    }}
+                  >
+                    Confirm Booking → {selectedTime} on Oct {25 + selectedDay}
                   </Button>
                 </CardContent>
               </Card>
