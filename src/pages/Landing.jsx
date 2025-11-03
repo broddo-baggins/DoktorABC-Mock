@@ -297,12 +297,22 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {doctors.slice(0, 2).map((doctor) => (
+            {doctors.slice(0, 3).map((doctor) => (
               <Card key={doctor.id} className="hover:shadow-xl transition-all duration-300">
                 <CardContent className="p-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-                    <Users className="w-12 h-12 text-primary-600" />
-                  </div>
+                  {doctor.profile.avatar ? (
+                    <div className="w-24 h-24 rounded-full mx-auto mb-4 overflow-hidden ring-4 ring-primary-200">
+                      <img 
+                        src={doctor.profile.avatar} 
+                        alt={doctor.name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <Users className="w-12 h-12 text-primary-600" />
+                    </div>
+                  )}
                   
                   <div className="text-center mb-4">
                     <h3 className="text-xl font-bold text-gray-900 mb-1">{doctor.name}</h3>
@@ -325,8 +335,14 @@ const Landing = () => {
                     </div>
                     <div className="flex items-center">
                       <CheckCircle className="w-3 h-3 text-accent-600 mr-2" />
-                      <span>{doctor.profile.totalConsultations} consultations</span>
+                      <span>{doctor.profile.totalConsultations}+ consultations</span>
                     </div>
+                    {doctor.profile.awards && doctor.profile.awards.length > 0 && (
+                      <div className="flex items-start pt-2 border-t border-gray-200">
+                        <Award className="w-3 h-3 text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
+                        <span className="text-yellow-700 font-medium">{doctor.profile.awards[0]}</span>
+                      </div>
+                    )}
                   </div>
 
                   <Button variant="outline" size="sm" className="w-full" onClick={() => navigate('/book-consultation')}>

@@ -102,6 +102,35 @@
     }
   },
   {
+    "id": "doctor-003",
+    "role": "doctor",
+    "email": "dr.alexandra.hartley@doktorabc.com",
+    "password": "demo123",
+    "name": "Dr. Alexandra Hartley",
+    "title": "MD, PhD, FRCP, FACOG",
+    "specialization": ["Sexual Health", "Reproductive Medicine", "Aesthetic Medicine", "Hormone Therapy"],
+    "licenseNumber": "GMC-7123456",
+    "phone": "+44 7700 900202",
+    "profile": {
+      "avatar": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=400&fit=crop",
+      "bio": "Leading specialist in sexual health and reproductive medicine with dual MD-PhD degrees from Oxford. Former Chief of Sexual Medicine at Royal London Hospital. Published over 60 peer-reviewed papers and pioneered several treatment protocols now used internationally. Passionate about breaking stigmas and providing compassionate, evidence-based care.",
+      "yearsExperience": 18,
+      "rating": 4.95,
+      "totalConsultations": 4280,
+      "languages": ["English", "German", "Spanish", "Italian"],
+      "awards": [
+        "UK Sexual Health Physician of the Year 2022",
+        "European Association Excellence Award 2020",
+        "Published Author - 'Modern Approaches to Sexual Wellness'"
+      ],
+      "availability": {
+        "inHouse": true,
+        "travel": true,
+        "travelRadius": 100
+      }
+    }
+  },
+  {
     "id": "pharmacy-001",
     "role": "pharmacy",
     "email": "central.pharmacy@partner.com",
