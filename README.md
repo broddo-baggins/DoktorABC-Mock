@@ -44,6 +44,254 @@ npm run build
 npm run preview
 ```
 
+## 🧪 Testing Suite
+
+### Test Categories
+
+The application includes a comprehensive test suite covering multiple testing methodologies:
+
+#### 1. **Smoke Tests** 🔥
+- **Purpose**: Quick verification that critical functionality works after deployment
+- **When to Run**: After every deployment, before detailed testing begins
+- **Coverage**: Essential features required for basic operation
+- **Runtime**: ~5 seconds
+
+**What's Tested:**
+- Application entry points exist (main.jsx, App.jsx)
+- Critical pages load (Landing, Login, Categories)
+- Core routes are defined (/, /login, /categories)
+- Essential components exist (Header, Footer)
+- Authentication context is configured
+- Required data files exist and are valid JSON
+
+**User Stories Covered:**
+- US-001: As a visitor, I want to access the landing page
+- US-002: As a visitor, I want to view available treatments
+- US-003: As a visitor, I want to access login/register
+- US-004: As a user, I want basic navigation to work
+
+**Run Command:**
+```bash
+npm run test:smoke
+```
+
+---
+
+#### 2. **Sanity Tests** 🧪
+- **Purpose**: Verify core functionality after bug fixes or minor changes
+- **When to Run**: After bug fixes, minor updates, or configuration changes
+- **Coverage**: Key features and critical workflows
+- **Runtime**: ~10 seconds
+
+**What's Tested:**
+- All public routes are accessible without authentication
+- Protected routes require authentication and check roles
+- Navigation links in Header and Footer work correctly
+- Authentication system (login/logout) functions properly
+- Data management (treatments, users) works as expected
+- Key pages import and render components
+
+**User Stories Covered:**
+- US-010: As a visitor, I want to browse all treatment categories
+- US-011: As a visitor, I want to read treatment details
+- US-020: As a patient, I want to access my dashboard
+- US-021: As a patient, I want to view my cart
+- US-030: As a doctor, I want to access my portal
+- US-040: As a pharmacist, I want to manage orders
+
+**Run Command:**
+```bash
+npm run test:sanity
+```
+
+---
+
+#### 3. **Regression Tests** 🔄
+- **Purpose**: Ensure existing features still work after code changes
+- **When to Run**: Before releases, after major feature additions
+- **Coverage**: All previously working features
+- **Runtime**: ~15 seconds
+
+**What's Tested:**
+- All 41 routes still exist and are configured correctly
+- Navigation links in Header, Footer, and Landing page remain intact
+- Authentication features (login, logout, role-based access) work
+- All critical pages exist and haven't been deleted
+- Data structures remain consistent across changes
+- UI components are still present
+- Context providers maintain required functionality
+
+**User Stories Covered:**
+- US-001 to US-050: All implemented user stories
+- Validates backward compatibility
+- Prevents feature regression
+
+**Run Command:**
+```bash
+npm run test:regression
+```
+
+---
+
+#### 4. **Positive Tests** ✅
+- **Purpose**: Verify expected behavior with valid inputs (happy path)
+- **When to Run**: During development, before releases
+- **Coverage**: Normal use cases with valid data
+- **Runtime**: ~12 seconds
+
+**What's Tested:**
+- Valid routes are accessible
+- Public pages work without authentication
+- Treatment browsing and detail viewing works
+- Valid user credentials authenticate successfully
+- Login redirects to appropriate dashboards by role
+- Data structures are valid and contain required fields
+- Role-based access allows correct roles
+- UI components export and function properly
+
+**User Stories Covered:**
+- US-101: As a visitor, I can navigate to all public pages
+- US-102: As a patient, I can log in with valid credentials
+- US-103: As a patient, I can browse treatments
+- US-104: As a patient, I can add items to cart
+- US-105: As a doctor, I can access my dashboard
+- US-106: As staff, I can access role-specific pages
+
+**Run Command:**
+```bash
+npm run test:positive
+```
+
+---
+
+#### 5. **Negative Tests** ❌
+- **Purpose**: Verify error handling with invalid inputs and security
+- **When to Run**: During development, security audits
+- **Coverage**: Error cases, edge cases, unauthorized access
+- **Runtime**: ~10 seconds
+
+**What's Tested:**
+- Protected routes reject unauthorized access
+- Role-based access prevents wrong role access (doctor routes reject patients)
+- Invalid routes redirect to 404/home
+- Missing data is handled gracefully (empty arrays, null users)
+- Input validation exists on forms
+- Security measures: passwords not in plain text, auth state persists, logout clears state
+- User roles cannot be modified by client
+- Error boundaries or error handling exists
+
+**User Stories Covered:**
+- US-201: As a system, I prevent unauthorized access
+- US-202: As a system, I handle invalid routes gracefully
+- US-203: As a system, I validate user inputs
+- US-204: As a system, I prevent role escalation
+- US-205: As a system, I handle missing data
+
+**Run Command:**
+```bash
+npm run test:negative
+```
+
+---
+
+### Running Tests
+
+#### Run All Tests
+Executes all test suites in sequence (Smoke → Sanity → Positive → Negative → Regression):
+```bash
+npm test
+```
+
+or
+
+```bash
+npm run test
+```
+
+#### Run Individual Test Suites
+```bash
+npm run test:smoke       # Smoke tests only (~5s)
+npm run test:sanity      # Sanity tests only (~10s)
+npm run test:positive    # Positive tests only (~12s)
+npm run test:negative    # Negative tests only (~10s)
+npm run test:regression  # Regression tests only (~15s)
+```
+
+### Test Output Example
+
+```
+🔥 SMOKE TESTS - Critical Functionality Check
+═══════════════════════════════════════════════════════════
+
+✅ PASS: ST-001: App entry point exists (main.jsx)
+✅ PASS: ST-002: App component exists (App.jsx)
+✅ PASS: ST-003: Landing page exists (LandingNew.jsx)
+✅ PASS: ST-004: Root route (/) is defined
+✅ PASS: ST-005: Login route (/login) is defined
+...
+
+═══════════════════════════════════════════════════════════
+📊 SMOKE TEST RESULTS:
+   Total: 11
+   ✅ Passed: 11
+   ❌ Failed: 0
+   Success Rate: 100.0%
+
+✅ SMOKE TESTS PASSED - Critical functionality verified!
+```
+
+### Test Coverage Summary
+
+| Test Suite | # Tests | Purpose | Critical | Runtime |
+|------------|---------|---------|----------|---------|
+| Smoke | 11 | Application starts and core files exist | Yes | ~5s |
+| Sanity | 16 | Core features work correctly | Yes | ~10s |
+| Regression | 50+ | No features broken by changes | No | ~15s |
+| Positive | 21 | Valid inputs produce expected results | No | ~12s |
+| Negative | 20 | Invalid inputs handled gracefully | No | ~10s |
+| **Total** | **~118** | **Full application validation** | - | **~52s** |
+
+### Testing Best Practices
+
+1. **Before Committing**: Run `npm test` to ensure no regressions
+2. **After Deployment**: Run `npm run test:smoke` to verify deployment
+3. **After Bug Fixes**: Run `npm run test:sanity` to verify the fix
+4. **Before Releases**: Run full test suite `npm test`
+5. **Security Audits**: Run `npm run test:negative` specifically
+
+### CI/CD Integration
+
+Add to your CI/CD pipeline:
+
+```yaml
+# Example GitHub Actions workflow
+- name: Run Tests
+  run: |
+    npm install
+    npm test
+```
+
+### Test Reports
+
+All tests output to console with:
+- ✅ Pass/❌ Fail indicators
+- Detailed error messages when tests fail
+- Summary statistics
+- Success rates
+- Exit codes (0 = pass, 1 = fail) for CI/CD
+
+### Future Test Enhancements
+
+Planned improvements:
+- [ ] Integration tests with real HTTP requests
+- [ ] E2E tests with Playwright/Cypress
+- [ ] Visual regression testing
+- [ ] Performance testing
+- [ ] Accessibility testing (WCAG compliance)
+- [ ] Code coverage reporting
+
+---
+
 ## 👥 Demo Accounts
 
 The application comes with pre-configured demo accounts for all personas:

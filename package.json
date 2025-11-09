@@ -6,7 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node tests/run-all-tests.js",
+    "test:smoke": "node tests/smoke-tests.js",
+    "test:sanity": "node tests/sanity-tests.js",
+    "test:positive": "node tests/positive-tests.js",
+    "test:negative": "node tests/negative-tests.js",
+    "test:regression": "node tests/regression-tests.js"
   },
   "dependencies": {
     "clsx": "^2.1.1",
