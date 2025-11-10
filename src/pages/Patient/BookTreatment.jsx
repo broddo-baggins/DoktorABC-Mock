@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { MapPin, Star, Clock, Calendar, CheckCircle } from 'lucide-react'
+import { MapPin, Star, Clock, Calendar, CheckCircle, User } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../components/ui/Toast'
@@ -18,6 +18,8 @@ const BookTreatment = () => {
   
   const consultationApt = appointments.find(apt => apt.id === planId)
   const treatment = getTreatmentById(consultationApt?.treatmentId)
+  const doctors = getDoctors()
+  const assignedDoctor = doctors.find(d => d.id === consultationApt?.doctorId)
   
   const [selectedClinic, setSelectedClinic] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
@@ -112,6 +114,48 @@ const BookTreatment = () => {
 
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
+          {/* Assigned Doctor */}
+          {assignedDoctor && (
+            <Card className="bg-gradient-to-r from-primary-50 to-blue-50 border-primary-200">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <CheckCircle className="w-5 h-5 text-primary-600 mr-2" />
+                  Your Assigned Doctor
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-start gap-4">
+                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0 border-2 border-primary-200">
+                    <User className="w-10 h-10 text-primary-600" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-900">{assignedDoctor.name}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{assignedDoctor.title}</p>
+                    <div className="flex items-center mb-3">
+                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
+                      <span className="font-semibold text-sm mr-3">{assignedDoctor.profile.rating}</span>
+                      <span className="text-xs text-gray-600">
+                        {assignedDoctor.profile.totalConsultations} treatments • {assignedDoctor.profile.yearsExperience} years experience
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {assignedDoctor.specialization.slice(0, 3).map((spec, idx) => (
+                        <Badge key={idx} variant="default" className="text-xs">
+                          {spec}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-white rounded-lg border border-primary-200">
+                  <p className="text-sm text-gray-700">
+                    <strong>{assignedDoctor.name.split(' ')[1]}</strong> will perform your treatment at your selected clinic location.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Select Clinic */}
           <Card>
             <CardHeader>
@@ -247,6 +291,20 @@ const BookTreatment = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                {assignedDoctor && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Your Doctor</p>
+                    <div className="flex items-center">
+                      <User className="w-4 h-4 mr-2 text-primary-600" />
+                      <span className="font-semibold">{assignedDoctor.name}</span>
+                    </div>
+                    <div className="flex items-center mt-1">
+                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 mr-1" />
+                      <span className="text-xs text-gray-600">{assignedDoctor.profile.rating} rating</span>
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Treatment</p>
                   <p className="font-semibold">{treatment.name}</p>
