@@ -240,7 +240,7 @@ Desktop (1280x720+)
 
 ---
 
-## ✨ **What Makes This Special**
+## **What Makes This Special**
 
 ### **Demo-Optimized:**
 - **One-click portal access** from login page

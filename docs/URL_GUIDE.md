@@ -284,7 +284,7 @@ http://localhost:3000/customer-service/inquiries
 
 ---
 
-## ✨ **Mobile Features**
+## **Mobile Features**
 
 1. **Sticky Elements:**
    - Header stays at top

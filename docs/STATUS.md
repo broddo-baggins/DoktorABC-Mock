@@ -201,7 +201,7 @@ npm run preview
 
 ---
 
-## ✨ Project Achievements
+## Project Achievements
 
 ### **Built in Single Session:**
 - 70+ React components

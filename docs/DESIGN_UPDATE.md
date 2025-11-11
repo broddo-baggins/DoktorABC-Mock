@@ -34,7 +34,7 @@ Inspired by the Botox Aesthetics Telemedicine design, the application now featur
 
 ---
 
-## ✨ **Design Updates**
+## **Design Updates**
 
 ### **1. Background**
 - **Old:** Gray-50 (#f9fafb)
@@ -173,7 +173,7 @@ Background: Soft pink (#fdf2f8)
 
 ---
 
-## ✨ **Key Features of New Design**
+## **Key Features of New Design**
 
 ### **Cleaner Look:**
 - More whitespace

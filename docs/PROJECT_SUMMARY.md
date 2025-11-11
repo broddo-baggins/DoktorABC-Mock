@@ -228,26 +228,26 @@ See **DEMO_GUIDE.md** for:
 ## Key Highlights for Video
 
 ### **Patient Experience**
-- ✨ Complete end-to-end treatment journey
-- ✨ 4-step medical questionnaire with auto-save
-- ✨ Real-time doctor booking with calendar
-- ✨ Mock payment processing
-- ✨ Treatment day workflow with photo documentation
-- ✨ Day-by-day aftercare instructions
-- ✨ Loyalty points and subscription system
+- Complete end-to-end treatment journey
+- 4-step medical questionnaire with auto-save
+- Real-time doctor booking with calendar
+- Mock payment processing
+- Treatment day workflow with photo documentation
+- Day-by-day aftercare instructions
+- Loyalty points and subscription system
 
 ### **Multi-Persona Platform**
-- ✨ 5 distinct portal experiences
-- ✨ Role-based authentication and routing
-- ✨ Interconnected workflows (patient → doctor → pharmacy)
-- ✨ Real-time data updates (via LocalStorage)
+- 5 distinct portal experiences
+- Role-based authentication and routing
+- Interconnected workflows (patient → doctor → pharmacy)
+- Real-time data updates (via LocalStorage)
 
 ### **Professional UI**
-- ✨ Modern, clean design
-- ✨ Smooth animations and transitions
-- ✨ Mobile-first responsive layout
-- ✨ Intuitive navigation
-- ✨ Consistent design patterns
+- Modern, clean design
+- Smooth animations and transitions
+- Mobile-first responsive layout
+- Intuitive navigation
+- Consistent design patterns
 
 ---
 
@@ -285,7 +285,7 @@ See **DEMO_GUIDE.md** for:
 
 ---
 
-## ✨ Success Metrics
+## Success Metrics
 
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
