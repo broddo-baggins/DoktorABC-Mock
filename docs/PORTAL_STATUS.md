@@ -117,7 +117,7 @@ Receive Inquiry → View Patient History → Send Response → Resolve Issue →
 
 ## **All Portals Verification**
 
-### **Patient Portal** ✅
+### **Patient Portal**
 - [x] Complete user journey (11 pages)
 - [x] Medical questionnaire
 - [x] Consultation booking
@@ -127,7 +127,7 @@ Receive Inquiry → View Patient History → Send Response → Resolve Issue →
 - [x] Aftercare & follow-up
 - [x] Dashboard with analytics
 
-### **Doctor Portal** ✅
+### **Doctor Portal**
 - [x] Patient review system
 - [x] Video consultation interface
 - [x] Prescription management
@@ -135,20 +135,20 @@ Receive Inquiry → View Patient History → Send Response → Resolve Issue →
 - [x] Availability scheduling
 - [x] Dashboard with metrics
 
-### **Pharmacy Portal** ✅
+### **Pharmacy Portal**
 - [x] Order management system
 - [x] Inventory tracking with alerts
 - [x] Delivery coordination
 - [x] Stock reordering
 - [x] Dashboard with analytics
 
-### **Support Engineer Portal** ✅
+### **Support Engineer Portal**
 - [x] Technical ticket system
 - [x] System health monitoring
 - [x] Issue resolution workflow
 - [x] Dashboard with metrics
 
-### **Customer Service Portal** ✅
+### **Customer Service Portal**
 - [x] Customer inquiry management
 - [x] Messaging system
 - [x] Ticket resolution

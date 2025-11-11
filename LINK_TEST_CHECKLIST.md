@@ -280,11 +280,11 @@ lsof -i :3000
 Date: _________________
 Tester: _______________
 
-Public Routes: ___/14 ✅
-Header Links: ___/8 ✅
-Footer Links: ___/14 ✅
-Landing Page Links: ___/15 ✅
-Protected Routes: ___/27 ✅
+Public Routes: ___/14
+Header Links: ___/8
+Footer Links: ___/14
+Landing Page Links: ___/15
+Protected Routes: ___/27
 
 Total: ___/78 Links Working
 
