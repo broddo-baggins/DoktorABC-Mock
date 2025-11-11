@@ -152,5 +152,5 @@ tests/
 
 ## Ready for Demo!
 
-All tests passing, comprehensive coverage, and ready to show to management! 🎉
+All tests passing, comprehensive coverage, and ready to show to management!
 

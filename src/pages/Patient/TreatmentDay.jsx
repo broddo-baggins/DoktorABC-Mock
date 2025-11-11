@@ -193,7 +193,7 @@ const TreatmentDay = () => {
         {treatmentComplete && afterPhotos.length > 0 && (
           <Card className="bg-accent-50 border-accent-200">
             <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Treatment Complete! ✨</h3>
+              <h3 className="text-xl font-semibold mb-4">Treatment Complete!</h3>
               <p className="text-gray-700 mb-4">
                 Your treatment is complete. Please review the aftercare instructions carefully.
               </p>

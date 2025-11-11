@@ -348,5 +348,5 @@ Based on your specifications, the DoktorABC mock now includes a **high-conversio
 
 **Status:** **COMPLETE - HIGH-CONVERSION LANDING PAGE LIVE!**
 
-Open **http://localhost:3000** to see the transformation! 🎉
+Open **http://localhost:3000** to see the transformation!
 

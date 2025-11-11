@@ -267,7 +267,6 @@ const Landing = () => {
               {[1, 2, 3].map((i) => (
                 <div key={i} className="bg-white rounded-xl p-4 shadow-lg">
                   <div className="aspect-[4/3] bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg mb-3 flex items-center justify-center">
-                    <span className="text-4xl">✨</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
                     <div><span className="font-semibold">Before:</span> Fine lines visible</div>
