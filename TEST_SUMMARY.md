@@ -23,7 +23,7 @@ The DoktorABC Mock application includes a **comprehensive test suite** with **11
 
 ## Test Suite Overview
 
-### 1. Smoke Tests 🔥
+### 1. Smoke Tests
 
 **Purpose**: Quick verification that critical functionality works after deployment
 
@@ -54,7 +54,7 @@ npm run test:smoke
 
 ---
 
-### 2. Sanity Tests 🧪
+### 2. Sanity Tests
 
 **Purpose**: Verify core functionality after bug fixes or minor changes
 
@@ -87,7 +87,7 @@ npm run test:sanity
 
 ---
 
-### 3. Positive Tests ✅
+### 3. Positive Tests
 
 **Purpose**: Verify expected behavior with valid inputs (happy path scenarios)
 
@@ -122,7 +122,7 @@ npm run test:positive
 
 ---
 
-### 4. Negative Tests ❌
+### 4. Negative Tests
 
 **Purpose**: Verify error handling with invalid inputs and security measures
 
@@ -156,7 +156,7 @@ npm run test:negative
 
 ---
 
-### 5. Regression Tests 🔄
+### 5. Regression Tests
 
 **Purpose**: Ensure existing features still work after code changes
 
@@ -477,7 +477,7 @@ The DoktorABC Mock application has a **robust, comprehensive test suite** that:
 
 ---
 
-**Ready to show to management!** 📊✨
+**Ready to show to management!**
 
 All tests are passing and the application is thoroughly validated.
 

@@ -290,8 +290,8 @@ jobs:
 ```
 
 ### Exit Codes
-- `0` = All tests passed (safe to deploy) ✅
-- `1` = Tests failed (do not deploy) ❌
+- `0` = All tests passed (safe to deploy)
+- `1` = Tests failed (do not deploy) 
 
 ---
 
@@ -411,7 +411,7 @@ npm run test:regression
 
 ---
 
-**Ready for Manager Approval** ✅
+**Ready for Manager Approval**
 
 All tests passing, comprehensive documentation provided, and production ready!
 
