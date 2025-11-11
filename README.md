@@ -1,5 +1,7 @@
 # DoktorABC Mobile Mock - Training Demo
 
+**Version:** v1.5-EA
+
 A comprehensive React-based mobile-first mock application simulating the complete DoktorABC platform treatment funnel across multiple personas (patients, doctors, pharmacies, support engineers, and customer service).
 
 ## Live Demo
