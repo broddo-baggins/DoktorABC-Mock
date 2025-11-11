@@ -10,6 +10,18 @@ The application is deployed and live on GitHub Pages. No installation required -
 
 > 📚 **Documentation:** All project documentation is organized in the [`docs/`](./docs/) folder. See [`docs/LANDING_PAGE_GUIDE.md`](./docs/LANDING_PAGE_GUIDE.md) for the complete landing page guide and [`docs/DEMO_CREDENTIALS.md`](./docs/DEMO_CREDENTIALS.md) for all login credentials.
 
+## 📊 Presentation Deck
+
+**👉 [Download Presentation (PDF)](./docs/Deck/DoktorABC_Aesthetics_MVP_V3-Short.pdf)**
+
+View the complete project presentation including:
+- Product overview and features
+- Technical architecture
+- User journey workflows  
+- Business value proposition
+
+> 📁 **All Presentation Files:** Available in [`docs/Deck/`](./docs/Deck/) folder (PowerPoint and PDF formats)
+
 ## 🎯 Purpose
 
 This is a **demo mock application for training purposes**. It demonstrates the complete user flow and workflows for:
