@@ -20,7 +20,7 @@ const testSuites = [
   { name: 'Regression Tests', file: 'regression-tests.js', critical: false }
 ];
 
-console.log('🚀 Running All Test Suites\n');
+console.log('Running All Test Suites\n');
 console.log('═'.repeat(80));
 console.log('\n');
 
@@ -54,34 +54,34 @@ async function runAllTests() {
     const passed = await runTest(suite);
     
     if (!passed && suite.critical) {
-      console.log(`\n⚠️  Critical test suite "${suite.name}" failed. Stopping execution.\n`);
+      console.log(`\nWARNING: Critical test suite "${suite.name}" failed. Stopping execution.\n`);
       break;
     }
   }
   
   // Final summary
   console.log('\n' + '═'.repeat(80));
-  console.log('📊 FINAL TEST SUMMARY');
+  console.log('FINAL TEST SUMMARY');
   console.log('═'.repeat(80));
   console.log('\nTest Suite Results:\n');
   
   results.forEach(result => {
-    const status = result.passed ? '✅ PASSED' : '❌ FAILED';
+    const status = result.passed ? 'PASSED' : 'FAILED';
     const critical = result.critical ? '[CRITICAL]' : '';
     console.log(`  ${status} ${critical} ${result.name}`);
   });
   
   console.log('\nOverall Statistics:');
   console.log(`  Total Suites: ${results.length}`);
-  console.log(`  ✅ Passed: ${totalPassed}`);
-  console.log(`  ❌ Failed: ${totalFailed}`);
+  console.log(`  Passed: ${totalPassed}`);
+  console.log(`  Failed: ${totalFailed}`);
   console.log(`  Success Rate: ${((totalPassed / results.length) * 100).toFixed(1)}%\n`);
   
   if (totalFailed > 0) {
-    console.log('⚠️  TESTS FAILED - See details above\n');
+    console.log('TESTS FAILED - See details above\n');
     process.exit(1);
   } else {
-    console.log('✅ ALL TESTS PASSED!\n');
+    console.log('ALL TESTS PASSED!\n');
     process.exit(0);
   }
 }

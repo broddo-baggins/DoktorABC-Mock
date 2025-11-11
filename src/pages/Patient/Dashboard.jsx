@@ -283,7 +283,7 @@ const PatientDashboard = () => {
           {/* Health Tips */}
           <Card className="bg-primary-50 border-primary-200">
             <CardContent className="p-4">
-              <h4 className="font-semibold text-primary-900 mb-2">💡 Health Tip</h4>
+              <h4 className="font-semibold text-primary-900 mb-2">Health Tip</h4>
               <p className="text-sm text-primary-800">
                 Regular check-ins with your doctor help maintain optimal treatment results. 
                 Book your follow-up appointments on time.

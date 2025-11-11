@@ -24,7 +24,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-console.log('🧪 SANITY TESTS - Core Functionality Verification\n');
+console.log('SANITY TESTS - Core Functionality Verification\n');
 console.log('═'.repeat(80));
 
 let passed = 0;
@@ -33,10 +33,10 @@ let failed = 0;
 function test(name, fn) {
   try {
     fn();
-    console.log(`✅ PASS: ${name}`);
+    console.log(`PASS: ${name}`);
     passed++;
   } catch (error) {
-    console.log(`❌ FAIL: ${name}`);
+    console.log(`FAIL: ${name}`);
     console.log(`   Error: ${error.message}`);
     failed++;
   }
@@ -195,18 +195,18 @@ test('SAN-016: Patient dashboard exists', () => {
 
 // Summary
 console.log('\n' + '═'.repeat(80));
-console.log(`\n📊 SANITY TEST RESULTS:`);
+console.log(`\nSANITY TEST RESULTS:`);
 console.log(`   Total: ${passed + failed}`);
-console.log(`   ✅ Passed: ${passed}`);
-console.log(`   ❌ Failed: ${failed}`);
+console.log(`   Passed: ${passed}`);
+console.log(`   Failed: ${failed}`);
 console.log(`   Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%\n`);
 
 if (failed > 0) {
-  console.log('⚠️  SANITY TESTS FAILED - Core functionality broken!');
+  console.log('SANITY TESTS FAILED - Core functionality broken!');
   console.log('   Investigate and fix issues before proceeding.\n');
   process.exit(1);
 } else {
-  console.log('✅ SANITY TESTS PASSED - Core functionality verified!\n');
+  console.log('SANITY TESTS PASSED - Core functionality verified!\n');
   process.exit(0);
 }
 

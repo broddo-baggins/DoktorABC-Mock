@@ -24,7 +24,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-console.log('✅ POSITIVE TESTS - Valid Input & Expected Behavior\n');
+console.log('POSITIVE TESTS - Valid Input & Expected Behavior\n');
 console.log('═'.repeat(80));
 
 let passed = 0;
@@ -33,17 +33,17 @@ let failed = 0;
 function test(name, fn) {
   try {
     fn();
-    console.log(`✅ PASS: ${name}`);
+    console.log(`PASS: ${name}`);
     passed++;
   } catch (error) {
-    console.log(`❌ FAIL: ${name}`);
+    console.log(`FAIL: ${name}`);
     console.log(`   Error: ${error.message}`);
     failed++;
   }
 }
 
 // Test Group 1: Valid Route Navigation
-console.log('\n🌐 VALID NAVIGATION TESTS:');
+console.log('\nVALID NAVIGATION TESTS:');
 
 test('POS-001: Root route (/) is accessible', () => {
   const appContent = readFileSync(join(rootDir, 'src/App.jsx'), 'utf-8');
@@ -232,18 +232,18 @@ test('POS-021: Footer renders on all pages', () => {
 
 // Summary
 console.log('\n' + '═'.repeat(80));
-console.log(`\n📊 POSITIVE TEST RESULTS:`);
+console.log(`\nPOSITIVE TEST RESULTS:`);
 console.log(`   Total: ${passed + failed}`);
-console.log(`   ✅ Passed: ${passed}`);
-console.log(`   ❌ Failed: ${failed}`);
+console.log(`   Passed: ${passed}`);
+console.log(`   Failed: ${failed}`);
 console.log(`   Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%\n`);
 
 if (failed > 0) {
-  console.log('⚠️  POSITIVE TESTS FAILED!');
+  console.log('POSITIVE TESTS FAILED!');
   console.log('   Some expected behaviors are not working.\n');
   process.exit(1);
 } else {
-  console.log('✅ POSITIVE TESTS PASSED!');
+  console.log('POSITIVE TESTS PASSED!');
   console.log('   All expected behaviors work correctly.\n');
   process.exit(0);
 }

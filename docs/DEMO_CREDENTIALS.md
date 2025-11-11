@@ -1,6 +1,6 @@
 # DoktorABC Mock - Demo Credentials
 
-## 🌐 Live Demo URL
+## Live Demo URL
 **http://localhost:3000**
 
 ---
@@ -88,33 +88,33 @@
 
 ---
 
-## 🎯 Landing Page Features to Demo
+## Landing Page Features to Demo
 
 ### Trust Building Elements
-- ✅ "from €279" pricing badge in hero
-- ✅ GMC registration numbers on doctor cards
-- ✅ Verified patient testimonials with badges
-- ✅ Trust badges (GMC, CQC, GDPR, SSL, ISO 27001)
-- ✅ 3 doctor profiles with qualifications
+- "from €279" pricing badge in hero
+- GMC registration numbers on doctor cards
+- Verified patient testimonials with badges
+- Trust badges (GMC, CQC, GDPR, SSL, ISO 27001)
+- 3 doctor profiles with qualifications
 
 ### Transparent Pricing Section
-- ✅ "No Hidden Fees Guarantee" badge
-- ✅ 3 treatment pricing cards with full breakdown
-- ✅ VIP membership benefits (15% off)
+- "No Hidden Fees Guarantee" badge
+- 3 treatment pricing cards with full breakdown
+- VIP membership benefits (15% off)
 
 ### Booking Journey
-- ✅ Visual 4-step process with time estimates
-- ✅ "From Click to Treatment in 3 Days" messaging
-- ✅ "Free Consultation" CTA
+- Visual 4-step process with time estimates
+- "From Click to Treatment in 3 Days" messaging
+- "Free Consultation" CTA
 
 ### Portal Access
-- ✅ Footer links for all professional portals
-- ✅ "Join Our Healthcare Network" section
-- ✅ Portal cards with benefits for each role
+- Footer links for all professional portals
+- "Join Our Healthcare Network" section
+- Portal cards with benefits for each role
 
 ### Sticky Elements
-- ✅ Sticky booking bar (appears on scroll)
-- ✅ Pricing badge and trust signals
+- Sticky booking bar (appears on scroll)
+- Pricing badge and trust signals
 
 ---
 
@@ -134,7 +134,7 @@
 
 ---
 
-## 🚀 Quick Start Commands
+## Quick Start Commands
 
 ```bash
 # Clone the repository
@@ -155,7 +155,7 @@ npm run dev
 
 ---
 
-## 📊 Key Conversion Optimizations Implemented
+## Key Conversion Optimizations Implemented
 
 ### Problem A - Trust Gap
 - GMC registration numbers visible
@@ -180,11 +180,11 @@ npm run dev
 ---
 
 ## 🔒 Security Note
-⚠️ **These are demo credentials only.** All passwords are set to `demo123` for easy demonstration purposes. In a production environment, implement proper authentication, password hashing, and security measures.
+ **These are demo credentials only.** All passwords are set to `demo123` for easy demonstration purposes. In a production environment, implement proper authentication, password hashing, and security measures.
 
 ---
 
 **Repository:** https://github.com/broddo-baggins/DoktorABC-Mock  
-**Status:** ✅ All features operational  
+**Status:** All features operational  
 **Last Updated:** October 30, 2025
 

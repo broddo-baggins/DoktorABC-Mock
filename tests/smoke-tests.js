@@ -22,7 +22,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-console.log('🔥 SMOKE TESTS - Critical Functionality Check\n');
+console.log('SMOKE TESTS - Critical Functionality Check\n');
 console.log('═'.repeat(80));
 
 let passed = 0;
@@ -32,11 +32,11 @@ const results = [];
 function test(name, fn) {
   try {
     fn();
-    console.log(`✅ PASS: ${name}`);
+    console.log(`PASS: ${name}`);
     passed++;
     results.push({ name, status: 'PASS', error: null });
   } catch (error) {
-    console.log(`❌ FAIL: ${name}`);
+    console.log(`FAIL: ${name}`);
     console.log(`   Error: ${error.message}`);
     failed++;
     results.push({ name, status: 'FAIL', error: error.message });
@@ -113,18 +113,18 @@ test('ST-011: Treatment data file exists', () => {
 
 // Summary
 console.log('═'.repeat(80));
-console.log(`\n📊 SMOKE TEST RESULTS:`);
+console.log(`\nSMOKE TEST RESULTS:`);
 console.log(`   Total: ${passed + failed}`);
-console.log(`   ✅ Passed: ${passed}`);
-console.log(`   ❌ Failed: ${failed}`);
+console.log(`   Passed: ${passed}`);
+console.log(`   Failed: ${failed}`);
 console.log(`   Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%\n`);
 
 if (failed > 0) {
-  console.log('⚠️  SMOKE TESTS FAILED - Critical issues detected!');
+  console.log('SMOKE TESTS FAILED - Critical issues detected!');
   console.log('   Application may not be deployable.\n');
   process.exit(1);
 } else {
-  console.log('✅ SMOKE TESTS PASSED - Critical functionality verified!\n');
+  console.log('SMOKE TESTS PASSED - Critical functionality verified!\n');
   process.exit(0);
 }
 

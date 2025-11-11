@@ -32,44 +32,44 @@ npm run test:regression
 ## Test Coverage
 
 ### Smoke Tests (11 tests, ~5s)
-✅ Application entry points exist  
-✅ Critical pages load  
-✅ Core routes defined  
-✅ Essential components exist  
-✅ Auth context configured  
-✅ Data files valid  
+Application entry points exist  
+Critical pages load  
+Core routes defined  
+Essential components exist  
+Auth context configured  
+Data files valid  
 
 ### Sanity Tests (16 tests, ~10s)
-✅ Public routes accessible  
-✅ Protected routes secured  
-✅ Navigation links work  
-✅ Authentication functional  
-✅ Data management works  
-✅ Key pages render  
+Public routes accessible  
+Protected routes secured  
+Navigation links work  
+Authentication functional  
+Data management works  
+Key pages render  
 
 ### Positive Tests (21 tests, ~12s)
-✅ Valid routes accessible  
-✅ Authentication succeeds  
-✅ Treatment browsing works  
-✅ Role-based access correct  
-✅ Data structures valid  
-✅ UI components functional  
+Valid routes accessible  
+Authentication succeeds  
+Treatment browsing works  
+Role-based access correct  
+Data structures valid  
+UI components functional  
 
 ### Negative Tests (20 tests, ~10s)
-✅ Unauthorized access prevented  
-✅ Role escalation blocked  
-✅ Invalid routes handled  
-✅ Missing data managed  
-✅ Input validation exists  
-✅ Security measures in place  
+Unauthorized access prevented  
+Role escalation blocked  
+Invalid routes handled  
+Missing data managed  
+Input validation exists  
+Security measures in place  
 
 ### Regression Tests (50+ tests, ~15s)
-✅ All routes exist  
-✅ Navigation links intact  
-✅ Authentication works  
-✅ Data structures consistent  
-✅ Components present  
-✅ No features broken  
+All routes exist  
+Navigation links intact  
+Authentication works  
+Data structures consistent  
+Components present  
+No features broken  
 
 ## Exit Codes
 
@@ -96,7 +96,7 @@ See the main README.md for complete testing documentation including:
 
 ## Current Status
 
-✅ All 118 tests passing  
-✅ 100% success rate  
-✅ Ready for production
+All 118 tests passing  
+100% success rate  
+Ready for production
 

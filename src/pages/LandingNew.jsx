@@ -658,7 +658,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <Badge className="mb-4 bg-primary-100 text-primary-700 px-4 py-2 text-sm font-semibold">
-              ⚡ Fast Track Booking
+              Fast Track Booking
             </Badge>
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
               From Click to Treatment in 3 Days

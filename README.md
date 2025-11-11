@@ -2,20 +2,20 @@
 
 A comprehensive React-based mobile-first mock application simulating the complete DoktorABC platform treatment funnel across multiple personas (patients, doctors, pharmacies, support engineers, and customer service).
 
-## 🌐 Live Demo
+## Live Demo
 
 The application is deployed and live on multiple platforms. No installation required - just click a link below to explore the demo!
 
-**👉 [View on Vercel](https://doktorabc-mock.vercel.app)** ⚡ (Recommended - Faster CDN)  
-**👉 [View on GitHub Pages](https://broddo-baggins.github.io/DoktorABC-Mock/)** 🚀 (Alternative)
+**[View on Vercel](https://doktorabc-mock.vercel.app)** (Recommended - Faster CDN)  
+**[View on GitHub Pages](https://broddo-baggins.github.io/DoktorABC-Mock/)** (Alternative)
 
 Both deployments are automatically updated on every push to `master` branch.
 
-> 📚 **Documentation:** All project documentation is organized in the [`docs/`](./docs/) folder. See [`docs/LANDING_PAGE_GUIDE.md`](./docs/LANDING_PAGE_GUIDE.md) for the complete landing page guide and [`docs/DEMO_CREDENTIALS.md`](./docs/DEMO_CREDENTIALS.md) for all login credentials.
+> **Documentation:** All project documentation is organized in the [`docs/`](./docs/) folder. See [`docs/LANDING_PAGE_GUIDE.md`](./docs/LANDING_PAGE_GUIDE.md) for the complete landing page guide and [`docs/DEMO_CREDENTIALS.md`](./docs/DEMO_CREDENTIALS.md) for all login credentials.
 
-## 📊 Presentation Deck
+## Presentation Deck
 
-**👉 [Download Presentation (PDF)](./docs/Deck/DoktorABC_Aesthetics_MVP_V3-Short.pdf)**
+**[Download Presentation (PDF)](./docs/Deck/DoktorABC_Aesthetics_MVP_V3-Short.pdf)**
 
 View the complete project presentation including:
 - Product overview and features
@@ -23,9 +23,9 @@ View the complete project presentation including:
 - User journey workflows  
 - Business value proposition
 
-> 📁 **All Presentation Files:** Available in [`docs/Deck/`](./docs/Deck/) folder (PowerPoint and PDF formats)
+> **All Presentation Files:** Available in [`docs/Deck/`](./docs/Deck/) folder (PowerPoint and PDF formats)
 
-## 🎯 Purpose
+## Purpose
 
 This is a **demo mock application for training purposes**. It demonstrates the complete user flow and workflows for:
 - **Patients**: Browse treatments → Complete questionnaire → Book consultation → Get treatment → Follow-up care
@@ -34,7 +34,7 @@ This is a **demo mock application for training purposes**. It demonstrates the c
 - **Support Engineers**: Handle technical issues → Monitor systems
 - **Customer Service**: Manage inquiries → Handle complaints → Assist bookings
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Node.js 18+ and npm/yarn installed
@@ -59,18 +59,18 @@ npm run build
 npm run preview
 ```
 
-## 🚀 Deployment
+## Deployment
 
 This project can be deployed to multiple platforms:
 
-### Vercel (Recommended) ⚡
+### Vercel (Recommended)
 - **Live URL**: https://doktorabc-mock.vercel.app
 - **Faster deployments** (~2 min vs ~5 min)
 - **Preview deployments** for every PR/commit
 - **Global CDN** for better performance
 - **Setup**: See [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md) for step-by-step guide
 
-### GitHub Pages 🚀
+### GitHub Pages
 - **Live URL**: https://broddo-baggins.github.io/DoktorABC-Mock/
 - **Setup**: See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for detailed instructions
 - **Auto-deploy**: Enabled via GitHub Actions on push to `master`
@@ -79,17 +79,17 @@ This project can be deployed to multiple platforms:
 1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
 2. Click "Add New Project" → Import `broddo-baggins/DoktorABC-Mock`
 3. Click "Deploy" (settings auto-detected)
-4. Done! 🎉
+4. Done!
 
 The project is configured to work with both platforms automatically.
 
-## 🧪 Testing Suite
+## Testing Suite
 
 ### Test Categories
 
 The application includes a comprehensive test suite covering multiple testing methodologies:
 
-#### 1. **Smoke Tests** 🔥
+#### 1. **Smoke Tests**
 - **Purpose**: Quick verification that critical functionality works after deployment
 - **When to Run**: After every deployment, before detailed testing begins
 - **Coverage**: Essential features required for basic operation
@@ -116,7 +116,7 @@ npm run test:smoke
 
 ---
 
-#### 2. **Sanity Tests** 🧪
+#### 2. **Sanity Tests**
 - **Purpose**: Verify core functionality after bug fixes or minor changes
 - **When to Run**: After bug fixes, minor updates, or configuration changes
 - **Coverage**: Key features and critical workflows
@@ -145,7 +145,7 @@ npm run test:sanity
 
 ---
 
-#### 3. **Regression Tests** 🔄
+#### 3. **Regression Tests**
 - **Purpose**: Ensure existing features still work after code changes
 - **When to Run**: Before releases, after major feature additions
 - **Coverage**: All previously working features
@@ -172,7 +172,7 @@ npm run test:regression
 
 ---
 
-#### 4. **Positive Tests** ✅
+#### 4. **Positive Tests**
 - **Purpose**: Verify expected behavior with valid inputs (happy path)
 - **When to Run**: During development, before releases
 - **Coverage**: Normal use cases with valid data
@@ -203,7 +203,7 @@ npm run test:positive
 
 ---
 
-#### 5. **Negative Tests** ❌
+#### 5. **Negative Tests**
 - **Purpose**: Verify error handling with invalid inputs and security
 - **When to Run**: During development, security audits
 - **Coverage**: Error cases, edge cases, unauthorized access
@@ -259,24 +259,24 @@ npm run test:regression  # Regression tests only (~15s)
 ### Test Output Example
 
 ```
-🔥 SMOKE TESTS - Critical Functionality Check
+SMOKE TESTS - Critical Functionality Check
 ═══════════════════════════════════════════════════════════
 
-✅ PASS: ST-001: App entry point exists (main.jsx)
-✅ PASS: ST-002: App component exists (App.jsx)
-✅ PASS: ST-003: Landing page exists (LandingNew.jsx)
-✅ PASS: ST-004: Root route (/) is defined
-✅ PASS: ST-005: Login route (/login) is defined
+PASS: ST-001: App entry point exists (main.jsx)
+PASS: ST-002: App component exists (App.jsx)
+PASS: ST-003: Landing page exists (LandingNew.jsx)
+PASS: ST-004: Root route (/) is defined
+PASS: ST-005: Login route (/login) is defined
 ...
 
 ═══════════════════════════════════════════════════════════
-📊 SMOKE TEST RESULTS:
+SMOKE TEST RESULTS:
    Total: 11
-   ✅ Passed: 11
-   ❌ Failed: 0
+   Passed: 11
+   Failed: 0
    Success Rate: 100.0%
 
-✅ SMOKE TESTS PASSED - Critical functionality verified!
+SMOKE TESTS PASSED - Critical functionality verified!
 ```
 
 ### Test Coverage Summary
@@ -313,7 +313,7 @@ Add to your CI/CD pipeline:
 ### Test Reports
 
 All tests output to console with:
-- ✅ Pass/❌ Fail indicators
+- Pass/Fail indicators
 - Detailed error messages when tests fail
 - Summary statistics
 - Success rates
@@ -331,7 +331,7 @@ Planned improvements:
 
 ---
 
-## 👥 Demo Accounts
+## Demo Accounts
 
 The application comes with pre-configured demo accounts for all personas:
 
@@ -353,7 +353,7 @@ The application comes with pre-configured demo accounts for all personas:
 ### Customer Service
 - **Email**: cs.lead@doktorabc.com | **Password**: demo123
 
-## 📱 Features
+## Features
 
 ### Patient Portal
 - Browse 10+ treatment categories with 2,500+ medications
@@ -397,7 +397,7 @@ The application comes with pre-configured demo accounts for all personas:
 - Message patients directly
 - Track satisfaction scores
 
-## 🛠 Technology Stack
+## Technology Stack
 
 - **Frontend**: React 18 with Hooks
 - **Routing**: React Router v6
@@ -408,7 +408,7 @@ The application comes with pre-configured demo accounts for all personas:
 - **Icons**: Lucide React
 - **Build Tool**: Vite
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 src/
@@ -435,7 +435,7 @@ src/
 └── App.jsx            # Main app component
 ```
 
-## 🎨 Design System
+## Design System
 
 - **Colors**: Medical trust blues, accent greens, warm neutrals
 - **Typography**: Inter font family
@@ -443,7 +443,7 @@ src/
 - **Responsive**: Mobile-first approach with breakpoints
 - **Components**: Consistent UI patterns across all portals
 
-## 🔒 Security Note
+## Security Note
 
 This is a **mock/demo application** for training purposes:
 - No real database connections
@@ -453,7 +453,7 @@ This is a **mock/demo application** for training purposes:
 - Mock authentication system
 - **DO NOT** use for actual medical services
 
-## 📊 Mock Data
+## Mock Data
 
 The application includes:
 - 10+ treatment options across multiple categories
@@ -464,7 +464,7 @@ The application includes:
 
 All data persists in LocalStorage during the session and can be reset by clearing browser data.
 
-## 🎥 Recording for Demo Video
+## Recording for Demo Video
 
 ### Recommended Flow for Video:
 
@@ -501,7 +501,7 @@ All data persists in LocalStorage during the session and can be reset by clearin
    - Show support ticket system
    - Customer service inquiries
 
-## 🚧 Limitations
+## Limitations
 
 This is a mock application with the following limitations:
 - No actual backend server
@@ -512,7 +512,7 @@ This is a mock application with the following limitations:
 - No file uploads (simulated)
 - Data resets on browser cache clear
 
-## 📝 Development Notes
+## Development Notes
 
 - All routes are protected based on user role
 - LocalStorage used for session persistence
@@ -520,14 +520,14 @@ This is a mock application with the following limitations:
 - Responsive design optimized for mobile
 - Loading states and error handling included
 
-## 🤝 Support
+## Support
 
 For issues or questions about this demo application:
 - This is a mock/training application
 - No real medical services provided
 - For demonstration purposes only
 
-## 📄 License
+## License
 
 This is a demo/training application. All rights reserved.
 

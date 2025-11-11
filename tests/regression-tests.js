@@ -21,7 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-console.log('🔄 REGRESSION TESTS - Verify Existing Features\n');
+console.log('REGRESSION TESTS - Verify Existing Features\n');
 console.log('═'.repeat(80));
 
 let passed = 0;
@@ -33,11 +33,11 @@ function test(category, name, fn) {
   
   try {
     fn();
-    console.log(`✅ PASS: ${name}`);
+    console.log(`PASS: ${name}`);
     passed++;
     categories[category].passed++;
   } catch (error) {
-    console.log(`❌ FAIL: ${name}`);
+    console.log(`FAIL: ${name}`);
     console.log(`   Error: ${error.message}`);
     failed++;
     categories[category].failed++;
@@ -203,7 +203,7 @@ uiComponents.forEach((component, idx) => {
 });
 
 // Test Group 7: Context Providers
-console.log('\n🌐 CONTEXT REGRESSION:');
+console.log('\nCONTEXT REGRESSION:');
 
 test('Context', 'REG-CT1: AuthContext still provides required values', () => {
   const authContent = readFileSync(join(rootDir, 'src/contexts/AuthContext.jsx'), 'utf-8');
@@ -224,7 +224,7 @@ test('Context', 'REG-CT2: AppStateContext still manages state', () => {
 
 // Summary
 console.log('\n' + '═'.repeat(80));
-console.log(`\n📊 REGRESSION TEST RESULTS:\n`);
+console.log(`\nREGRESSION TEST RESULTS:\n`);
 
 Object.keys(categories).forEach(cat => {
   const { passed: p, failed: f } = categories[cat];
@@ -234,16 +234,16 @@ Object.keys(categories).forEach(cat => {
 });
 
 console.log(`\n   Overall Total: ${passed + failed}`);
-console.log(`   ✅ Passed: ${passed}`);
-console.log(`   ❌ Failed: ${failed}`);
+console.log(`   Passed: ${passed}`);
+console.log(`   Failed: ${failed}`);
 console.log(`   Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%\n`);
 
 if (failed > 0) {
-  console.log('⚠️  REGRESSION TESTS FAILED!');
+  console.log('REGRESSION TESTS FAILED!');
   console.log('   Some existing features were broken by recent changes.\n');
   process.exit(1);
 } else {
-  console.log('✅ REGRESSION TESTS PASSED!');
+  console.log('REGRESSION TESTS PASSED!');
   console.log('   All existing features still work correctly.\n');
   process.exit(0);
 }

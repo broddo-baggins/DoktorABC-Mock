@@ -1,6 +1,6 @@
 # 🎥 Demo Recording Guide - DoktorABC Mobile Mock
 
-## 🚀 Before You Start
+## Before You Start
 
 1. **Open the Application**
    - Navigate to: http://localhost:3000
@@ -184,34 +184,34 @@
 
 ---
 
-## 🎯 Key Points to Highlight
+## Key Points to Highlight
 
 ### **Patient Experience**
-✅ Complete end-to-end journey from discovery to follow-up
-✅ Modern, intuitive UI with clear progress indicators
-✅ Multi-step questionnaire with auto-save
-✅ Real-time booking with instant confirmation
-✅ Comprehensive aftercare guidance
+Complete end-to-end journey from discovery to follow-up
+Modern, intuitive UI with clear progress indicators
+Multi-step questionnaire with auto-save
+Real-time booking with instant confirmation
+Comprehensive aftercare guidance
 
 ### **Doctor Portal**
-✅ Efficient patient review workflow
-✅ Clear prescription management
-✅ Flexible availability scheduling
-✅ Treatment monitoring capabilities
+Efficient patient review workflow
+Clear prescription management
+Flexible availability scheduling
+Treatment monitoring capabilities
 
 ### **Pharmacy Portal**
-✅ Streamlined order processing
-✅ Smart inventory management with alerts
-✅ Delivery coordination system
+Streamlined order processing
+Smart inventory management with alerts
+Delivery coordination system
 
 ### **Support & CS**
-✅ Ticket management system
-✅ System health monitoring
-✅ Customer inquiry handling
+Ticket management system
+System health monitoring
+Customer inquiry handling
 
 ---
 
-## 💡 Pro Tips for Recording
+## Pro Tips for Recording
 
 1. **Narration Examples:**
    - "Here we see the patient dashboard showing upcoming appointments..."
@@ -235,7 +235,7 @@
 
 ---
 
-## 🔄 Quick Reset
+## Quick Reset
 
 To reset demo data and start fresh:
 1. Open Developer Tools (F12)

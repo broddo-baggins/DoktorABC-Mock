@@ -1,4 +1,4 @@
-# 🌐 Complete URL Guide - DoktorABC Mobile Mock
+# Complete URL Guide - DoktorABC Mobile Mock
 
 ## **Base URL:** http://localhost:3000
 
@@ -94,7 +94,7 @@
 
 ---
 
-## 🎯 **Quick Access from Login Page**
+## **Quick Access from Login Page**
 
 **NEW FEATURE:** Login page (`/login`) now includes **Quick Portal Access** buttons!
 
@@ -113,30 +113,30 @@ Click any button to auto-login and go directly to that portal:
 
 ### **Mobile Optimization Features**
 
-✅ **Mobile-First Design**
+**Mobile-First Design**
 - All pages optimized for 375x812 (iPhone X)
 - Touch-friendly buttons (min 44x44px tap targets)
 - Responsive grid layouts (collapse to single column)
 - Optimized typography for small screens
 
-✅ **Mobile Navigation**
+**Mobile Navigation**
 - Hamburger menu on mobile
 - Full-width CTAs
 - Sticky elements positioned correctly
 - Easy thumb navigation
 
-✅ **Mobile-Specific Features**
+**Mobile-Specific Features**
 - **Sticky booking bar** (fixed to bottom on scroll)
 - Swipe-friendly carousels
 - Auto-focus on form fields
 - Optimized form layouts
 
-✅ **Breakpoints**
+**Breakpoints**
 - **Mobile:** < 768px (full optimization)
 - **Tablet:** 768px - 1024px (hybrid layout)
 - **Desktop:** > 1024px (multi-column)
 
-✅ **Tested On**
+**Tested On**
 - iPhone sizes (X, 12, 13, 14, 15)
 - Android sizes (standard, large)
 - iPad (portrait & landscape)
@@ -224,7 +224,7 @@ http://localhost:3000/customer-service/inquiries
 
 ---
 
-## 📊 **Portal Access Summary**
+## **Portal Access Summary**
 
 ### **How to Reach Each Portal:**
 
@@ -335,5 +335,5 @@ http://localhost:3000/customer-service/inquiries
 
 ---
 
-**Status:** ✅ **All portals accessible • Mobile-optimized • Quick access available!**
+**Status:** **All portals accessible • Mobile-optimized • Quick access available!**
 

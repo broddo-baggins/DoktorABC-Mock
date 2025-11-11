@@ -23,7 +23,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const rootDir = join(__dirname, '..');
 
-console.log('❌ NEGATIVE TESTS - Error Handling & Security\n');
+console.log('NEGATIVE TESTS - Error Handling & Security\n');
 console.log('═'.repeat(80));
 
 let passed = 0;
@@ -32,10 +32,10 @@ let failed = 0;
 function test(name, fn) {
   try {
     fn();
-    console.log(`✅ PASS: ${name}`);
+    console.log(`PASS: ${name}`);
     passed++;
   } catch (error) {
-    console.log(`❌ FAIL: ${name}`);
+    console.log(`FAIL: ${name}`);
     console.log(`   Error: ${error.message}`);
     failed++;
   }
@@ -224,7 +224,7 @@ test('NEG-017: User role cannot be modified by client', () => {
 });
 
 // Test Group 6: Error Boundary
-console.log('\n⚠️ ERROR HANDLING TESTS:');
+console.log('\n ERROR HANDLING TESTS:');
 
 test('NEG-018: App has error boundary or error handling', () => {
   const appContent = readFileSync(join(rootDir, 'src/App.jsx'), 'utf-8');
@@ -253,18 +253,18 @@ test('NEG-020: Navigation handles undefined routes gracefully', () => {
 
 // Summary
 console.log('\n' + '═'.repeat(80));
-console.log(`\n📊 NEGATIVE TEST RESULTS:`);
+console.log(`\nNEGATIVE TEST RESULTS:`);
 console.log(`   Total: ${passed + failed}`);
-console.log(`   ✅ Passed: ${passed}`);
-console.log(`   ❌ Failed: ${failed}`);
+console.log(`   Passed: ${passed}`);
+console.log(`   Failed: ${failed}`);
 console.log(`   Success Rate: ${((passed / (passed + failed)) * 100).toFixed(1)}%\n`);
 
 if (failed > 0) {
-  console.log('⚠️  NEGATIVE TESTS FAILED!');
+  console.log('NEGATIVE TESTS FAILED!');
   console.log('   Some error handling or security measures are missing.\n');
   process.exit(1);
 } else {
-  console.log('✅ NEGATIVE TESTS PASSED!');
+  console.log('NEGATIVE TESTS PASSED!');
   console.log('   Error handling and security measures are in place.\n');
   process.exit(0);
 }

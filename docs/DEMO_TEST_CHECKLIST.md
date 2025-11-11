@@ -1,8 +1,8 @@
-# 🎯 DEMO TEST CHECKLIST - DoktorABC Mock
+# DEMO TEST CHECKLIST - DoktorABC Mock
 
-## ✅ PRE-DEMO CHECKLIST
+## PRE-DEMO CHECKLIST
 
-### 🌐 **Site Access**
+### **Site Access**
 - [ ] Landing page loads: https://broddo-baggins.github.io/DoktorABC-Mock/
 - [ ] No console errors in browser DevTools (F12)
 - [ ] All fonts load correctly (Inter font family)
@@ -201,7 +201,7 @@
 
 ---
 
-## 🔄 **NAVIGATION & UX TEST**
+## **NAVIGATION & UX TEST**
 
 ### **Scroll to Top**
 - [ ] Click footer link → page scrolls to top ✅
@@ -284,17 +284,17 @@
 
 ---
 
-## ⚠️ **KNOWN LIMITATIONS (Expected Behavior)**
+##  **KNOWN LIMITATIONS (Expected Behavior)**
 
-- ✅ Refreshing a route may show `?/route` in URL (SPA redirect - NORMAL)
-- ✅ No actual video calls (mock interface only)
-- ✅ No real payments (simulation only)
-- ✅ All data in localStorage (resets on cache clear)
-- ✅ Mock data (pre-populated for demo)
+- Refreshing a route may show `?/route` in URL (SPA redirect - NORMAL)
+- No actual video calls (mock interface only)
+- No real payments (simulation only)
+- All data in localStorage (resets on cache clear)
+- Mock data (pre-populated for demo)
 
 ---
 
-## 🚀 **FINAL PRE-DEMO CHECKS**
+## **FINAL PRE-DEMO CHECKS**
 
 **Night Before:**
 - [ ] Open site in incognito window
@@ -332,7 +332,7 @@
 
 ---
 
-## ✅ **TEST SUMMARY**
+## **TEST SUMMARY**
 
 **Total Items:** 100+ test points
 **Critical for Demo:** ~20 key flows
