@@ -4,12 +4,11 @@ A comprehensive React-based mobile-first mock application simulating the complet
 
 ## Live Demo
 
-The application is deployed and live on multiple platforms. No installation required - just click a link below to explore the demo!
+The application is deployed and live on Vercel. No installation required - just click the link below to explore the demo!
 
-**[View on Vercel](https://doktorabc-mock.vercel.app)** (Recommended - Faster CDN)  
-**[View on GitHub Pages](https://broddo-baggins.github.io/DoktorABC-Mock/)** (Alternative)
+**[View Live Application](https://doktorabc-mock.vercel.app)**
 
-Both deployments are automatically updated on every push to `master` branch.
+The deployment is automatically updated on every push to `master` branch.
 
 > **Documentation:** All project documentation is organized in the [`docs/`](./docs/) folder. See [`docs/LANDING_PAGE_GUIDE.md`](./docs/LANDING_PAGE_GUIDE.md) for the complete landing page guide and [`docs/DEMO_CREDENTIALS.md`](./docs/DEMO_CREDENTIALS.md) for all login credentials.
 
@@ -61,27 +60,20 @@ npm run preview
 
 ## Deployment
 
-This project can be deployed to multiple platforms:
+This project is deployed on Vercel:
 
-### Vercel (Recommended)
 - **Live URL**: https://doktorabc-mock.vercel.app
-- **Faster deployments** (~2 min vs ~5 min)
+- **Faster deployments** (~2 min)
 - **Preview deployments** for every PR/commit
 - **Global CDN** for better performance
+- **Auto-deploy**: Enabled on every push to `master` branch
 - **Setup**: See [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md) for step-by-step guide
-
-### GitHub Pages
-- **Live URL**: https://broddo-baggins.github.io/DoktorABC-Mock/
-- **Setup**: See [`DEPLOYMENT.md`](./DEPLOYMENT.md) for detailed instructions
-- **Auto-deploy**: Enabled via GitHub Actions on push to `master`
 
 **Quick Deploy to Vercel:**
 1. Go to [vercel.com](https://vercel.com) and sign in with GitHub
 2. Click "Add New Project" → Import `broddo-baggins/DoktorABC-Mock`
 3. Click "Deploy" (settings auto-detected)
 4. Done!
-
-The project is configured to work with both platforms automatically.
 
 ## Testing Suite
 

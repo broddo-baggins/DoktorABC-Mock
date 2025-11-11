@@ -1,6 +1,14 @@
-# GitHub Pages Deployment Guide
+# GitHub Pages Deployment Guide (DEPRECATED)
 
-This guide will help you deploy your DoktorABC Mock project to GitHub Pages for free hosting.
+**Note:** This project now uses Vercel for deployment. GitHub Pages deployment has been discontinued.
+
+For current deployment instructions, see [`VERCEL_DEPLOYMENT.md`](./VERCEL_DEPLOYMENT.md).
+
+---
+
+## Historical Reference
+
+This guide was previously used for GitHub Pages deployment but is no longer maintained.
 
 ## Prerequisites
 
