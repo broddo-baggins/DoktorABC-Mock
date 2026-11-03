@@ -8,11 +8,13 @@ import Button from '../../components/ui/Button'
 import Select from '../../components/ui/Select'
 import Textarea from '../../components/ui/Textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
+import NotFound from '../../components/NotFound'
+import { upcomingDateKeys, localDateTimeISO, formatDateKey } from '../../utils/dates'
 
 const FollowUp = () => {
   const { treatmentId } = useParams()
   const navigate = useNavigate()
-  const { getTreatmentById, createAppointment, getDoctors } = useAppState()
+  const { getTreatmentById, createAppointment, getDoctors, appointments } = useAppState()
   const { user } = useAuth()
   const toast = useToast()
   
@@ -28,11 +30,13 @@ const FollowUp = () => {
     selectedTime: ''
   })
 
-  const availableDates = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() + i + 1)
-    return date.toISOString().split('T')[0]
-  })
+  const availableDates = upcomingDateKeys(7)
+
+  // The follow-up is with the doctor who looked after this treatment
+  const treatingDoctorId = appointments
+    .filter(apt => apt.patientId === user?.id && apt.treatmentId === treatmentId && apt.doctorId)
+    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime))[0]?.doctorId
+  const doctorId = treatingDoctorId || doctors[0].id
 
   const timeSlots = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00']
 
@@ -42,14 +46,13 @@ const FollowUp = () => {
       return
     }
 
-    const datetime = new Date(`${formData.selectedDate}T${formData.selectedTime}:00Z`)
-    
+
     createAppointment({
       patientId: user.id,
-      doctorId: doctors[0].id,
+      doctorId,
       treatmentId,
       type: 'follow-up',
-      datetime: datetime.toISOString(),
+      datetime: localDateTimeISO(formData.selectedDate, formData.selectedTime),
       duration: 15,
       location: 'Virtual',
       notes: `2-week follow-up. Satisfaction: ${formData.satisfactionLevel}. ${formData.concerns || 'No concerns'}`
@@ -60,11 +63,7 @@ const FollowUp = () => {
   }
 
   if (!treatment) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Treatment not found</p>
-      </div>
-    )
+    return <NotFound title="Treatment not found" backTo="/dashboard" backLabel="Back to dashboard" />
   }
 
   return (
@@ -142,7 +141,7 @@ const FollowUp = () => {
               <option value="">Choose a date...</option>
               {availableDates.map(date => (
                 <option key={date} value={date}>
-                  {new Date(date).toLocaleDateString('en-GB', {
+                  {formatDateKey(date, {
                     weekday: 'long',
                     day: 'numeric',
                     month: 'long'
@@ -160,6 +159,8 @@ const FollowUp = () => {
                   {timeSlots.map(time => (
                     <button
                       key={time}
+                      type="button"
+                      aria-pressed={formData.selectedTime === time}
                       onClick={() => setFormData({ ...formData, selectedTime: time })}
                       className={`p-2 text-sm rounded-lg border-2 transition-all ${
                         formData.selectedTime === time

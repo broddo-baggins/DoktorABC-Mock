@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Save } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
-import { useAuth } from '../../contexts/AuthContext'
+import NotFound from '../../components/NotFound'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
@@ -14,7 +14,6 @@ const Questionnaire = () => {
   const { treatmentId } = useParams()
   const navigate = useNavigate()
   const { getTreatmentById, saveQuestionnaire, getQuestionnaire } = useAppState()
-  const { user } = useAuth()
   const toast = useToast()
   const treatment = getTreatmentById(treatmentId)
   
@@ -44,9 +43,38 @@ const Questionnaire = () => {
   })
 
   const totalSteps = 4
+  const [errors, setErrors] = useState({})
+
+  // Returns the errors for one step; steps 2 and 4 are optional.
+  const stepErrors = (step) => {
+    const e = {}
+    if (step === 1) {
+      const height = Number(formData.height)
+      const weight = Number(formData.weight)
+      if (!formData.height) e.height = 'Height is required'
+      else if (!(height >= 50 && height <= 250)) e.height = 'Enter a height between 50 and 250 cm'
+      if (!formData.weight) e.weight = 'Weight is required'
+      else if (!(weight >= 20 && weight <= 350)) e.weight = 'Enter a weight between 20 and 350 kg'
+    }
+    if (step === 3 && !String(formData.treatmentGoals || '').trim()) {
+      e.treatmentGoals = 'Please describe your treatment goals'
+    }
+    return e
+  }
+
+  const validateStep = (step) => {
+    const e = stepErrors(step)
+    setErrors(e)
+    if (Object.keys(e).length > 0) {
+      toast.error('Please complete the required fields')
+      return false
+    }
+    return true
+  }
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
+      if (!validateStep(currentStep)) return
       setCurrentStep(currentStep + 1)
       // Auto-save
       saveQuestionnaire(treatmentId, formData)
@@ -61,6 +89,12 @@ const Questionnaire = () => {
   }
 
   const handleSubmit = () => {
+    const firstInvalid = [1, 2, 3, 4].find(step => Object.keys(stepErrors(step)).length > 0)
+    if (firstInvalid) {
+      setCurrentStep(firstInvalid)
+      validateStep(firstInvalid)
+      return
+    }
     saveQuestionnaire(treatmentId, { ...formData, completed: true })
     toast.success('Questionnaire submitted successfully!')
     navigate('/book-consultation', { state: { treatmentId } })
@@ -78,6 +112,10 @@ const Questionnaire = () => {
                 type="number"
                 value={formData.height}
                 onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                error={errors.height}
+                min={50}
+                max={250}
+                required
                 placeholder="170"
               />
               <Input
@@ -85,6 +123,10 @@ const Questionnaire = () => {
                 type="number"
                 value={formData.weight}
                 onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                error={errors.weight}
+                min={20}
+                max={350}
+                required
                 placeholder="70"
               />
             </div>
@@ -167,6 +209,8 @@ const Questionnaire = () => {
               label="What are your treatment goals?"
               value={formData.treatmentGoals}
               onChange={(e) => setFormData({ ...formData, treatmentGoals: e.target.value })}
+              error={errors.treatmentGoals}
+              required
               placeholder="Describe what you hope to achieve with this treatment"
               rows={4}
             />
@@ -199,7 +243,7 @@ const Questionnaire = () => {
                 type="file"
                 accept="image/*"
                 multiple
-                className="hidden"
+                className="sr-only"
                 id="photo-upload"
                 onChange={(e) => {
                   const files = Array.from(e.target.files || [])
@@ -235,17 +279,13 @@ const Questionnaire = () => {
   }
 
   if (!treatment) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Treatment not found</p>
-      </div>
-    )
+    return <NotFound title="Treatment not found" backTo="/categories" backLabel="Browse treatments" />
   }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(`/treatment/${treatmentId}`)}
         className="flex items-center text-primary-600 hover:text-primary-700 mb-6"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />

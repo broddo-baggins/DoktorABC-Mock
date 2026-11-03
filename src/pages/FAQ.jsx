@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
+import { selectableProps } from '../utils/a11y'
 import { Card, CardContent } from '../components/ui/Card'
 
 const FAQ = () => {
@@ -98,7 +99,8 @@ const FAQ = () => {
                   <Card key={qIdx} className="cursor-pointer hover:shadow-md transition-shadow">
                     <CardContent
                       className="p-6"
-                      onClick={() => setOpenIndex(isOpen ? null : index)}
+                      {...selectableProps(() => setOpenIndex(isOpen ? null : index))}
+                      aria-expanded={isOpen}
                     >
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-lg text-gray-900 pr-8">

@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle, Camera, FileText, ArrowRight } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
+import { useAuth } from '../../contexts/AuthContext'
+import NotFound from '../../components/NotFound'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
@@ -11,15 +13,23 @@ const TreatmentDay = () => {
   const { appointmentId } = useParams()
   const navigate = useNavigate()
   const { appointments, getTreatmentById, updateAppointment } = useAppState()
+  const { user } = useAuth()
   const toast = useToast()
-  
-  const appointment = appointments.find(apt => apt.id === appointmentId)
+
+  const appointment = appointments.find(apt =>
+    apt.id === appointmentId && apt.patientId === user?.id && apt.type === 'treatment'
+  )
   const treatment = getTreatmentById(appointment?.treatmentId)
-  
-  const [checkedIn, setCheckedIn] = useState(false)
-  const [beforePhotos, setBeforePhotos] = useState([])
-  const [afterPhotos, setAfterPhotos] = useState([])
-  const [treatmentComplete, setTreatmentComplete] = useState(false)
+
+  // Progress lives on the appointment so a reload does not restart the day
+  const progress = appointment?.dayProgress || {}
+  const checkedIn = !!progress.checkedIn
+  const beforePhotos = progress.beforePhotos || []
+  const afterPhotos = progress.afterPhotos || []
+  const treatmentComplete = !!progress.treatmentComplete
+  const saveProgress = (updates) => {
+    updateAppointment(appointmentId, { dayProgress: { ...progress, ...updates } })
+  }
 
   const timeline = [
     { step: 'Check-In', completed: checkedIn, icon: CheckCircle },
@@ -31,37 +41,33 @@ const TreatmentDay = () => {
   ]
 
   const handleCheckIn = () => {
-    setCheckedIn(true)
+    saveProgress({ checkedIn: true })
     toast.success('Checked in successfully!')
   }
 
   const handleBeforePhotos = () => {
-    setBeforePhotos(['before-1.jpg', 'before-2.jpg'])
+    saveProgress({ beforePhotos: ['before-1.jpg', 'before-2.jpg'] })
     toast.success('Before photos uploaded')
   }
 
   const handleTreatmentComplete = () => {
-    setTreatmentComplete(true)
+    saveProgress({ treatmentComplete: true })
     toast.success('Treatment completed!')
   }
 
   const handleAfterPhotos = () => {
-    setAfterPhotos(['after-1.jpg', 'after-2.jpg'])
+    saveProgress({ afterPhotos: ['after-1.jpg', 'after-2.jpg'] })
     toast.success('After photos uploaded')
   }
 
   const handleComplete = () => {
     updateAppointment(appointmentId, { status: 'completed' })
-    toast.success('All set! Follow-up scheduled.')
+    toast.success('All set! Remember to book your follow-up.')
     navigate(`/aftercare/${treatment?.id}`)
   }
 
   if (!appointment || !treatment) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Appointment not found</p>
-      </div>
-    )
+    return <NotFound title="Appointment not found" backTo="/dashboard" backLabel="Back to dashboard" />
   }
 
   return (

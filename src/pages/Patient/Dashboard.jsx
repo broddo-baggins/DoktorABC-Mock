@@ -6,6 +6,21 @@ import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { localDateKey } from '../../utils/dates'
+import { selectableProps } from '../../utils/a11y'
+
+// Where each appointment leads next in the patient journey
+export const appointmentLink = (apt) => {
+  if (apt.type === 'consultation') {
+    return apt.status === 'completed' ? `/treatment-plan/${apt.id}` : `/consultation/waiting/${apt.id}`
+  }
+  if (apt.type === 'treatment') {
+    if (apt.status === 'completed') return `/aftercare/${apt.treatmentId}`
+    // A QuickBook deposit secures the slot; the balance is due on the day
+    return ['paid', 'deposit'].includes(apt.paymentStatus) ? `/treatment-day/${apt.id}` : `/payment/${apt.id}`
+  }
+  return null
+}
 
 const PatientDashboard = () => {
   const navigate = useNavigate()
@@ -15,11 +30,22 @@ const PatientDashboard = () => {
   const appointments = getAppointmentsByPatient(user.id)
   const prescriptions = getPrescriptionsByPatient(user.id)
   
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
   const upcomingAppointments = appointments
-    .filter(apt => ['scheduled', 'pending'].includes(apt.status))
+    .filter(apt => ['scheduled', 'pending'].includes(apt.status) && new Date(apt.datetime) >= startOfToday)
     .sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
-  
-  const activePrescriptions = prescriptions.filter(rx => rx.status === 'active')
+
+  const recentActivity = [...appointments]
+    .sort((a, b) => new Date(b.datetime) - new Date(a.datetime))
+    .slice(0, 5)
+
+  // Issued and not yet expired, whether the pharmacy is still preparing it or it has been dispensed
+  const today = localDateKey()
+  const activePrescriptions = prescriptions.filter(rx =>
+    ['pending', 'active', 'preparing', 'filled'].includes(rx.status) && (!rx.expiryDate || rx.expiryDate >= today)
+  )
+  const prescriptionStatusLabel = { pending: 'Sent to pharmacy', preparing: 'Preparing', active: 'Active', filled: 'Dispensed' }
 
   const getStatusColor = (status) => {
     const colors = {
@@ -110,7 +136,7 @@ const PatientDashboard = () => {
                   Get priority booking, exclusive discounts, and quarterly treatments
                 </p>
               </div>
-              <Button variant="accent">Learn More</Button>
+              <Button variant="accent" onClick={() => navigate('/contact')}>Learn More</Button>
             </div>
           </CardContent>
         </Card>
@@ -139,15 +165,12 @@ const PatientDashboard = () => {
                 <div className="space-y-4">
                   {upcomingAppointments.map(apt => {
                     const treatment = treatments.find(t => t.id === apt.treatmentId)
+                    const link = appointmentLink(apt)
                     return (
                       <div
                         key={apt.id}
-                        className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors cursor-pointer"
-                        onClick={() => {
-                          if (apt.type === 'consultation' && apt.status === 'pending') {
-                            navigate(`/consultation/waiting/${apt.id}`)
-                          }
-                        }}
+                        className={`p-4 border border-gray-200 rounded-lg hover:border-primary-300 transition-colors ${link ? 'cursor-pointer' : ''}`}
+                        {...(link ? selectableProps(() => navigate(link)) : {})}
                       >
                         <div className="flex items-start justify-between mb-2">
                           <div>
@@ -163,7 +186,7 @@ const PatientDashboard = () => {
                           {formatDate(apt.datetime)}
                         </div>
                         <div className="text-sm text-gray-600 mt-1">
-                          📍 {apt.location}
+                          <span aria-hidden="true">📍</span> {apt.location}
                         </div>
                       </div>
                     )
@@ -190,12 +213,17 @@ const PatientDashboard = () => {
               <CardTitle>Recent Activity</CardTitle>
             </CardHeader>
             <CardContent>
-              {appointments.length > 0 ? (
+              {recentActivity.length > 0 ? (
                 <div className="space-y-3">
-                  {appointments.slice(0, 5).map(apt => {
+                  {recentActivity.map(apt => {
                     const treatment = treatments.find(t => t.id === apt.treatmentId)
+                    const link = appointmentLink(apt)
                     return (
-                      <div key={apt.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+                      <div
+                        key={apt.id}
+                        className={`flex items-center justify-between py-3 border-b last:border-b-0 ${link ? 'cursor-pointer' : ''}`}
+                        {...(link ? selectableProps(() => navigate(link)) : {})}
+                      >
                         <div>
                           <p className="font-medium">{treatment?.name}</p>
                           <p className="text-sm text-gray-600">{formatDate(apt.datetime)}</p>
@@ -232,7 +260,9 @@ const PatientDashboard = () => {
                         <span className="text-xs text-gray-500">
                           Expires: {rx.expiryDate}
                         </span>
-                        <Badge variant="success" className="text-xs">Active</Badge>
+                        <Badge variant={rx.status === 'active' || rx.status === 'filled' ? 'success' : 'warning'} className="text-xs">
+                          {prescriptionStatusLabel[rx.status]}
+                        </Badge>
                       </div>
                     </div>
                   ))}

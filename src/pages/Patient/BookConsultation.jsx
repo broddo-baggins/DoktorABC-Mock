@@ -7,6 +7,9 @@ import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import Select from '../../components/ui/Select'
+import { upcomingDateKeys, localDateTimeISO, formatDateKey } from '../../utils/dates'
+import { selectableProps } from '../../utils/a11y'
 
 const BookConsultation = () => {
   const navigate = useNavigate()
@@ -36,11 +39,7 @@ const BookConsultation = () => {
   }
 
   // Generate available dates (next 14 days)
-  const availableDates = Array.from({ length: 14 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() + i + 1)
-    return date.toISOString().split('T')[0]
-  })
+  const availableDates = upcomingDateKeys(14)
 
   // Available time slots
   const timeSlots = [
@@ -54,14 +53,12 @@ const BookConsultation = () => {
       return
     }
 
-    const datetime = new Date(`${selectedDate}T${selectedTime}:00Z`)
-    
     const appointment = createAppointment({
       patientId: user.id,
       doctorId: selectedDoctor,
       treatmentId: treatmentId,
       type: 'consultation',
-      datetime: datetime.toISOString(),
+      datetime: localDateTimeISO(selectedDate, selectedTime),
       duration: 30,
       location: 'Virtual',
       notes: 'Initial consultation'
@@ -96,7 +93,7 @@ const BookConsultation = () => {
                         ? 'border-primary-600 bg-primary-50'
                         : 'border-gray-200 hover:border-primary-300'
                     }`}
-                    onClick={() => setSelectedDoctor(doctor.id)}
+                    {...selectableProps(() => setSelectedDoctor(doctor.id), selectedDoctor === doctor.id)}
                   >
                     <div className="flex items-start gap-4">
                       <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
@@ -150,7 +147,7 @@ const BookConsultation = () => {
                     <option value="">Select a date...</option>
                     {availableDates.map(date => (
                       <option key={date} value={date}>
-                        {new Date(date).toLocaleDateString('en-GB', {
+                        {formatDateKey(date, {
                           weekday: 'long',
                           day: 'numeric',
                           month: 'long',
@@ -169,6 +166,8 @@ const BookConsultation = () => {
                         {timeSlots.map(time => (
                           <button
                             key={time}
+                            type="button"
+                            aria-pressed={selectedTime === time}
                             onClick={() => setSelectedTime(time)}
                             className={`p-2 text-sm rounded-lg border-2 transition-all ${
                               selectedTime === time
@@ -222,7 +221,7 @@ const BookConsultation = () => {
                     <div>
                       <p className="font-medium">Date</p>
                       <p className="text-sm text-gray-600">
-                        {new Date(selectedDate).toLocaleDateString('en-GB', {
+                        {formatDateKey(selectedDate, {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric'

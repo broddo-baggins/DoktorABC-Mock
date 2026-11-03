@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Search } from 'lucide-react'
 import { useAppState } from '../contexts/AppStateContext'
 import { Card, CardContent } from '../components/ui/Card'
@@ -13,8 +13,7 @@ const Categories = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
 
-  const categories = [
-    { value: 'all', label: 'All Treatments' },
+  const allCategories = [
     { value: 'aesthetic', label: 'Aesthetic' },
     { value: 'mens-health', label: "Men's Health" },
     { value: 'womens-health', label: "Women's Health" },
@@ -22,6 +21,11 @@ const Categories = () => {
     { value: 'travel-health', label: 'Travel Health' },
     { value: 'chronic', label: 'Chronic Conditions' },
     { value: 'wellbeing', label: 'Wellbeing' }
+  ]
+  // Only offer filters that match at least one treatment
+  const categories = [
+    { value: 'all', label: 'All Treatments' },
+    ...allCategories.filter(cat => treatments.some(t => t.category === cat.value))
   ]
 
   const filteredTreatments = treatments.filter(treatment => {
@@ -47,12 +51,14 @@ const Categories = () => {
           <Input
             type="text"
             placeholder="Search treatments..."
+            aria-label="Search treatments"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
         <Select
+          aria-label="Filter by category"
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >
@@ -78,6 +84,7 @@ const Categories = () => {
             <div 
               className="h-40 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center cursor-pointer"
               onClick={() => navigate(`/treatment/${treatment.id}`)}
+              aria-hidden="true"
             >
               <span className="text-5xl">
                 {treatment.category === 'aesthetic' && '💉'}
@@ -91,8 +98,8 @@ const Categories = () => {
             </div>
             <CardContent className="p-6">
               <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-lg flex-1 cursor-pointer hover:text-primary-600" onClick={() => navigate(`/treatment/${treatment.id}`)}>
-                  {treatment.name}
+                <h3 className="font-semibold text-lg flex-1 cursor-pointer hover:text-primary-600">
+                  <Link to={`/treatment/${treatment.id}`}>{treatment.name}</Link>
                 </h3>
                 {treatment.popular && (
                   <Badge variant="accent" className="ml-2">Popular</Badge>
@@ -111,6 +118,7 @@ const Categories = () => {
                 <Badge variant="default">{treatment.duration}</Badge>
               </div>
               <button
+                type="button"
                 onClick={() => navigate(`/quick-book/${treatment.id}`)}
                 className="w-full bg-accent-600 hover:bg-accent-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
               >

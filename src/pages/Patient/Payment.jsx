@@ -1,7 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CreditCard, Lock, CheckCircle } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
+import { useAuth } from '../../contexts/AuthContext'
+import NotFound from '../../components/NotFound'
+import { validateCard } from '../../utils/payment'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
@@ -12,9 +15,10 @@ const Payment = () => {
   const { bookingId } = useParams()
   const navigate = useNavigate()
   const { appointments, getTreatmentById, updateAppointment } = useAppState()
+  const { user } = useAuth()
   const toast = useToast()
-  
-  const appointment = appointments.find(apt => apt.id === bookingId)
+
+  const appointment = appointments.find(apt => apt.id === bookingId && apt.patientId === user?.id)
   const treatment = getTreatmentById(appointment?.treatmentId)
   
   const [paymentData, setPaymentData] = useState({
@@ -24,6 +28,12 @@ const Payment = () => {
     cvv: ''
   })
   const [processing, setProcessing] = useState(false)
+  const [agreed, setAgreed] = useState(false)
+  const [errors, setErrors] = useState({})
+  const timerRef = useRef(null)
+
+  // Leaving the page mid-payment must not navigate the user somewhere else later
+  useEffect(() => () => clearTimeout(timerRef.current), [])
 
   const calculateTotal = () => {
     if (!treatment) return 0
@@ -33,16 +43,22 @@ const Payment = () => {
   }
 
   const handlePayment = async () => {
-    if (!paymentData.cardNumber || !paymentData.cardName || !paymentData.expiryDate || !paymentData.cvv) {
-      toast.error('Please fill in all payment details')
+    const cardErrors = validateCard(paymentData)
+    if (!agreed) cardErrors.agreed = 'Please accept the payment terms'
+    setErrors(cardErrors)
+    if (Object.keys(cardErrors).length > 0) {
+      toast.error(Object.keys(cardErrors).length === 1 ? Object.values(cardErrors)[0] : 'Please fill in all payment details')
       return
     }
 
     setProcessing(true)
 
     // Mock payment processing
-    setTimeout(() => {
-      updateAppointment(bookingId, { status: 'scheduled', paymentStatus: 'paid' })
+    timerRef.current = setTimeout(() => {
+      // Paying for a plan must not reopen the consultation it came from
+      updateAppointment(bookingId, appointment.type === 'treatment'
+        ? { status: 'scheduled', paymentStatus: 'paid' }
+        : { paymentStatus: 'paid' })
       toast.success('Payment successful!')
       setProcessing(false)
       
@@ -55,10 +71,17 @@ const Payment = () => {
   }
 
   if (!appointment || !treatment) {
+    return <NotFound title="Appointment not found" backTo="/dashboard" backLabel="Back to dashboard" />
+  }
+
+  if (appointment.paymentStatus === 'paid') {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Appointment not found</p>
-      </div>
+      <NotFound
+        title="Already paid"
+        message={`Payment for ${treatment.name} has been received.`}
+        backTo={appointment.type === 'treatment' ? `/treatment-day/${bookingId}` : '/dashboard'}
+        backLabel={appointment.type === 'treatment' ? 'View treatment day details' : 'Back to dashboard'}
+      />
     )
   }
 
@@ -90,7 +113,10 @@ const Payment = () => {
                   placeholder="1234 5678 9012 3456"
                   value={paymentData.cardNumber}
                   onChange={(e) => setPaymentData({ ...paymentData, cardNumber: e.target.value })}
-                  maxLength={19}
+                  maxLength={23}
+                  inputMode="numeric"
+                  autoComplete="cc-number"
+                  error={errors.cardNumber}
                 />
 
                 <Input
@@ -99,6 +125,8 @@ const Payment = () => {
                   placeholder="John Doe"
                   value={paymentData.cardName}
                   onChange={(e) => setPaymentData({ ...paymentData, cardName: e.target.value })}
+                  autoComplete="cc-name"
+                  error={errors.cardName}
                 />
 
                 <div className="grid grid-cols-2 gap-4">
@@ -108,7 +136,9 @@ const Payment = () => {
                     placeholder="MM/YY"
                     value={paymentData.expiryDate}
                     onChange={(e) => setPaymentData({ ...paymentData, expiryDate: e.target.value })}
-                    maxLength={5}
+                    maxLength={7}
+                    autoComplete="cc-exp"
+                    error={errors.expiryDate}
                   />
                   <Input
                     label="CVV"
@@ -116,7 +146,10 @@ const Payment = () => {
                     placeholder="123"
                     value={paymentData.cvv}
                     onChange={(e) => setPaymentData({ ...paymentData, cvv: e.target.value })}
-                    maxLength={3}
+                    maxLength={4}
+                    inputMode="numeric"
+                    autoComplete="cc-csc"
+                    error={errors.cvv}
                   />
                 </div>
 
@@ -131,8 +164,15 @@ const Payment = () => {
                 </div>
 
                 <div className="flex items-start mt-4">
-                  <input type="checkbox" className="mt-1 mr-2" required />
-                  <label className="text-sm text-gray-600">
+                  <input
+                    id="payment-terms"
+                    type="checkbox"
+                    className="mt-1 mr-2"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    aria-invalid={errors.agreed ? true : undefined}
+                  />
+                  <label htmlFor="payment-terms" className="text-sm text-gray-600">
                     I agree to the payment terms and conditions. I understand that this payment is for medical services provided by DoktorABC and its partners.
                   </label>
                 </div>

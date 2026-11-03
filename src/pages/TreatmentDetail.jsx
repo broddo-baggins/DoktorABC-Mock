@@ -1,41 +1,64 @@
 import React from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, Clock, Package } from 'lucide-react'
 import { useAppState } from '../contexts/AppStateContext'
 import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
+import NotFound from '../components/NotFound'
+import { useToast } from '../components/ui/Toast'
 
 const TreatmentDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getTreatmentById } = useAppState()
+  const location = useLocation()
+  const { getTreatmentById, addToCart, cart } = useAppState()
   const { isAuthenticated, user } = useAuth()
+  const toast = useToast()
   const treatment = getTreatmentById(id)
 
   if (!treatment) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <p className="text-center text-gray-500">Treatment not found</p>
-      </div>
-    )
+    return <NotFound title="Treatment not found" backTo="/categories" backLabel="Browse treatments" />
   }
 
+  const isPatient = isAuthenticated && user?.role === 'patient'
+  // Medication can be ordered; aesthetic procedures are booked at a clinic instead
+  const canAddToCart = treatment.category !== 'aesthetic'
+  const inCart = cart.some(item => item.treatmentId === treatment.id)
+
   const handleStartConsultation = () => {
-    if (!isAuthenticated) {
-      navigate('/login')
-    } else if (user?.role === 'patient') {
+    if (isPatient) {
       navigate(`/questionnaire/${treatment.id}`)
+    } else if (!isAuthenticated) {
+      navigate('/login', { state: { from: { pathname: `/questionnaire/${treatment.id}` } } })
     } else {
-      navigate('/login')
+      toast.info('Consultations are booked from a patient account')
     }
+  }
+
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location } })
+      return
+    }
+    if (!isPatient) {
+      toast.info('Orders are placed from a patient account')
+      return
+    }
+    addToCart({
+      treatmentId: treatment.id,
+      name: treatment.name,
+      description: treatment.description,
+      price: treatment.price.treatment
+    })
+    toast.success(`${treatment.name} added to cart`)
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/categories')}
         className="flex items-center text-primary-600 hover:text-primary-700 mb-6"
       >
         <ArrowLeft className="w-4 h-4 mr-2" />
@@ -158,6 +181,16 @@ const TreatmentDetail = () => {
                 >
                   Or Start Consultation First
                 </Button>
+                {canAddToCart && (
+                  <Button
+                    className="w-full"
+                    size="lg"
+                    variant="ghost"
+                    onClick={inCart ? () => navigate('/cart') : handleAddToCart}
+                  >
+                    {inCart ? 'In Cart - View Cart' : 'Add to Cart'}
+                  </Button>
+                )}
 
                 <p className="text-xs text-gray-500 text-center mt-4">
                   Consultation reviewed by qualified doctors. Prescription issued if appropriate.

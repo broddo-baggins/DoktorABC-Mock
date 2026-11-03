@@ -6,15 +6,21 @@ import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { useToast } from '../components/ui/Toast'
 import { useAppState } from '../contexts/AppStateContext'
+import { upcomingDateKeys, parseLocalDate, localDateTimeISO } from '../utils/dates'
 
 const Landing = () => {
   const navigate = useNavigate()
   const toast = useToast()
-  const { treatments, getDoctors } = useAppState()
+  const { getDoctors } = useAppState()
   const doctors = getDoctors()
   const [showStickyBooking, setShowStickyBooking] = useState(false)
-  const [selectedDay, setSelectedDay] = useState(3) // Default: day 3 (28th)
+  // The slot picker shows the next 7 days starting today
+  const [slotDays] = useState(() => upcomingDateKeys(7, 0).map(parseLocalDate))
+  const [selectedDay, setSelectedDay] = useState(1) // Default: tomorrow
   const [selectedTime, setSelectedTime] = useState('14:30') // Default time
+  const [now] = useState(() => Date.now())
+  const isPastSlot = (dayIndex, time) =>
+    new Date(localDateTimeISO(upcomingDateKeys(1, dayIndex, new Date(now))[0], time)).getTime() < now
 
   useEffect(() => {
     const handleScroll = () => {
@@ -92,7 +98,7 @@ const Landing = () => {
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <Button size="lg" variant="accent" onClick={() => navigate('/categories')} className="group text-lg shadow-2xl">
                   <Calendar className="w-5 h-5 mr-2" />
-                  Book Consultation - Free
+                  Book Consultation
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 <Button size="lg" variant="outline" onClick={() => navigate('/treatment/botox-forehead')} className="bg-white/10 backdrop-blur-sm text-white border-2 border-white hover:bg-white hover:text-primary-600">
@@ -135,21 +141,26 @@ const Landing = () => {
                   
                   <div className="space-y-3 mb-4">
                     <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
-                      <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+                      {slotDays.map(day => (
+                        <div key={day.toISOString()}>{day.toLocaleDateString('en-GB', { weekday: 'short' })}</div>
+                      ))}
                     </div>
                     <div className="grid grid-cols-7 gap-1">
-                      {[...Array(7)].map((_, i) => {
-                        const isPast = i < 2
+                      {slotDays.map((day, i) => {
+                        // Every time slot of the day has passed
+                        const isPast = ['09:00', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'].every(t => isPastSlot(i, t))
                         const isSelected = selectedDay === i
                         return (
-                          <button 
-                            key={i} 
+                          <button
+                            key={i}
+                            type="button"
                             disabled={isPast}
+                            aria-pressed={isSelected}
+                            aria-label={day.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
                             onClick={() => {
                               if (!isPast) {
                                 setSelectedDay(i)
-                                const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                                toast.success(`Selected ${dayNames[i]}, Oct ${25 + i}`)
+                                toast.success(`Selected ${day.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}`)
                               }
                             }}
                             className={`aspect-square rounded-lg text-sm font-medium transition-all ${
@@ -158,7 +169,7 @@ const Landing = () => {
                               'bg-gray-50 hover:bg-primary-100 text-gray-700 hover:scale-105 cursor-pointer'
                             }`}
                           >
-                            {i + 25}
+                            {day.getDate()}
                           </button>
                         )
                       })}
@@ -171,8 +182,11 @@ const Landing = () => {
                       {['09:00', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'].map(time => {
                         const isSelected = selectedTime === time
                         return (
-                          <button 
-                            key={time} 
+                          <button
+                            key={time}
+                            type="button"
+                            aria-pressed={isSelected}
+                            disabled={isPastSlot(selectedDay, time)}
                             onClick={() => {
                               setSelectedTime(time)
                               toast.success(`Time slot ${time} selected`)
@@ -192,28 +206,14 @@ const Landing = () => {
 
                   <Button 
                     className="w-full mt-4" 
+                    disabled={isPastSlot(selectedDay, selectedTime)}
                     onClick={() => {
-                      // Get date info for selected day
-                      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-                      const selectedDayName = dayNames[selectedDay]
-                      const selectedDate = `October ${25 + selectedDay}, 2025`
-                      
-                      // Show success toast
-                      toast.success(`Booking confirmed! ${selectedDayName}, ${selectedDate} at ${selectedTime}`)
-                      
-                      // Navigate to categories with booking info in state
-                      setTimeout(() => {
-                        navigate('/categories', { 
-                          state: { 
-                            preselectedTime: selectedTime,
-                            preselectedDay: selectedDayName,
-                            preselectedDate: selectedDate
-                          } 
-                        })
-                      }, 800)
+                      // Nothing is booked yet: QuickBook collects the area, clinic and deposit
+                      toast.info('Choose your treatment area and clinic to finish booking')
+                      navigate('/quick-book/botox-forehead')
                     }}
                   >
-                    Confirm Booking → {selectedTime} on Oct {25 + selectedDay}
+                    Continue Booking → {selectedTime} on {slotDays[selectedDay].toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
                   </Button>
                 </CardContent>
               </Card>
@@ -352,7 +352,7 @@ const Landing = () => {
                   Automated reminders for repeat treatments and secure follow-up messaging. Your doctor is always just a message away.
                 </p>
                 <div className="mt-6">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => navigate('/how-it-works')}>
                     Learn More →
                   </Button>
                 </div>
@@ -376,11 +376,11 @@ const Landing = () => {
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <div>
                       <p className="text-xs font-semibold text-gray-600 mb-1">Before</p>
-                      <img src={item.before} alt="Before treatment" className="aspect-[4/3] rounded-lg object-cover" />
+                      <img src={item.before} alt={`${item.area}, before treatment`} className="aspect-[4/3] rounded-lg object-cover" />
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-gray-600 mb-1">After</p>
-                      <img src={item.after} alt="After treatment" className="aspect-[4/3] rounded-lg object-cover" />
+                      <img src={item.after} alt={`${item.area}, 3 months after treatment`} className="aspect-[4/3] rounded-lg object-cover" />
                     </div>
                   </div>
                   <div className="text-center">
@@ -738,7 +738,7 @@ const Landing = () => {
                 <h3 className="text-2xl font-bold mb-4">Questions First?</h3>
                 <p className="text-gray-600 mb-2">Chat with specialists</p>
                 <p className="text-sm text-gray-500 mb-6">Get expert advice before booking</p>
-                <Button size="lg" variant="outline" className="w-full hover:bg-accent-600 hover:text-white hover:border-accent-600">
+                <Button size="lg" variant="outline" className="w-full hover:bg-accent-600 hover:text-white hover:border-accent-600" onClick={() => navigate('/contact')}>
                   Start Chat →
                 </Button>
               </CardContent>
@@ -791,7 +791,7 @@ const Landing = () => {
                 <Gift className="w-12 h-12 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-3">Ready for your next session?</h3>
                 <p className="text-sm text-accent-100 mb-4">Get €50 off when you rebook within 6 months</p>
-                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100">Claim Offer →</Button>
+                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100" onClick={() => navigate('/categories')}>Claim Offer →</Button>
               </CardContent>
             </Card>
 
@@ -800,7 +800,7 @@ const Landing = () => {
                 <Users className="w-12 h-12 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-3">Refer a Friend</h3>
                 <p className="text-sm text-accent-100 mb-4">Both get €50 credit when they complete their first treatment</p>
-                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100">Share Link →</Button>
+                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100" onClick={() => navigate('/register')}>Share Link →</Button>
               </CardContent>
             </Card>
 
@@ -809,7 +809,7 @@ const Landing = () => {
                 <Award className="w-12 h-12 mx-auto mb-4" />
                 <h3 className="text-xl font-bold mb-3">Membership Plans</h3>
                 <p className="text-sm text-accent-100 mb-4">3 treatments/year for 15% off. Priority booking included.</p>
-                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100">Learn More →</Button>
+                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100" onClick={() => navigate('/faq')}>Learn More →</Button>
               </CardContent>
             </Card>
           </div>
@@ -1015,7 +1015,7 @@ const Landing = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-accent-400" />
-              <span>Free consultation</span>
+              <span>Consultation from €49</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-accent-400" />

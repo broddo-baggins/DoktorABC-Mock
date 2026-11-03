@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Mail, Phone, MapPin, MessageCircle, Send } from 'lucide-react'
 import { useToast } from '../components/ui/Toast'
+import { useAuth } from '../contexts/AuthContext'
+import { useAppState } from '../contexts/AppStateContext'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import Textarea from '../components/ui/Textarea'
@@ -9,17 +11,50 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 
 const Contact = () => {
   const toast = useToast()
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  })
+  const { user } = useAuth()
+  const { createTicket } = useAppState()
+  const emptyForm = { name: user?.name || '', email: user?.email || '', subject: '', message: '' }
+  const [formData, setFormData] = useState(emptyForm)
+
+  const subjectLabels = {
+    general: 'General Inquiry',
+    treatment: 'Treatment Question',
+    booking: 'Booking Assistance',
+    delivery: 'Delivery Issue',
+    technical: 'Technical Support',
+    complaint: 'Complaint'
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    const name = formData.name.trim()
+    const email = formData.email.trim()
+    const message = formData.message.trim()
+    if (!name || !/^\S+@\S+\.\S+$/.test(email) || !subjectLabels[formData.subject] || !message) {
+      toast.error('Please fill in every field with valid details')
+      return
+    }
+
+    // Technical problems go to the support engineers, everything else to customer service
+    const isTechnical = formData.subject === 'technical'
+    createTicket({
+      type: isTechnical ? 'support' : 'customer-service',
+      patientId: user?.role === 'patient' ? user.id : null,
+      contactName: name,
+      contactEmail: email,
+      subject: `${subjectLabels[formData.subject]} from ${name}`,
+      category: subjectLabels[formData.subject],
+      priority: formData.subject === 'complaint' ? 'high' : 'medium',
+      assignedTo: isTechnical ? 'support-001' : 'cs-001',
+      messages: [{
+        id: `msg-${Date.now()}`,
+        sender: user?.id || email,
+        timestamp: new Date().toISOString(),
+        content: message.slice(0, 2000)
+      }]
+    })
     toast.success('Message sent! We\'ll respond within 24 hours.')
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    setFormData(emptyForm)
   }
 
   return (
@@ -72,6 +107,7 @@ const Contact = () => {
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows={6}
+                  maxLength={2000}
                   required
                 />
                 <Button type="submit" className="w-full">

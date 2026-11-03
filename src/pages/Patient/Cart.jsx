@@ -1,14 +1,17 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react'
+import { ShoppingCart, Trash2 } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
+import { useAuth } from '../../contexts/AuthContext'
+import { upcomingDateKeys, localDateTimeISO } from '../../utils/dates'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 
 const Cart = () => {
   const navigate = useNavigate()
-  const { cart, removeFromCart, clearCart } = useAppState()
+  const { cart, removeFromCart, clearCart, createAppointment, getDoctors } = useAppState()
+  const { user } = useAuth()
   const toast = useToast()
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price || 0), 0)
@@ -25,8 +28,24 @@ const Cart = () => {
       toast.error('Your cart is empty')
       return
     }
-    toast.success('Proceeding to checkout')
-    navigate('/categories')
+    // Every item is prescription-only: checkout requests a doctor's review for each one.
+    const doctorId = getDoctors()[0].id
+    const reviewDate = upcomingDateKeys(1)[0]
+    cart.forEach((item, index) => {
+      createAppointment({
+        patientId: user.id,
+        doctorId,
+        treatmentId: item.treatmentId,
+        type: 'consultation',
+        datetime: localDateTimeISO(reviewDate, `${String(9 + index).padStart(2, '0')}:00`),
+        duration: 15,
+        location: 'Virtual',
+        notes: `Prescription review for ${item.name} (ordered from cart)`
+      })
+    })
+    clearCart()
+    toast.success(`Order sent for doctor review (${cart.length} item${cart.length === 1 ? '' : 's'})`)
+    navigate('/dashboard')
   }
 
   return (
@@ -62,7 +81,7 @@ const Cart = () => {
                       className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg"
                     >
                       <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-3xl">💊</span>
+                        <span className="text-3xl" aria-hidden="true">💊</span>
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold">{item.name}</h4>
@@ -74,6 +93,8 @@ const Cart = () => {
                         </p>
                       </div>
                       <button
+                        type="button"
+                        aria-label={`Remove ${item.name} from cart`}
                         onClick={() => handleRemove(item.id)}
                         className="text-red-600 hover:text-red-700 p-2"
                       >

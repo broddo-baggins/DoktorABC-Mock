@@ -2,6 +2,8 @@ import React from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { CheckCircle, Calendar, Package, Euro, AlertCircle } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
+import { useAuth } from '../../contexts/AuthContext'
+import NotFound from '../../components/NotFound'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
@@ -10,10 +12,12 @@ import Badge from '../../components/ui/Badge'
 const TreatmentPlan = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { appointments, createPrescription, getTreatmentById, getDoctors } = useAppState()
+  const { appointments, prescriptions, createPrescription, getTreatmentById, getDoctors } = useAppState()
+  const { user } = useAuth()
   const toast = useToast()
-  
-  const appointment = appointments.find(apt => apt.id === id)
+
+  // A plan comes out of the patient's own consultation
+  const appointment = appointments.find(apt => apt.id === id && apt.patientId === user?.id && apt.type === 'consultation')
   const treatment = getTreatmentById(appointment?.treatmentId)
   const doctor = getDoctors().find(d => d.id === appointment?.doctorId)
 
@@ -40,8 +44,11 @@ const TreatmentPlan = () => {
   }
 
   const handleApprove = () => {
-    // Create prescription
-    createPrescription({
+    // One prescription per consultation, however often the plan is approved
+    const alreadyPrescribed = prescriptions.some(rx => rx.appointmentId === id)
+    if (!alreadyPrescribed) createPrescription({
+      appointmentId: id,
+      treatmentId: appointment.treatmentId,
       patientId: appointment.patientId,
       doctorId: appointment.doctorId,
       medication: mockPlan.medication,
@@ -62,10 +69,17 @@ const TreatmentPlan = () => {
   }
 
   if (!appointment || !treatment) {
+    return <NotFound title="Treatment plan not found" backTo="/dashboard" backLabel="Back to dashboard" />
+  }
+
+  if (appointment.status !== 'completed') {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Treatment plan not found</p>
-      </div>
+      <NotFound
+        title="Treatment plan not ready yet"
+        message="Your doctor writes your plan during the consultation."
+        backTo={`/consultation/waiting/${id}`}
+        backLabel="Go to your consultation"
+      />
     )
   }
 

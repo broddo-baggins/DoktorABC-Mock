@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Video, FileText, Clock, CheckCircle } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
+import { useAuth } from '../../contexts/AuthContext'
+import NotFound from '../../components/NotFound'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
@@ -9,26 +11,21 @@ import Badge from '../../components/ui/Badge'
 const ConsultationWaiting = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { appointments, updateAppointment, getDoctors, getTreatmentById } = useAppState()
-  const [timeLeft, setTimeLeft] = useState(0)
-  
-  const appointment = appointments.find(apt => apt.id === id)
+  const { appointments, updateAppointment, getDoctors, getTreatmentById, getQuestionnaire } = useAppState()
+  const { user } = useAuth()
+  const [now, setNow] = useState(() => Date.now())
+
+  // Patients only see their own consultations
+  const appointment = appointments.find(apt => apt.id === id && apt.patientId === user?.id)
   const doctor = getDoctors().find(d => d.id === appointment?.doctorId)
   const treatment = getTreatmentById(appointment?.treatmentId)
+  const questionnaireDone = !!getQuestionnaire(appointment?.treatmentId)?.completed
+  const timeLeft = appointment ? Math.max(0, new Date(appointment.datetime).getTime() - now) : 0
 
   useEffect(() => {
-    if (appointment) {
-      const aptTime = new Date(appointment.datetime).getTime()
-      const now = Date.now()
-      setTimeLeft(Math.max(0, aptTime - now))
-
-      const interval = setInterval(() => {
-        setTimeLeft(prev => Math.max(0, prev - 1000))
-      }, 1000)
-
-      return () => clearInterval(interval)
-    }
-  }, [appointment])
+    const interval = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   const formatTimeLeft = (ms) => {
     const hours = Math.floor(ms / (1000 * 60 * 60))
@@ -38,24 +35,24 @@ const ConsultationWaiting = () => {
   }
 
   const handleJoinConsultation = () => {
-    updateAppointment(id, { status: 'completed', outcome: 'Consultation completed' })
+    if (appointment.status !== 'completed') {
+      updateAppointment(id, { status: 'completed', outcome: 'Consultation completed' })
+    }
     // Mock treatment plan creation
     navigate(`/treatment-plan/${id}`)
   }
 
   if (!appointment) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Appointment not found</p>
-      </div>
-    )
+    return <NotFound title="Appointment not found" backTo="/dashboard" backLabel="Back to dashboard" />
   }
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Video Consultation</h1>
-        <Badge variant="success">Scheduled</Badge>
+        <Badge variant={appointment.status === 'completed' ? 'success' : appointment.status === 'pending' ? 'warning' : 'primary'}>
+          {{ pending: 'Awaiting confirmation', scheduled: 'Scheduled', completed: 'Completed' }[appointment.status] || appointment.status}
+        </Badge>
       </div>
 
       {/* Countdown */}
@@ -129,10 +126,16 @@ const ConsultationWaiting = () => {
         <CardContent>
           <ul className="space-y-3">
             <li className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-accent-600 mr-3 flex-shrink-0 mt-0.5" />
+              <CheckCircle className={`w-5 h-5 mr-3 flex-shrink-0 mt-0.5 ${questionnaireDone ? 'text-accent-600' : 'text-gray-300'}`} />
               <div>
-                <p className="font-medium">Medical questionnaire completed</p>
-                <p className="text-sm text-gray-600">Your responses have been reviewed by the doctor</p>
+                <p className="font-medium">
+                  {questionnaireDone ? 'Medical questionnaire completed' : 'Complete your medical questionnaire'}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {questionnaireDone
+                    ? 'Your responses have been shared with the doctor'
+                    : 'Your doctor will review it before the consultation'}
+                </p>
               </div>
             </li>
             <li className="flex items-start">
@@ -164,10 +167,10 @@ const ConsultationWaiting = () => {
       <div className="flex gap-4 justify-center">
         <Button
           variant="outline"
-          onClick={() => navigate('/dashboard')}
+          onClick={() => navigate(`/questionnaire/${appointment.treatmentId}`)}
         >
           <FileText className="w-4 h-4 mr-2" />
-          View My Questionnaire
+          {questionnaireDone ? 'View My Questionnaire' : 'Complete Questionnaire'}
         </Button>
         <Button
           onClick={handleJoinConsultation}

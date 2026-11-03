@@ -8,6 +8,9 @@ import Button from '../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import Input from '../components/ui/Input'
 import Badge from '../components/ui/Badge'
+import NotFound from '../components/NotFound'
+import { upcomingDateKeys, localDateTimeISO, parseLocalDate } from '../utils/dates'
+import { validateCard } from '../utils/payment'
 
 const QuickBook = () => {
   const { id } = useParams()
@@ -25,8 +28,10 @@ const QuickBook = () => {
   const [selectedArea, setSelectedArea] = useState('')
   const [selectedClinic, setSelectedClinic] = useState('')
   const [selectedSlot, setSelectedSlot] = useState('')
-  const [depositPaid, setDepositPaid] = useState(false)
-  
+  const [bookedAppointmentId, setBookedAppointmentId] = useState(null)
+  const [card, setCard] = useState({ cardNumber: '', expiryDate: '', cvv: '' })
+  const [cardErrors, setCardErrors] = useState({})
+
   // Quick registration form
   const [quickRegForm, setQuickRegForm] = useState({
     name: '',
@@ -36,96 +41,119 @@ const QuickBook = () => {
     password: 'demo123' // Auto-set for quick booking
   })
   
-  // Mock treatment areas
+  // Clinic procedures pick an area and a clinic; everything else is a video consultation
+  const isAesthetic = treatment?.category === 'aesthetic'
   const treatmentAreas = ['Forehead', 'Crow\'s Feet', 'Frown Lines', 'Lip Area']
-  
+
+  // Slots for the next 7 days, skipping times that have already passed today
+  const generateTimeSlots = () => {
+    const earliest = Date.now() + 60 * 60 * 1000
+    const times = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00']
+    return upcomingDateKeys(7, 0)
+      .flatMap(key => times.map(time => ({ key, time, datetime: localDateTimeISO(key, time) })))
+      .filter(slot => new Date(slot.datetime).getTime() >= earliest)
+      .slice(0, 21)
+      .map(slot => ({
+        datetime: slot.datetime,
+        display: `${parseLocalDate(slot.key).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at ${slot.time}`
+      }))
+  }
+
+  // Computed once per visit: the slot list must not change under the user while they choose
+  const [availableSlots] = useState(generateTimeSlots)
+
   // Mock partner clinics
   const clinics = [
-    { id: 'clinic-001', name: 'Central Aesthetic Clinic', address: '145 Harley Street, London', distance: '2.3 km', nextSlot: '2025-10-30 10:00' },
-    { id: 'clinic-002', name: 'Mayfair Medical Aesthetics', address: '32 Curzon Street, London', distance: '3.1 km', nextSlot: '2025-10-30 14:00' },
-    { id: 'clinic-003', name: 'Kensington Beauty & Wellness', address: '78 Kensington High Street, London', distance: '5.2 km', nextSlot: '2025-10-31 09:00' }
+    { id: 'clinic-001', name: 'Central Aesthetic Clinic', address: '145 Harley Street, London', distance: '2.3 km', nextSlot: availableSlots[0]?.datetime },
+    { id: 'clinic-002', name: 'Mayfair Medical Aesthetics', address: '32 Curzon Street, London', distance: '3.1 km', nextSlot: availableSlots[2]?.datetime },
+    { id: 'clinic-003', name: 'Kensington Beauty & Wellness', address: '78 Kensington High Street, London', distance: '5.2 km', nextSlot: availableSlots[7]?.datetime }
   ]
-  
-  // Available slots for next 7 days
-  const generateTimeSlots = () => {
-    const slots = []
-    for (let day = 0; day < 7; day++) {
-      const date = new Date()
-      date.setDate(date.getDate() + day)
-      const dateStr = date.toISOString().split('T')[0]
-      
-      const times = ['09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00']
-      times.forEach(time => {
-        slots.push({
-          datetime: `${dateStr}T${time}`,
-          display: `${date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} at ${time}`
-        })
-      })
-    }
-    return slots.slice(0, 21) // Show 21 slots
-  }
-  
-  const availableSlots = generateTimeSlots()
-  
+
   if (!treatment) {
-    return <div className="max-w-4xl mx-auto px-4 py-12"><p className="text-center text-gray-500">Treatment not found</p></div>
+    return <NotFound title="Treatment not found" backTo="/categories" backLabel="Browse treatments" />
   }
-  
+
   const depositAmount = Math.floor(treatment.price.treatment * 0.3) // 30% deposit
-  
+  // A consultation is paid in full up front; a treatment takes a 30% deposit
+  const amountDue = bookingType === 'consult' ? treatment.price.consultation : depositAmount
+  const isPatient = isAuthenticated && user?.role === 'patient'
+  const showSlots = isAesthetic ? !!selectedClinic : true
+
   const handleBookingTypeSelect = (type) => {
+    if (isAuthenticated && !isPatient) {
+      toast.error('Please sign in with a patient account to book')
+      return
+    }
     setBookingType(type)
-    if (isAuthenticated) {
+    if (isPatient) {
       setStep(3) // Skip to deposit
     } else {
       setStep(2) // Go to quick register
     }
   }
-  
+
   const handleQuickRegister = () => {
-    if (!quickRegForm.name || !quickRegForm.email || !quickRegForm.phone || !quickRegForm.dateOfBirth) {
+    const name = quickRegForm.name.trim()
+    const email = quickRegForm.email.trim()
+    if (!name || !email || !quickRegForm.phone.trim() || !quickRegForm.dateOfBirth) {
       toast.error('Please fill in all fields')
       return
     }
-    
-    const result = register(quickRegForm)
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error('Please enter a valid email address')
+      return
+    }
+    if (new Date(`${quickRegForm.dateOfBirth}T00:00:00`) >= new Date()) {
+      toast.error('Date of birth must be in the past')
+      return
+    }
+
+    const result = register({ ...quickRegForm, name, email, phone: quickRegForm.phone.trim() })
     if (result.success) {
       toast.success('Account created!')
       setStep(3)
     } else {
-      toast.error('Registration failed')
+      toast.error(result.error || 'Registration failed')
     }
   }
-  
+
+  // Paying is what books the slot: the appointment exists as soon as the money is taken.
   const handleDepositPayment = () => {
-    setDepositPaid(true)
-    toast.success('Deposit paid successfully!')
-    setStep(4)
-  }
-  
-  const handleFinalBooking = () => {
-    const clinic = clinics.find(c => c.id === selectedClinic)
-    
+    const errors = validateCard({ ...card, cardName: user?.name || 'Patient' })
+    setCardErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      toast.error('Please check your card details')
+      return
+    }
+
+    const clinic = isAesthetic ? clinics.find(c => c.id === selectedClinic) : null
+    const isConsult = bookingType === 'consult'
     const appointment = createAppointment({
       patientId: user?.id,
       doctorId: doctors[0]?.id,
       treatmentId: treatment.id,
-      type: bookingType === 'consult' ? 'consultation' : 'treatment',
+      type: isConsult ? 'consultation' : 'treatment',
       datetime: selectedSlot,
-      duration: bookingType === 'consult' ? 30 : 45,
-      location: bookingType === 'consult' ? 'Virtual' : clinic?.name,
-      clinicAddress: clinic ? { street: clinic.address } : null,
-      area: selectedArea,
-      depositPaid: depositAmount,
-      notes: `Quick booking - ${bookingType === 'consult' ? 'Consultation first' : 'Direct treatment'}`
+      duration: isConsult ? 30 : 45,
+      location: isConsult ? 'Virtual' : clinic?.name,
+      clinicAddress: !isConsult && clinic ? { street: clinic.address } : null,
+      area: selectedArea || null,
+      depositPaid: amountDue,
+      paymentStatus: isConsult ? 'paid' : 'deposit',
+      // The clinic slot is confirmed once the deposit is in; a consultation awaits the doctor
+      status: isConsult ? 'pending' : 'scheduled',
+      notes: `Quick booking - ${isConsult ? 'Consultation first' : 'Direct treatment'}`
     })
-    
-    toast.success('Booking confirmed!')
-    
+    setBookedAppointmentId(appointment.id)
+    toast.success(isConsult ? 'Consultation fee paid!' : 'Deposit paid successfully!')
+    setStep(4)
+  }
+
+  const handleFinalBooking = () => {
     if (bookingType === 'consult') {
-      navigate(`/consultation/waiting/${appointment.id}`)
+      navigate(`/consultation/waiting/${bookedAppointmentId}`)
     } else {
-      navigate(`/treatment-day/${appointment.id}`)
+      navigate(`/treatment-day/${bookedAppointmentId}`)
     }
   }
   
@@ -165,12 +193,15 @@ const QuickBook = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Treatment Area */}
+              {isAesthetic && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Treatment Area</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {treatmentAreas.map(area => (
                     <button
                       key={area}
+                      type="button"
+                      aria-pressed={selectedArea === area}
                       onClick={() => setSelectedArea(area)}
                       className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
                         selectedArea === area
@@ -183,15 +214,18 @@ const QuickBook = () => {
                   ))}
                 </div>
               </div>
+              )}
 
               {/* Clinic Selection */}
-              {selectedArea && (
+              {isAesthetic && selectedArea && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Select Clinic</label>
                   <div className="space-y-3">
                     {clinics.map(clinic => (
                       <button
                         key={clinic.id}
+                        type="button"
+                        aria-pressed={selectedClinic === clinic.id}
                         onClick={() => setSelectedClinic(clinic.id)}
                         className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
                           selectedClinic === clinic.id
@@ -206,7 +240,11 @@ const QuickBook = () => {
                               <MapPin className="w-3 h-3 mr-1" />
                               {clinic.address} • {clinic.distance}
                             </p>
-                            <p className="text-xs text-accent-600 mt-1">Next available: {new Date(clinic.nextSlot).toLocaleString()}</p>
+                            {clinic.nextSlot && (
+                              <p className="text-xs text-accent-600 mt-1">
+                                Next available: {new Date(clinic.nextSlot).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </button>
@@ -216,13 +254,15 @@ const QuickBook = () => {
               )}
 
               {/* Slot Selection */}
-              {selectedClinic && (
+              {showSlots && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Select Appointment Slot</label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-64 overflow-y-auto">
                     {availableSlots.map(slot => (
                       <button
                         key={slot.datetime}
+                        type="button"
+                        aria-pressed={selectedSlot === slot.datetime}
                         onClick={() => setSelectedSlot(slot.datetime)}
                         className={`p-3 rounded-lg border text-sm ${
                           selectedSlot === slot.datetime
@@ -244,7 +284,9 @@ const QuickBook = () => {
               <CardContent className="p-6">
                 <h3 className="font-semibold mb-4">2. Choose Booking Type</h3>
                 <div className="grid md:grid-cols-2 gap-4">
+                  {isAesthetic && (
                   <button
+                    type="button"
                     onClick={() => handleBookingTypeSelect('now')}
                     className="p-6 rounded-lg bg-white border-2 border-primary-600 hover:shadow-lg transition-all text-left group"
                   >
@@ -254,8 +296,10 @@ const QuickBook = () => {
                     <div className="text-2xl font-bold text-primary-600">€{treatment.price.treatment}</div>
                     <p className="text-xs text-gray-500 mt-1">Deposit: €{depositAmount}</p>
                   </button>
+                  )}
 
                   <button
+                    type="button"
                     onClick={() => handleBookingTypeSelect('consult')}
                     className="p-6 rounded-lg bg-white border-2 border-gray-200 hover:border-primary-400 hover:shadow-lg transition-all text-left group"
                   >
@@ -314,7 +358,7 @@ const QuickBook = () => {
                 Continue to Deposit <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <p className="text-xs text-gray-500 text-center">
-                Already have an account? <button onClick={() => navigate('/login')} className="text-primary-600 hover:underline">Sign in</button>
+                Already have an account? <button type="button" onClick={() => navigate('/login', { state: { from: location } })} className="text-primary-600 hover:underline">Sign in</button>
               </p>
             </CardContent>
           </Card>
@@ -327,46 +371,69 @@ const QuickBook = () => {
           <Card>
             <CardHeader>
               <CardTitle>Secure Your Booking</CardTitle>
-              <p className="text-sm text-gray-600">30% deposit required • Fully refundable</p>
+              <p className="text-sm text-gray-600">
+                {bookingType === 'consult' ? 'Consultation fee • Fully refundable' : '30% deposit required • Fully refundable'}
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="bg-gray-50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-600">Treatment</span>
-                  <span className="font-semibold">€{treatment.price.treatment}</span>
-                </div>
-                <div className="flex items-center justify-between text-lg font-bold border-t pt-2">
-                  <span className="text-accent-600">Deposit (30%)</span>
-                  <span className="text-accent-600">€{depositAmount}</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-2">Remaining €{treatment.price.treatment - depositAmount} due on treatment day</p>
+                {bookingType === 'consult' ? (
+                  <div className="flex items-center justify-between text-lg font-bold">
+                    <span className="text-accent-600">Video consultation</span>
+                    <span className="text-accent-600">€{amountDue}</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-gray-600">Treatment</span>
+                      <span className="font-semibold">€{treatment.price.treatment}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-lg font-bold border-t pt-2">
+                      <span className="text-accent-600">Deposit (30%)</span>
+                      <span className="text-accent-600">€{depositAmount}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Remaining €{treatment.price.treatment - depositAmount} due on treatment day</p>
+                  </>
+                )}
               </div>
 
-              {!depositPaid ? (
-                <div className="space-y-4">
-                  <Input label="Card Number" placeholder="4242 4242 4242 4242" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input label="Expiry" placeholder="MM/YY" />
-                    <Input label="CVC" placeholder="123" />
-                  </div>
-                  <Button className="w-full bg-accent-600 hover:bg-accent-700" onClick={handleDepositPayment}>
-                    <CreditCard className="w-4 h-4 mr-2" />
-                    Pay €{depositAmount} Deposit
-                  </Button>
-                  <p className="text-xs text-gray-500 text-center">
-                    🔒 Secure payment powered by Stripe
-                  </p>
+              <div className="space-y-4">
+                <Input
+                  label="Card Number"
+                  placeholder="4242 4242 4242 4242"
+                  inputMode="numeric"
+                  autoComplete="cc-number"
+                  value={card.cardNumber}
+                  onChange={(e) => setCard({ ...card, cardNumber: e.target.value })}
+                  error={cardErrors.cardNumber}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Expiry"
+                    placeholder="MM/YY"
+                    autoComplete="cc-exp"
+                    value={card.expiryDate}
+                    onChange={(e) => setCard({ ...card, expiryDate: e.target.value })}
+                    error={cardErrors.expiryDate}
+                  />
+                  <Input
+                    label="CVC"
+                    placeholder="123"
+                    inputMode="numeric"
+                    autoComplete="cc-csc"
+                    value={card.cvv}
+                    onChange={(e) => setCard({ ...card, cvv: e.target.value })}
+                    error={cardErrors.cvv}
+                  />
                 </div>
-              ) : (
-                <div className="text-center py-6">
-                  <CheckCircle className="w-16 h-16 text-accent-600 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Deposit Paid!</h3>
-                  <p className="text-gray-600 mb-6">Your slot is secured</p>
-                  <Button className="w-full" onClick={() => setStep(4)}>
-                    Continue to Confirmation <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              )}
+                <Button className="w-full bg-accent-600 hover:bg-accent-700" onClick={handleDepositPayment}>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  {bookingType === 'consult' ? `Pay €${amountDue}` : `Pay €${depositAmount} Deposit`}
+                </Button>
+                <p className="text-xs text-gray-500 text-center">
+                  <span aria-hidden="true">🔒</span> Secure payment powered by Stripe
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -394,15 +461,21 @@ const QuickBook = () => {
                     <MapPin className="w-4 h-4 mr-3 mt-0.5 text-gray-400" />
                     <div>
                       <span className="text-gray-600">Location:</span>
-                      <p className="font-medium">{clinics.find(c => c.id === selectedClinic)?.name}</p>
-                      <p className="text-xs text-gray-500">{clinics.find(c => c.id === selectedClinic)?.address}</p>
+                      <p className="font-medium">{bookingType === 'consult' ? 'Video consultation' : clinics.find(c => c.id === selectedClinic)?.name}</p>
+                      {bookingType !== 'consult' && (
+                        <p className="text-xs text-gray-500">{clinics.find(c => c.id === selectedClinic)?.address}</p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-start">
                     <Euro className="w-4 h-4 mr-3 mt-0.5 text-gray-400" />
                     <div>
                       <span className="text-gray-600">Payment:</span>
-                      <p className="font-medium">€{depositAmount} paid • €{treatment.price.treatment - depositAmount} remaining</p>
+                      <p className="font-medium">
+                        {bookingType === 'consult'
+                          ? `€${amountDue} paid`
+                          : `€${depositAmount} paid • €${treatment.price.treatment - depositAmount} remaining`}
+                      </p>
                     </div>
                   </div>
                 </div>

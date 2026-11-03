@@ -8,6 +8,9 @@ import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Select from '../../components/ui/Select'
 import Badge from '../../components/ui/Badge'
+import NotFound from '../../components/NotFound'
+import { upcomingDateKeys, localDateTimeISO, formatDateKey } from '../../utils/dates'
+import { selectableProps } from '../../utils/a11y'
 
 const BookTreatment = () => {
   const { planId } = useParams()
@@ -16,7 +19,10 @@ const BookTreatment = () => {
   const { user } = useAuth()
   const toast = useToast()
   
-  const consultationApt = appointments.find(apt => apt.id === planId)
+  // Treatments are booked from the patient's own completed consultation
+  const consultationApt = appointments.find(apt =>
+    apt.id === planId && apt.patientId === user?.id && apt.type === 'consultation' && apt.status === 'completed'
+  )
   const treatment = getTreatmentById(consultationApt?.treatmentId)
   const doctors = getDoctors()
   const assignedDoctor = doctors.find(d => d.id === consultationApt?.doctorId)
@@ -34,7 +40,7 @@ const BookTreatment = () => {
       distance: '2.3 km',
       rating: 4.8,
       reviews: 245,
-      nextAvailable: '2025-10-30'
+      nextAvailable: upcomingDateKeys(1, 5)[0]
     },
     {
       id: 'clinic-002',
@@ -43,7 +49,7 @@ const BookTreatment = () => {
       distance: '3.1 km',
       rating: 4.9,
       reviews: 189,
-      nextAvailable: '2025-10-31'
+      nextAvailable: upcomingDateKeys(1, 6)[0]
     },
     {
       id: 'clinic-003',
@@ -52,15 +58,11 @@ const BookTreatment = () => {
       distance: '5.2 km',
       rating: 4.7,
       reviews: 312,
-      nextAvailable: '2025-11-01'
+      nextAvailable: upcomingDateKeys(1, 7)[0]
     }
   ]
 
-  const availableDates = Array.from({ length: 14 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() + i + 5)
-    return date.toISOString().split('T')[0]
-  })
+  const availableDates = upcomingDateKeys(14, 5)
 
   const timeSlots = [
     '09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'
@@ -73,14 +75,14 @@ const BookTreatment = () => {
     }
 
     const clinic = clinics.find(c => c.id === selectedClinic)
-    const datetime = new Date(`${selectedDate}T${selectedTime}:00Z`)
-    
+
     const appointment = createAppointment({
       patientId: user.id,
       doctorId: consultationApt.doctorId,
       treatmentId: consultationApt.treatmentId,
       type: 'treatment',
-      datetime: datetime.toISOString(),
+      consultationId: consultationApt.id,
+      datetime: localDateTimeISO(selectedDate, selectedTime),
       duration: 45,
       location: clinic.name,
       clinicAddress: { street: clinic.address },
@@ -98,11 +100,7 @@ const BookTreatment = () => {
   }
 
   if (!treatment) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Treatment not found</p>
-      </div>
-    )
+    return <NotFound title="Treatment plan not found" backTo="/dashboard" backLabel="Back to dashboard" />
   }
 
   return (
@@ -171,7 +169,7 @@ const BookTreatment = () => {
                         ? 'border-primary-600 bg-primary-50'
                         : 'border-gray-200 hover:border-primary-300'
                     }`}
-                    onClick={() => setSelectedClinic(clinic.id)}
+                    {...selectableProps(() => setSelectedClinic(clinic.id), selectedClinic === clinic.id)}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div>
@@ -192,7 +190,7 @@ const BookTreatment = () => {
                     <div className="flex items-center justify-between text-sm">
                       <Badge variant="default">{clinic.distance} away</Badge>
                       <span className="text-gray-600">
-                        Next available: {new Date(clinic.nextAvailable).toLocaleDateString('en-GB')}
+                        Next available: {formatDateKey(clinic.nextAvailable)}
                       </span>
                     </div>
                   </div>
@@ -217,7 +215,7 @@ const BookTreatment = () => {
                     <option value="">Select a date...</option>
                     {availableDates.map(date => (
                       <option key={date} value={date}>
-                        {new Date(date).toLocaleDateString('en-GB', {
+                        {formatDateKey(date, {
                           weekday: 'long',
                           day: 'numeric',
                           month: 'long'
@@ -235,6 +233,8 @@ const BookTreatment = () => {
                         {timeSlots.map(time => (
                           <button
                             key={time}
+                            type="button"
+                            aria-pressed={selectedTime === time}
                             onClick={() => setSelectedTime(time)}
                             className={`p-2 text-sm rounded-lg border-2 transition-all ${
                               selectedTime === time
@@ -323,7 +323,7 @@ const BookTreatment = () => {
                     <div className="flex items-center">
                       <Calendar className="w-4 h-4 mr-2 text-primary-600" />
                       <span className="font-semibold">
-                        {new Date(selectedDate).toLocaleDateString('en-GB', {
+                        {formatDateKey(selectedDate, {
                           day: 'numeric',
                           month: 'long'
                         })}
