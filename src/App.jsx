@@ -6,6 +6,7 @@ import { ToastProvider } from './components/ui/Toast'
 import ScrollToTop from './components/ScrollToTop'
 import Header from './components/Layout/Header'
 import Footer from './components/Layout/Footer'
+import { PageSkeleton } from './components/ui/Page'
 
 // Public Pages
 import Landing from './pages/LandingNew'
@@ -64,11 +65,7 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   if (!user) {
@@ -87,7 +84,7 @@ const AppContent = () => {
     <div className="flex flex-col min-h-screen">
       <ScrollToTop />
       <Header />
-      <main className="flex-1">
+      <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
