@@ -1,38 +1,32 @@
 import React from 'react'
 import { cn } from '../../utils/cn'
+import { Field, controlClass, useFieldId, describedBy } from './Field'
 
-const Input = React.forwardRef(({ 
-  className, 
+const Input = React.forwardRef(({
+  className,
   type = 'text',
   label,
+  hint,
   error,
-  ...props 
+  id,
+  ...props
 }, ref) => {
+  const fieldId = useFieldId(id)
   return (
-    <div className="w-full">
-      {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label}
-        </label>
-      )}
+    <Field id={fieldId} label={label} hint={hint} error={error} required={props.required}>
       <input
+        id={fieldId}
         type={type}
-        className={cn(
-          'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white text-gray-900 placeholder:text-gray-500',
-          error && 'border-red-500 focus:ring-red-500',
-          className
-        )}
+        className={cn(controlClass(error), 'h-11', className)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(fieldId, hint, error)}
         ref={ref}
         {...props}
       />
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
-    </div>
+    </Field>
   )
 })
 
 Input.displayName = 'Input'
 
 export default Input
-

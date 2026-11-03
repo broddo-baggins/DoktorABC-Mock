@@ -1,36 +1,30 @@
 import React from 'react'
 import { cn } from '../../utils/cn'
+import { Field, controlClass, useFieldId, describedBy } from './Field'
 
-const Textarea = React.forwardRef(({ 
-  className, 
+const Textarea = React.forwardRef(({
+  className,
   label,
+  hint,
   error,
-  ...props 
+  id,
+  ...props
 }, ref) => {
+  const fieldId = useFieldId(id)
   return (
-    <div className="w-full">
-      {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label}
-        </label>
-      )}
+    <Field id={fieldId} label={label} hint={hint} error={error} required={props.required}>
       <textarea
-        className={cn(
-          'w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-vertical bg-white text-gray-900 placeholder:text-gray-500',
-          error && 'border-red-500 focus:ring-red-500',
-          className
-        )}
+        id={fieldId}
+        className={cn(controlClass(error), 'py-2.5 min-h-[112px] resize-y leading-relaxed', className)}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy(fieldId, hint, error)}
         ref={ref}
         {...props}
       />
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
-    </div>
+    </Field>
   )
 })
 
 Textarea.displayName = 'Textarea'
 
 export default Textarea
-
