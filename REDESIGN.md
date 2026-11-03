@@ -11,7 +11,7 @@ Branch `redesign/2026-11`. Every route of the mock (13 public, 12 patient, 15 st
 - **Staff portals dressed as the shop.** Pharmacists and doctors saw the marketing header and the full marketing footer, stat cards with a different coloured icon each, and stacks of outlined blue buttons.
 - **Bugs that looked like design.** "Patient #nt-001" from a string slice, "Ready to ship" hardcoded to 0, a CS reply that never appeared in the open thread, BookConsultation crashing on doctor choice, dead offer buttons.
 - **States missing.** Not-found rendered grey text on an empty page; empty lists said "No data"; loading was a spinner.
-- **Measured contrast (1440 px, rendered pixels):** 109 failing text runs on 24 of 43 routes, lowest 1.38:1.
+- **Measured contrast (rendered pixels):** text below 4.5:1 (3:1 large) on all 43 routes: 185 failing runs at 1440 and 220 at 390, lowest 1.38:1. The footer alone fails on every page ("Join Our Network" 1.6:1, the demo notice 2.37:1).
 
 ## Decisions
 
@@ -36,8 +36,17 @@ Branch `redesign/2026-11`. Every route of the mock (13 public, 12 patient, 15 st
 
 ## Results (Nov 3, 2026)
 
-- **Screens:** 45 route states captured after at 1440, 768 and 390 (135 shots, none blank), plus `/book-consultation` with a chosen treatment. 45 side-by-side compare sheets.
+- **Screens:** 46 route states, including `/book-consultation` with a chosen treatment, captured after the final commit at 1440, 768 and 390 (138 shots, none blank). 45 side-by-side compare sheets.
 - **Overflow:** no horizontal overflow on any route at 390, 768 or 1440, after fixing the video consultation stage at 390.
-- **Contrast, from rendered pixels:** a first pass found thin "/" and "," separators in 12 px mono below 4.5:1, and disabled buttons at 2.2:1. Mono labels moved to `--ink-2`, and disabled buttons became ink-3 on sunk (4.96:1). The measurer's glyph sampling was then corrected for thin punctuation. With the corrected method the patient dashboards measure a minimum of 5.74:1 with 0 failures. The full corrected rerun on every route, and the matching re-baseline of the old site, were still running when this was written. The old site's first-pass figure (109 failures on 24 of 43 routes, minimum 1.38:1) used the earlier sampling.
+- **Contrast, from rendered pixels.** Every visible text run on all 43 routes was measured at 1440 and 390, on both this branch and a clean checkout of the base commit (`e257ce5`), using the same method. The method: crop each line box from a DPR 2 screenshot, take the dominant colour as the background and the 99.5th-percentile contrasting pixel (at least 3 px) as the glyph, and skip line boxes that a `line-clamp`, an overflow ancestor or a closed `<details>` keeps from painting.
+
+  | | Width | Text runs | Below 4.5:1 (3:1 large) | Routes failing | Lowest |
+  |---|---|---|---|---|---|
+  | Before | 1440 | 2,956 | 185 | 43 of 43 | 1.38:1 |
+  | Before | 390 | 3,041 | 220 | 43 of 43 | 1.38:1 |
+  | After | 1440 | 3,770 | 0 | 0 of 43 | 4.96:1 |
+  | After | 390 | 3,427 | 0 | 0 of 43 | 4.96:1 |
+
+  The lowest result after the redesign is the disabled button (ink-3 on sunk). Getting there took two fixes in an earlier pass: thin "/" and "," separators in 12 px mono, now `--ink-2`, and disabled buttons at 2.2:1. No token changed in the final pass. The three states that need an interaction (login error, empty catalogue search, booking with a chosen treatment) are in the screenshots but not in the contrast count. An earlier first-pass baseline (109 failures on 24 routes) missed the footer and is superseded by the table.
 - **Build and tests:** `npm run build` passes; all 5 test suites pass. The repo has no lint script.
 
