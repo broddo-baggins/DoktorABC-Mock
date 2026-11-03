@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { Search, X, ArrowRight } from 'lucide-react'
 import { useAppState } from '../contexts/AppStateContext'
-import { Card, CardContent } from '../components/ui/Card'
-import Input from '../components/ui/Input'
 import Select from '../components/ui/Select'
 import Badge from '../components/ui/Badge'
+import Button from '../components/ui/Button'
+import { Page, PageHeader, EmptyState } from '../components/ui/Page'
+import TreatmentGlyph, { CATEGORY_LABELS } from '../components/brand/TreatmentGlyph'
+import { cn } from '../utils/cn'
 
 const Categories = () => {
   const navigate = useNavigate()
@@ -14,15 +16,18 @@ const Categories = () => {
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   const categories = [
-    { value: 'all', label: 'All Treatments' },
-    { value: 'aesthetic', label: 'Aesthetic' },
-    { value: 'mens-health', label: "Men's Health" },
-    { value: 'womens-health', label: "Women's Health" },
-    { value: 'sexual-health', label: 'Sexual Health' },
-    { value: 'travel-health', label: 'Travel Health' },
-    { value: 'chronic', label: 'Chronic Conditions' },
+    { value: 'all', label: 'All treatments' },
+    { value: 'aesthetic', label: 'Aesthetics' },
+    { value: 'mens-health', label: "Men's health" },
+    { value: 'womens-health', label: "Women's health" },
+    { value: 'sexual-health', label: 'Sexual health' },
+    { value: 'travel-health', label: 'Travel health' },
+    { value: 'chronic', label: 'Long-term conditions' },
     { value: 'wellbeing', label: 'Wellbeing' }
   ]
+
+  const countFor = (value) =>
+    value === 'all' ? treatments.length : treatments.filter(t => t.category === value).length
 
   const filteredTreatments = treatments.filter(treatment => {
     const matchesSearch = treatment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -31,104 +36,147 @@ const Categories = () => {
     return matchesSearch && matchesCategory
   })
 
+  const clearFilters = () => {
+    setSearchTerm('')
+    setSelectedCategory('all')
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Browse Treatments</h1>
-        <p className="text-gray-600">
-          Find the right treatment for your health needs from our extensive catalog
-        </p>
-      </div>
+    <Page>
+      <PageHeader
+        title="Treatments"
+        description="Every treatment starts with a short medical questionnaire. A GMC-registered doctor reviews it before anything is prescribed."
+      />
 
       {/* Filters */}
-      <div className="mb-8 grid md:grid-cols-2 gap-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search treatments..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      <div className="flex flex-col gap-4 mb-8">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,420px)_1fr] items-end">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="treatment-search" className="text-sm font-medium text-[var(--ink)]">Search</label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 size-[18px] text-[var(--ink-3)]" aria-hidden="true" />
+              <input
+                id="treatment-search"
+                type="search"
+                placeholder="Botox, hair loss, blood pressure"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full h-11 pl-10 pr-10 rounded-lg border border-[var(--line-strong)] hover:border-[var(--ink-3)] bg-[var(--surface)] text-[0.9375rem] text-[var(--ink)] focus:outline-none focus:border-[var(--pine)] focus:shadow-[0_0_0_3px_var(--pine-tint)] [&::-webkit-search-cancel-button]:hidden"
+              />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  aria-label="Clear search"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 grid place-items-center size-9 rounded-md text-[var(--ink-3)] hover:text-[var(--ink)] hover:bg-[var(--sunk)]"
+                >
+                  <X className="size-4" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="md:hidden">
+            <Select
+              label="Category"
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+            >
+              {categories.map(cat => (
+                <option key={cat.value} value={cat.value}>{cat.label} ({countFor(cat.value)})</option>
+              ))}
+            </Select>
+          </div>
         </div>
-        <Select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-        >
-          {categories.map(cat => (
-            <option key={cat.value} value={cat.value}>{cat.label}</option>
-          ))}
-        </Select>
+
+        <div className="hidden md:flex flex-wrap gap-2" role="group" aria-label="Filter by category">
+          {categories.map(cat => {
+            const active = selectedCategory === cat.value
+            return (
+              <button
+                key={cat.value}
+                onClick={() => setSelectedCategory(cat.value)}
+                aria-pressed={active}
+                className={cn(
+                  'inline-flex items-center gap-2 h-9 px-3 rounded-lg border text-sm transition-colors',
+                  active
+                    ? 'bg-[var(--ink)] border-[var(--ink)] text-[var(--ink-on-dark)]'
+                    : 'bg-[var(--surface)] border-[var(--line)] text-[var(--ink-2)] hover:border-[var(--line-strong)] hover:text-[var(--ink)]'
+                )}
+              >
+                {cat.label}
+                <span className={cn('figure text-xs', active ? 'text-[var(--ink-on-dark-2)]' : 'text-[var(--ink-3)]')}>{countFor(cat.value)}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* Results */}
-      <div className="mb-4">
-        <p className="text-gray-600">
-          Showing {filteredTreatments.length} treatment{filteredTreatments.length !== 1 ? 's' : ''}
-        </p>
-      </div>
+      <p className="text-sm text-[var(--ink-3)] mb-3" aria-live="polite">
+        {filteredTreatments.length} treatment{filteredTreatments.length !== 1 ? 's' : ''}
+        {selectedCategory !== 'all' && ` in ${categories.find(c => c.value === selectedCategory)?.label.toLowerCase()}`}
+        {searchTerm && ` matching "${searchTerm}"`}
+      </p>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredTreatments.map(treatment => (
-          <Card
-            key={treatment.id}
-            className="hover:shadow-lg transition-all duration-200"
-          >
-            <div 
-              className="h-40 bg-gradient-to-br from-primary-100 to-primary-200 flex items-center justify-center cursor-pointer"
-              onClick={() => navigate(`/treatment/${treatment.id}`)}
+      {filteredTreatments.length > 0 && (
+        <ul className="bg-[var(--surface)] border border-[var(--line)] rounded-xl divide-y divide-[var(--line)] overflow-hidden">
+          {filteredTreatments.map(treatment => (
+            <li
+              key={treatment.id}
+              className="group relative grid gap-x-5 gap-y-3 p-4 md:p-5 grid-cols-[auto_1fr] lg:grid-cols-[auto_minmax(0,1fr)_9rem_8rem_auto] items-start lg:items-center hover:bg-[var(--paper)] transition-colors"
             >
-              <span className="text-5xl">
-                {treatment.category === 'aesthetic' && '💉'}
-                {treatment.category === 'mens-health' && '👨'}
-                {treatment.category === 'womens-health' && '👩'}
-                {treatment.category === 'sexual-health' && '💊'}
-                {treatment.category === 'travel-health' && '✈️'}
-                {treatment.category === 'chronic' && '❤️'}
-                {treatment.category === 'wellbeing' && '🌟'}
-              </span>
-            </div>
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between mb-2">
-                <h3 className="font-semibold text-lg flex-1 cursor-pointer hover:text-primary-600" onClick={() => navigate(`/treatment/${treatment.id}`)}>
-                  {treatment.name}
-                </h3>
-                {treatment.popular && (
-                  <Badge variant="accent" className="ml-2">Popular</Badge>
-                )}
-              </div>
-              <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                {treatment.description}
-              </p>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <span className="text-sm text-gray-500">From </span>
-                  <span className="text-xl font-bold text-primary-600">
-                    €{treatment.price.treatment}
-                  </span>
+              <TreatmentGlyph treatment={treatment} size={48} />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <h2 className="text-[1.0625rem] font-semibold text-[var(--ink)]">
+                    <button
+                      onClick={() => navigate(`/treatment/${treatment.id}`)}
+                      className="text-left hover:text-[var(--pine)] after:absolute after:inset-0 after:content-[''] rounded-sm"
+                    >
+                      {treatment.name}
+                    </button>
+                  </h2>
+                  {treatment.popular && <Badge variant="primary">Popular</Badge>}
                 </div>
-                <Badge variant="default">{treatment.duration}</Badge>
+                <p className="label-mono mt-1">{CATEGORY_LABELS[treatment.category] ?? treatment.category}</p>
+                <p className="mt-2 text-sm text-[var(--ink-2)] line-clamp-2 max-w-[62ch]">{treatment.description}</p>
               </div>
-              <button
-                onClick={() => navigate(`/quick-book/${treatment.id}`)}
-                className="w-full bg-accent-600 hover:bg-accent-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-              >
-                Book Now →
-              </button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+
+              <div className="col-start-2 lg:col-start-auto flex lg:block items-baseline gap-4">
+                <p className="text-[0.8125rem] text-[var(--ink-3)]">From</p>
+                <p className="figure text-xl font-medium text-[var(--ink)]">€{treatment.price.treatment}</p>
+              </div>
+              <div className="hidden lg:block">
+                <p className="text-[0.8125rem] text-[var(--ink-3)]">Lasts</p>
+                <p className="text-sm text-[var(--ink)]">{treatment.duration}</p>
+              </div>
+              <div className="col-start-2 lg:col-start-auto relative z-10 flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => navigate(`/quick-book/${treatment.id}`)}
+                  aria-label={`Book ${treatment.name}`}
+                >
+                  Book
+                  <ArrowRight aria-hidden="true" />
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {filteredTreatments.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500 text-lg">No treatments found matching your criteria</p>
+        <div className="bg-[var(--surface)] border border-[var(--line)] rounded-xl">
+          <EmptyState
+            icon={Search}
+            title="No treatments match that search"
+            description="Try a broader word, or browse every category. Our doctors can also advise if you are not sure what you need."
+            action={<Button variant="secondary" onClick={clearFilters}>Clear search</Button>}
+          />
         </div>
       )}
-    </div>
+    </Page>
   )
 }
 
 export default Categories
-

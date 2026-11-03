@@ -5,8 +5,8 @@ import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
-import Badge from '../../components/ui/Badge'
+import { ErrorState } from '../../components/ui/Page'
+import { Stepper, Summary, FlowTitle } from './FlowParts'
 
 const Payment = () => {
   const { bookingId } = useParams()
@@ -43,7 +43,7 @@ const Payment = () => {
     // Mock payment processing
     setTimeout(() => {
       updateAppointment(bookingId, { status: 'scheduled', paymentStatus: 'paid' })
-      toast.success('Payment successful!')
+      toast.success('Payment received')
       setProcessing(false)
       
       if (appointment?.type === 'treatment') {
@@ -56,171 +56,138 @@ const Payment = () => {
 
   if (!appointment || !treatment) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Appointment not found</p>
-      </div>
+      <ErrorState
+        title="Appointment not found"
+        description="This payment link does not match a booking on your account. Your dashboard lists every appointment."
+        action={<Button onClick={() => navigate('/dashboard')}>Go to dashboard</Button>}
+      />
     )
   }
 
+  const set = (key) => (e) => setPaymentData({ ...paymentData, [key]: e.target.value })
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
-        <div className="flex items-center justify-center text-sm text-gray-600">
-          <Lock className="w-4 h-4 mr-2" />
-          <span>Your payment information is encrypted and secure</span>
-        </div>
-      </div>
+    <div className="container-page py-8 md:py-12">
+      {appointment.type === 'treatment' && <Stepper steps={['Clinic and time', 'Payment', 'Treatment day']} current={2} />}
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Payment Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <CreditCard className="w-5 h-5 mr-2" />
-                Payment Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Input
-                  label="Card Number"
-                  type="text"
-                  placeholder="1234 5678 9012 3456"
-                  value={paymentData.cardNumber}
-                  onChange={(e) => setPaymentData({ ...paymentData, cardNumber: e.target.value })}
-                  maxLength={19}
-                />
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-8 lg:gap-12 items-start">
+        <div className="min-w-0 max-w-[560px]">
+          <FlowTitle kicker={`PAYMENT / ${appointment.id.toUpperCase()}`} title="Payment" />
+          <p className="-mt-3 mb-8 flex items-center gap-2 text-sm text-[var(--ink-2)]">
+            <Lock className="size-4 text-[var(--pine)]" aria-hidden="true" />
+            Your card details are encrypted and never stored in full.
+          </p>
 
-                <Input
-                  label="Cardholder Name"
-                  type="text"
-                  placeholder="John Doe"
-                  value={paymentData.cardName}
-                  onChange={(e) => setPaymentData({ ...paymentData, cardName: e.target.value })}
-                />
+          <section aria-labelledby="card-title" className="flex flex-col gap-5">
+            <h2 id="card-title" className="flex items-center gap-2 text-lg font-semibold">
+              <CreditCard className="size-5 text-[var(--ink-3)]" aria-hidden="true" />
+              Card details
+            </h2>
+            <Input
+              label="Card number"
+              type="text"
+              inputMode="numeric"
+              autoComplete="cc-number"
+              placeholder="1234 5678 9012 3456"
+              value={paymentData.cardNumber}
+              onChange={set('cardNumber')}
+              maxLength={19}
+              className="figure"
+              required
+            />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    label="Expiry Date"
-                    type="text"
-                    placeholder="MM/YY"
-                    value={paymentData.expiryDate}
-                    onChange={(e) => setPaymentData({ ...paymentData, expiryDate: e.target.value })}
-                    maxLength={5}
-                  />
-                  <Input
-                    label="CVV"
-                    type="text"
-                    placeholder="123"
-                    value={paymentData.cvv}
-                    onChange={(e) => setPaymentData({ ...paymentData, cvv: e.target.value })}
-                    maxLength={3}
-                  />
-                </div>
+            <Input
+              label="Name on card"
+              type="text"
+              autoComplete="cc-name"
+              value={paymentData.cardName}
+              onChange={set('cardName')}
+              required
+            />
 
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-start">
-                    <Lock className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <div className="text-sm text-blue-800">
-                      <p className="font-semibold mb-1">Secure Payment</p>
-                      <p>Your payment is processed securely through our encrypted payment gateway. We never store your complete card details.</p>
-                    </div>
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Expiry date"
+                type="text"
+                autoComplete="cc-exp"
+                placeholder="MM/YY"
+                value={paymentData.expiryDate}
+                onChange={set('expiryDate')}
+                maxLength={5}
+                className="figure"
+                required
+              />
+              <Input
+                label="Security code"
+                type="text"
+                inputMode="numeric"
+                autoComplete="cc-csc"
+                placeholder="123"
+                value={paymentData.cvv}
+                onChange={set('cvv')}
+                maxLength={3}
+                className="figure"
+                hint="The 3 digits on the back"
+                required
+              />
+            </div>
 
-                <div className="flex items-start mt-4">
-                  <input type="checkbox" className="mt-1 mr-2" required />
-                  <label className="text-sm text-gray-600">
-                    I agree to the payment terms and conditions. I understand that this payment is for medical services provided by DoktorABC and its partners.
-                  </label>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            <div className="flex items-start gap-3 mt-1">
+              <input id="payment-terms" type="checkbox" className="mt-0.5 size-5 shrink-0 accent-[var(--pine)]" required />
+              <label htmlFor="payment-terms" className="text-sm text-[var(--ink-2)]">
+                I agree to the payment terms. This payment is for medical services provided by DoktorABC and its partners.
+              </label>
+            </div>
+          </section>
 
-          {/* Demo Card Info */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-700 font-medium mb-2">Demo Mode - Test Card Details:</p>
-            <p className="text-xs text-gray-600">Card: 4242 4242 4242 4242</p>
-            <p className="text-xs text-gray-600">Expiry: Any future date (MM/YY)</p>
-            <p className="text-xs text-gray-600">CVV: Any 3 digits</p>
-          </div>
+          <aside aria-label="Demo card details" className="mt-8 rounded-xl border border-dashed border-[var(--line-strong)] p-4">
+            <p className="text-sm font-medium text-[var(--ink)]">Demo mode: test card</p>
+            <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
+              <dt className="text-[var(--ink-3)]">Card</dt><dd className="figure text-[var(--ink)]">4242 4242 4242 4242</dd>
+              <dt className="text-[var(--ink-3)]">Expiry</dt><dd className="text-[var(--ink)]">Any future date (MM/YY)</dd>
+              <dt className="text-[var(--ink-3)]">Code</dt><dd className="text-[var(--ink)]">Any 3 digits</dd>
+            </dl>
+          </aside>
         </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-24">
-            <CardHeader>
-              <CardTitle>Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Treatment</p>
-                  <p className="font-semibold">{treatment.name}</p>
-                </div>
+        {/* Order summary */}
+        <aside className="lg:sticky lg:top-24" aria-label="Order summary">
+          <Summary
+            code="ORDER"
+            meta={appointment.id.toUpperCase()}
+            title={treatment.name}
+            rows={[
+              { label: 'Consultation fee', value: `€${treatment.price.consultation}`, mono: true },
+              { label: 'Treatment', value: `€${treatment.price.treatment}`, mono: true },
+              { label: 'Delivery', value: 'Free' },
+            ]}
+            total={{ label: 'Total', value: `€${calculateTotal()}` }}
+          >
+            <Button size="lg" className="w-full mt-5" onClick={handlePayment} disabled={processing}>
+              {processing ? (
+                'Processing payment'
+              ) : (
+                <>
+                  <Lock aria-hidden="true" />
+                  <span>Pay <span className="figure">€{calculateTotal()}</span></span>
+                </>
+              )}
+            </Button>
+            <p className="sr-only" aria-live="polite">{processing ? 'Processing payment' : ''}</p>
 
-                <div className="space-y-2 pt-4 border-t">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Consultation Fee</span>
-                    <span className="font-medium">€{treatment.price.consultation}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Treatment</span>
-                    <span className="font-medium">€{treatment.price.treatment}</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-accent-600">
-                    <span>Delivery</span>
-                    <span className="font-medium">FREE</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between items-center pt-4 border-t-2">
-                  <span className="text-lg font-bold">Total</span>
-                  <span className="text-2xl font-bold text-primary-600">
-                    €{calculateTotal()}
-                  </span>
-                </div>
-
-                <Button
-                  className="w-full"
-                  onClick={handlePayment}
-                  disabled={processing}
-                >
-                  {processing ? (
-                    <>Processing...</>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4 mr-2" />
-                      Pay €{calculateTotal()}
-                    </>
-                  )}
-                </Button>
-
-                <div className="space-y-2 text-xs text-gray-600 mt-4">
-                  <div className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2" />
-                    <span>Free next-day delivery</span>
-                  </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2" />
-                    <span>30-day money-back guarantee</span>
-                  </div>
-                  <div className="flex items-center">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2" />
-                    <span>24/7 customer support</span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+            <ul className="mt-5 space-y-2 text-[0.8125rem] text-[var(--ink-2)]">
+              {['Free next-day delivery', '30-day money-back guarantee', 'Customer support around the clock'].map(item => (
+                <li key={item} className="flex items-center gap-2">
+                  <CheckCircle className="size-4 text-[var(--pine)] shrink-0" aria-hidden="true" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </Summary>
+        </aside>
       </div>
     </div>
   )
 }
 
 export default Payment
-

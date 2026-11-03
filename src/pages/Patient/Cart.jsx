@@ -1,10 +1,12 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingCart, Trash2, Plus, Minus } from 'lucide-react'
+import { ShoppingBag, Trash2 } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
+import { Page, PageHeader, EmptyState, RxLabel } from '../../components/ui/Page'
+import TreatmentGlyph from '../../components/brand/TreatmentGlyph'
+import { Summary } from './FlowParts'
 
 const Cart = () => {
   const navigate = useNavigate()
@@ -17,12 +19,12 @@ const Cart = () => {
 
   const handleRemove = (itemId) => {
     removeFromCart(itemId)
-    toast.success('Item removed from cart')
+    toast.success('Removed from basket')
   }
 
   const handleCheckout = () => {
     if (cart.length === 0) {
-      toast.error('Your cart is empty')
+      toast.error('Your basket is empty')
       return
     }
     toast.success('Proceeding to checkout')
@@ -30,116 +32,87 @@ const Cart = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+    <Page>
+      <PageHeader
+        title="Basket"
+        description={cart.length > 0 ? `${cart.length} item${cart.length === 1 ? '' : 's'}. A doctor reviews every prescription medicine before it is dispensed.` : undefined}
+      />
 
       {cart.length === 0 ? (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">Your cart is empty</h3>
-            <p className="text-gray-600 mb-6">
-              Browse our treatments and add items to your cart
-            </p>
-            <Button onClick={() => navigate('/categories')}>
-              Browse Treatments
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="bg-[var(--surface)] border border-[var(--line)] rounded-xl">
+          <EmptyState
+            icon={ShoppingBag}
+            title="Your basket is empty"
+            description="Browse our treatments to add one. Prescription items are checked by a doctor before anything is sent."
+            action={<Button onClick={() => navigate('/categories')}>Browse treatments</Button>}
+          />
+        </div>
       ) : (
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
-          <div className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Cart Items ({cart.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {cart.map(item => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg"
-                    >
-                      <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-3xl">💊</span>
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{item.name}</h4>
-                        <p className="text-sm text-gray-600">{item.description}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-primary-600">
-                          €{item.price}
-                        </p>
-                      </div>
+        <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 lg:gap-12 items-start">
+          <section aria-label="Basket items">
+            <ul className="flex flex-col gap-3">
+              {cart.map((item, index) => (
+                <li key={item.id}>
+                  <RxLabel
+                    code={`ITEM ${String(index + 1).padStart(2, '0')}`}
+                    meta={item.treatmentId ? item.treatmentId.toUpperCase() : undefined}
+                    status={
                       <button
                         onClick={() => handleRemove(item.id)}
-                        className="text-red-600 hover:text-red-700 p-2"
+                        aria-label={`Remove ${item.name}`}
+                        className="-my-1.5 -mr-1.5 grid place-items-center size-9 rounded-md text-[var(--ink-3)] hover:text-[var(--danger-ink)] hover:bg-[var(--danger-tint)]"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="size-4" />
                       </button>
-                    </div>
-                  ))}
-                </div>
-
-                {cart.length > 0 && (
-                  <div className="mt-6 pt-6 border-t">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        clearCart()
-                        toast.success('Cart cleared')
-                      }}
-                    >
-                      Clear Cart
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Order Summary */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-24">
-              <CardHeader>
-                <CardTitle>Order Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold">€{subtotal}</span>
-                  </div>
-                  <div className="flex justify-between text-accent-600">
-                    <span>Delivery</span>
-                    <span className="font-semibold">FREE</span>
-                  </div>
-                  <div className="flex justify-between pt-3 border-t-2 text-lg">
-                    <span className="font-bold">Total</span>
-                    <span className="font-bold text-primary-600">€{total}</span>
-                  </div>
-
-                  <Button
-                    className="w-full mt-4"
-                    onClick={handleCheckout}
+                    }
                   >
-                    Proceed to Checkout
-                  </Button>
+                    <div className="flex items-start gap-4">
+                      <TreatmentGlyph treatment={item.treatmentId ? { id: item.treatmentId } : item} size={48} />
+                      <div className="flex-1 min-w-0">
+                        <h2 className="font-semibold text-[var(--ink)]">{item.name}</h2>
+                        {item.description && <p className="text-sm text-[var(--ink-3)] mt-0.5 line-clamp-2">{item.description}</p>}
+                      </div>
+                      <p className="figure text-lg text-[var(--ink)]">€{item.price}</p>
+                    </div>
+                  </RxLabel>
+                </li>
+              ))}
+            </ul>
 
-                  <p className="text-xs text-gray-500 text-center mt-4">
-                    Prescription required for all medications. Our doctors will review your order.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+            <Button
+              variant="ghost"
+              className="mt-4"
+              onClick={() => {
+                clearCart()
+                toast.success('Basket cleared')
+              }}
+            >
+              <Trash2 aria-hidden="true" />
+              Clear basket
+            </Button>
+          </section>
+
+          <aside className="lg:sticky lg:top-24" aria-label="Order summary">
+            <Summary
+              code="ORDER SUMMARY"
+              rows={[
+                { label: 'Subtotal', value: `€${subtotal}`, mono: true },
+                { label: 'Delivery', value: delivery === 0 ? 'Free' : `€${delivery}`, mono: delivery !== 0 },
+              ]}
+              total={{ label: 'Total', value: `€${total}` }}
+            >
+              <Button size="lg" className="w-full mt-5" onClick={handleCheckout}>
+                Checkout
+              </Button>
+              <p className="mt-3 text-[0.8125rem] text-[var(--ink-3)]">
+                Prescription medicines need a doctor's review. We will ask a few questions before payment.
+              </p>
+            </Summary>
+          </aside>
         </div>
       )}
-    </div>
+    </Page>
   )
 }
 
 export default Cart
-
