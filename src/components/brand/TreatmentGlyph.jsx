@@ -23,6 +23,7 @@ const BY_CATEGORY = {
   chronic: HeartPulse,
   wellbeing: CigaretteOff,
   'travel-health': Plane,
+  'sexual-health': ShieldPlus,
 }
 
 export const CATEGORY_LABELS = {

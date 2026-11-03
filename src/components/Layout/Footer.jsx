@@ -29,15 +29,15 @@ const Footer = () => {
   return (
     <footer className="mt-auto bg-[var(--ink)] text-[var(--ink-on-dark-2)]">
       <div className="container-page pt-14 pb-10">
-        <div className="grid grid-cols-2 md:grid-cols-12 gap-x-6 gap-y-10">
-          <div className="col-span-2 md:col-span-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-12 gap-x-6 gap-y-10">
+          <div className="col-span-2 sm:col-span-3 lg:col-span-4">
             <Logo inverted />
             <p className="mt-4 text-sm leading-relaxed max-w-[36ch]">
               Online doctors and a partner pharmacy. Discreet consultations, prescriptions reviewed by a GMC-registered doctor, treatment delivered to your door.
             </p>
           </div>
 
-          <div className="md:col-span-2">
+          <div className="lg:col-span-2">
             <h2 className={headClass}>Navigation</h2>
             <ul className="space-y-2.5">
               <li><Link to="/how-it-works" className={linkClass}>How it works</Link></li>
@@ -47,7 +47,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="md:col-span-2">
+          <div className="lg:col-span-2">
             <h2 className={headClass}>Information</h2>
             <ul className="space-y-2.5">
               <li><Link to="/terms" className={linkClass}>Terms and conditions</Link></li>
@@ -57,7 +57,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="md:col-span-2">
+          <div className="lg:col-span-2">
             <h2 className={headClass}>For professionals</h2>
             <ul className="space-y-2.5">
               <li><Link to="/login" state={{ role: 'doctor' }} className={linkClass}>Doctor portal</Link></li>
@@ -68,7 +68,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="col-span-2 md:col-span-2">
+          <div className="col-span-2 sm:col-span-1 lg:col-span-2">
             <h2 className={headClass}>Contact</h2>
             <ul className="space-y-3 text-sm">
               <li className="flex items-start gap-2">
@@ -85,7 +85,7 @@ const Footer = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="size-4 shrink-0" aria-hidden="true" />
-                <a href="tel:+442071234567" className={`${linkClass} figure`}>+44 20 7123 4567</a>
+                <a href="tel:+442071234567" className={`${linkClass} tabular`}>+44 20 7123 4567</a>
               </li>
             </ul>
           </div>
