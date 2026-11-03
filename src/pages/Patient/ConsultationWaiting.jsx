@@ -5,12 +5,8 @@ import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, SectionTitle, ErrorState } from '../../components/ui/Page'
+import { DOCTOR_PHOTOS } from '../../utils/doctorPhotos'
 
-const DOCTOR_PHOTOS = {
-  'doctor-001': '/images/doctor-emily.jpg',
-  'doctor-002': '/images/doctor-james.jpg',
-  'doctor-003': '/images/doctor-alexandra.jpg',
-}
 
 const CHECKLIST = [
   { title: 'Medical questionnaire completed', detail: 'Your doctor has read your answers before the call.', done: true },

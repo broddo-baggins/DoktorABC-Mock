@@ -6,7 +6,7 @@ import { useAppState } from '../../contexts/AppStateContext'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
-import { Panel, DataTable, FilterTabs, patientName, fmtDate, fmtTime, countBy, sentence } from '../portalParts'
+import { Panel, DataTable, FilterTabs, patientName, fmtDate, fmtTime, countBy, sentence } from '../../components/portal/PortalParts'
 
 const TreatmentMonitoring = () => {
   const navigate = useNavigate()

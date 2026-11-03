@@ -6,7 +6,7 @@ import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, Stat, StatGrid, EmptyState, BarList } from '../../components/ui/Page'
-import { Panel, PanelLink, DataTable, ShortcutList, RecordList, fmtNumber, fmtDate, todayLine, countBy, sentence } from '../portalParts'
+import { Panel, PanelLink, DataTable, ShortcutList, RecordList, fmtNumber, fmtDate, todayLine, countBy, sentence } from '../../components/portal/PortalParts'
 
 const PRIORITIES = ['urgent', 'high', 'medium', 'low']
 

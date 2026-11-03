@@ -11,16 +11,11 @@ import { useToast } from '../components/ui/Toast'
 import { useAppState } from '../contexts/AppStateContext'
 import TreatmentGlyph from '../components/brand/TreatmentGlyph'
 import { cn } from '../utils/cn'
+import { DOCTOR_PHOTOS } from '../utils/doctorPhotos'
 
 const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 const TIMES = ['09:00', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00']
 
-// Portraits vendored in public/images, matched to the doctor records by id.
-const DOCTOR_PHOTOS = {
-  'doctor-001': '/images/doctor-emily.jpg',
-  'doctor-002': '/images/doctor-james.jpg',
-  'doctor-003': '/images/doctor-alexandra.jpg',
-}
 
 // What each package includes, as the old pricing cards listed it.
 const PACKAGE_NOTES = {

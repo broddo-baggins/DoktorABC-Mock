@@ -4,7 +4,7 @@ import { Video, Mic, MicOff, VideoOff, PhoneOff } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
 import { Page, PageHeader } from '../../components/ui/Page'
-import { Panel, RecordList, patientName, fmtDateTime, sentence } from '../portalParts'
+import { Panel, RecordList, patientName, fmtDateTime, sentence } from '../../components/portal/PortalParts'
 import { cn } from '../../utils/cn'
 
 const ControlButton = ({ pressed, onClick, label, children }) => (

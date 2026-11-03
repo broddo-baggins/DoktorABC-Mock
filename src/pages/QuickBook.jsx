@@ -7,7 +7,7 @@ import { useToast } from '../components/ui/Toast'
 import Button from '../components/ui/Button'
 import Input from '../components/ui/Input'
 import { ErrorState } from '../components/ui/Page'
-import { Stepper, Summary, ChoiceButton, FlowTitle, formatSlot } from './Patient/FlowParts'
+import { Stepper, Summary, ChoiceButton, FlowTitle, formatSlot } from '../components/ui/Flow'
 
 const QuickBook = () => {
   const { id } = useParams()

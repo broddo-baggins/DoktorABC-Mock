@@ -6,14 +6,10 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { ErrorState } from '../../components/ui/Page'
-import { Stepper, Summary, ChoiceButton, FlowTitle } from './FlowParts'
+import { Stepper, Summary, ChoiceButton, FlowTitle } from '../../components/ui/Flow'
 import Badge from '../../components/ui/Badge'
+import { DOCTOR_PHOTOS } from '../../utils/doctorPhotos'
 
-const DOCTOR_PHOTOS = {
-  'doctor-001': '/images/doctor-emily.jpg',
-  'doctor-002': '/images/doctor-james.jpg',
-  'doctor-003': '/images/doctor-alexandra.jpg',
-}
 
 const BookTreatment = () => {
   const { planId } = useParams()

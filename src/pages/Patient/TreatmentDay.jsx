@@ -7,12 +7,8 @@ import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, ErrorState } from '../../components/ui/Page'
 import { cn } from '../../utils/cn'
+import { DOCTOR_PHOTOS } from '../../utils/doctorPhotos'
 
-const DOCTOR_PHOTOS = {
-  'doctor-001': '/images/doctor-emily.jpg',
-  'doctor-002': '/images/doctor-james.jpg',
-  'doctor-003': '/images/doctor-alexandra.jpg',
-}
 
 const TreatmentDay = () => {
   const { appointmentId } = useParams()

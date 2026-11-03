@@ -9,7 +9,7 @@ import Input from '../../components/ui/Input'
 import Textarea from '../../components/ui/Textarea'
 import Select from '../../components/ui/Select'
 import { ErrorState } from '../../components/ui/Page'
-import { Stepper, Summary, FlowTitle } from './FlowParts'
+import { Stepper, Summary, FlowTitle } from '../../components/ui/Flow'
 
 const Questionnaire = () => {
   const { treatmentId } = useParams()

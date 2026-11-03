@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useAppState } from '../../contexts/AppStateContext'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
-import { Panel, DataTable, FilterTabs, patientName, fmtDate, sentence } from '../portalParts'
+import { Panel, DataTable, FilterTabs, patientName, fmtDate, sentence } from '../../components/portal/PortalParts'
 
 const PrescriptionManagement = () => {
   const { user } = useAuth()

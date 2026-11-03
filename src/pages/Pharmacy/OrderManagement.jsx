@@ -6,7 +6,7 @@ import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
-import { Panel, DataTable, FilterTabs, ORDER_STAGE, patientName, fmtDate } from '../portalParts'
+import { Panel, DataTable, FilterTabs, ORDER_STAGE, patientName, fmtDate } from '../../components/portal/PortalParts'
 
 const OrderManagement = () => {
   const { user } = useAuth()

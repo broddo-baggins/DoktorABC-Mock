@@ -6,7 +6,7 @@ import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
-import { FilterTabs, fmtDateTime, patientName, sentence } from '../portalParts'
+import { FilterTabs, fmtDateTime, patientName, sentence } from '../../components/portal/PortalParts'
 
 const TicketManagement = () => {
   const { user } = useAuth()

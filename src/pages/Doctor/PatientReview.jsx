@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader } from '../../components/ui/Page'
-import { Panel, patientById, fmtDate, sentence } from '../portalParts'
+import { Panel, patientById, fmtDate, sentence } from '../../components/portal/PortalParts'
 
 const ageFrom = (dob) => {
   if (!dob) return null

@@ -9,7 +9,7 @@ import { Page, PageHeader, Stat, StatGrid, EmptyState, BarList } from '../../com
 import {
   Panel, PanelLink, DataTable, ShortcutList, RecordList,
   fmtDate, fmtTime, fmtNumber, todayLine, patientName, countBy, sentence,
-} from '../portalParts'
+} from '../../components/portal/PortalParts'
 
 const DoctorDashboard = () => {
   const navigate = useNavigate()

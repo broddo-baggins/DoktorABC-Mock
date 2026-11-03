@@ -2,7 +2,7 @@ import React from 'react'
 import { Truck, MapPin } from 'lucide-react'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
-import { Panel, todayLine } from '../portalParts'
+import { Panel, todayLine } from '../../components/portal/PortalParts'
 
 const DeliveryCoordination = () => {
   const mockDeliveries = [

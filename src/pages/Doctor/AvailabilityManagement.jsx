@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { Page, PageHeader } from '../../components/ui/Page'
-import { Panel } from '../portalParts'
+import { Panel } from '../../components/portal/PortalParts'
 import { cn } from '../../utils/cn'
 
 // Hours are stored as "HH:MM-HH:MM"; the form edits the two ends separately.

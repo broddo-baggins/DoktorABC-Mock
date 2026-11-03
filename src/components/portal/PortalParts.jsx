@@ -1,8 +1,8 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronRight } from 'lucide-react'
-import usersData from '../data/users.json'
-import { cn } from '../utils/cn'
+import usersData from '../../data/users.json'
+import { cn } from '../../utils/cn'
 
 // Pieces shared by the five staff portals (Doctor, Pharmacy, Support,
 // Customer Service). Public pages do not use these.

@@ -2,7 +2,7 @@ import React from 'react'
 import { Activity, Database, Server, Video, CheckCircle2 } from 'lucide-react'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader } from '../../components/ui/Page'
-import { Panel, DataTable } from '../portalParts'
+import { Panel, DataTable } from '../../components/portal/PortalParts'
 
 const SystemMonitoring = () => {
   const systems = [

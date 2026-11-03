@@ -7,7 +7,7 @@ import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
-import { fmtDate, fmtDateTime, patientName, sentence } from '../portalParts'
+import { fmtDate, fmtDateTime, patientName, sentence } from '../../components/portal/PortalParts'
 import { cn } from '../../utils/cn'
 
 const InquiryManagement = () => {

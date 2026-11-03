@@ -6,7 +6,7 @@ import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, Stat, StatGrid, EmptyState, BarList } from '../../components/ui/Page'
-import { Panel, PanelLink, DataTable, RecordList, fmtNumber, fmtDate, todayLine, countBy, sentence, patientName } from '../portalParts'
+import { Panel, PanelLink, DataTable, RecordList, fmtNumber, fmtDate, todayLine, countBy, sentence, patientName } from '../../components/portal/PortalParts'
 
 const CustomerServiceDashboard = () => {
   const navigate = useNavigate()

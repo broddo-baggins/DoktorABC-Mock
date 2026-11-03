@@ -6,7 +6,7 @@ import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
-import { Panel, DataTable, fmtDate } from '../portalParts'
+import { Panel, DataTable, fmtDate } from '../../components/portal/PortalParts'
 import { cn } from '../../utils/cn'
 
 // Inline cover bar: stock against the reorder tick, scaled to 5x the reorder level.

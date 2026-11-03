@@ -6,7 +6,7 @@ import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import { Page, PageHeader, EmptyState, RxLabel } from '../../components/ui/Page'
 import TreatmentGlyph from '../../components/brand/TreatmentGlyph'
-import { Summary } from './FlowParts'
+import { Summary } from '../../components/ui/Flow'
 
 const Cart = () => {
   const navigate = useNavigate()

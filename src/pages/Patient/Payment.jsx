@@ -6,7 +6,7 @@ import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 import { ErrorState } from '../../components/ui/Page'
-import { Stepper, Summary, FlowTitle } from './FlowParts'
+import { Stepper, Summary, FlowTitle } from '../../components/ui/Flow'
 
 const Payment = () => {
   const { bookingId } = useParams()

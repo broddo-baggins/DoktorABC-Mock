@@ -1,7 +1,7 @@
 import React from 'react'
 import { Check } from 'lucide-react'
 import { cn } from '../../utils/cn'
-import { RxLabel } from '../../components/ui/Page'
+import { RxLabel } from './Page'
 
 // Shared pieces for the booking flows (QuickBook, Questionnaire, BookTreatment,
 // BookConsultation, Payment). Candidate for src/components/ui once stable.
