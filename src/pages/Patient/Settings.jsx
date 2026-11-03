@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Ca
 import { User, MapPin, Lock } from 'lucide-react'
 
 const Settings = () => {
-  const { user } = useAuth()
+  const { user, updateProfile, changePassword } = useAuth()
   const toast = useToast()
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('personal')
@@ -20,10 +20,10 @@ const Settings = () => {
   })
 
   const [addressData, setAddressData] = useState({
-    street: '',
-    city: '',
-    postcode: '',
-    country: 'United Kingdom'
+    street: user?.address?.street || '',
+    city: user?.address?.city || '',
+    postcode: user?.address?.postcode || '',
+    country: user?.address?.country || 'Germany'
   })
 
   const [passwordData, setPasswordData] = useState({
@@ -34,17 +34,33 @@ const Settings = () => {
 
   const handlePersonalSave = async (e) => {
     e.preventDefault()
+    const name = personalData.name.trim()
+    const email = personalData.email.trim()
+    if (!name) {
+      toast.error('Name is required')
+      return
+    }
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      toast.error('Email is invalid')
+      return
+    }
     setLoading(true)
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500))
+    updateProfile({ ...personalData, name, email, phone: personalData.phone.trim() })
     toast.success('Personal details updated successfully!')
     setLoading(false)
   }
 
   const handleAddressSave = async (e) => {
     e.preventDefault()
+    if (!addressData.street.trim() || !addressData.city.trim() || !addressData.postcode.trim()) {
+      toast.error('Please fill in street, city and postcode')
+      return
+    }
     setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 500))
+    updateProfile({ address: { ...(user?.address || {}), ...addressData } })
     toast.success('Delivery address saved successfully!')
     setLoading(false)
   }
@@ -64,9 +80,14 @@ const Settings = () => {
 
     setLoading(true)
     await new Promise(resolve => setTimeout(resolve, 500))
+    const result = changePassword(passwordData.currentPassword, passwordData.newPassword)
+    setLoading(false)
+    if (!result.success) {
+      toast.error(result.error)
+      return
+    }
     toast.success('Password changed successfully!')
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' })
-    setLoading(false)
   }
 
   return (
@@ -80,6 +101,8 @@ const Settings = () => {
       <div className="mb-6 border-b border-gray-200">
         <nav className="flex space-x-8">
           <button
+            type="button"
+            aria-pressed={activeTab === 'personal'}
             onClick={() => setActiveTab('personal')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'personal'
@@ -91,6 +114,8 @@ const Settings = () => {
             Personal Details
           </button>
           <button
+            type="button"
+            aria-pressed={activeTab === 'address'}
             onClick={() => setActiveTab('address')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'address'
@@ -102,6 +127,8 @@ const Settings = () => {
             Delivery Address
           </button>
           <button
+            type="button"
+            aria-pressed={activeTab === 'password'}
             onClick={() => setActiveTab('password')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'password'

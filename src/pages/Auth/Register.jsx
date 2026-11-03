@@ -47,10 +47,21 @@ const Register = () => {
 
     if (!formData.dateOfBirth) {
       newErrors.dateOfBirth = 'Date of birth is required'
+    } else {
+      const dob = new Date(`${formData.dateOfBirth}T00:00:00`)
+      const adultCutoff = new Date()
+      adultCutoff.setFullYear(adultCutoff.getFullYear() - 18)
+      if (Number.isNaN(dob.getTime()) || dob > new Date()) {
+        newErrors.dateOfBirth = 'Date of birth must be in the past'
+      } else if (dob > adultCutoff) {
+        newErrors.dateOfBirth = 'You must be at least 18 years old'
+      }
     }
 
-    if (!formData.phone) {
+    if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required'
+    } else if (!/^\+?[0-9 ()-]{6,20}$/.test(formData.phone.trim())) {
+      newErrors.phone = 'Phone number is invalid'
     }
 
     if (!formData.agreeToTerms) {
@@ -72,11 +83,11 @@ const Register = () => {
 
     try {
       const userData = {
-        name: formData.name,
-        email: formData.email,
+        name: formData.name.trim(),
+        email: formData.email.trim(),
         password: formData.password,
         dateOfBirth: formData.dateOfBirth,
-        phone: formData.phone
+        phone: formData.phone.trim()
       }
 
       const result = register(userData)
@@ -85,6 +96,7 @@ const Register = () => {
         toast.success('Registration successful! Welcome to DoktorABC')
         navigate('/dashboard')
       } else {
+        if (result.error?.includes('email')) setErrors({ email: result.error })
         toast.error(result.error || 'Registration failed')
       }
     } catch (error) {
@@ -99,7 +111,7 @@ const Register = () => {
       <div className="w-full max-w-md animate-fade-in">
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">Create Your Account</CardTitle>
+            <CardTitle as="h1" className="text-center">Create Your Account</CardTitle>
             <p className="text-center text-gray-600 text-sm mt-2">
               Join over 600,000 patients using DoktorABC
             </p>
@@ -161,12 +173,14 @@ const Register = () => {
 
               <div className="flex items-start">
                 <input
+                  id="register-agree-terms"
                   type="checkbox"
                   checked={formData.agreeToTerms}
                   onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
+                  aria-invalid={errors.agreeToTerms ? true : undefined}
                   className="mt-1 mr-2"
                 />
-                <label className="text-sm text-gray-600">
+                <label htmlFor="register-agree-terms" className="text-sm text-gray-600">
                   I agree to the{' '}
                   <Link to="/terms" className="text-primary-600 hover:underline">
                     Terms and Conditions

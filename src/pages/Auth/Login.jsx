@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
@@ -9,14 +9,12 @@ import Select from '../../components/ui/Select'
 
 const Login = () => {
   const navigate = useNavigate()
+  const location = useLocation()
+  // Set by ProtectedRoute (the page the visitor tried to open) and by the footer portal links (a role).
+  const fromPath = location.state?.from?.pathname
+  const requestedRole = location.state?.role
   const { login } = useAuth()
   const toast = useToast()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
-  const [loading, setLoading] = useState(false)
-
   // Demo accounts for easy access
   const demoAccounts = [
     { label: 'Patient - Sarah Johnson', email: 'sarah.johnson@email.com', password: 'demo123' },
@@ -29,6 +27,23 @@ const Login = () => {
     { label: 'Customer Service - Rachel Thompson', email: 'cs.lead@doktorabc.com', password: 'demo123' }
   ]
 
+  const roleLabelPrefix = {
+    doctor: 'Doctor',
+    pharmacy: 'Pharmacy',
+    support: 'Support',
+    'customer-service': 'Customer Service',
+  }[requestedRole]
+  const preselectedIndex = roleLabelPrefix
+    ? demoAccounts.findIndex(a => a.label.startsWith(roleLabelPrefix))
+    : -1
+
+  const [formData, setFormData] = useState(() =>
+    preselectedIndex >= 0
+      ? { email: demoAccounts[preselectedIndex].email, password: demoAccounts[preselectedIndex].password }
+      : { email: '', password: '' }
+  )
+  const [loading, setLoading] = useState(false)
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -39,8 +54,12 @@ const Login = () => {
       if (result.success) {
         toast.success('Login successful!')
         
-        // Redirect based on role
+        // Back to the page that asked for a login, otherwise the role's dashboard
         const user = result.user
+        if (fromPath && fromPath !== '/login') {
+          navigate(fromPath + (location.state.from.search || ''), { replace: true })
+          return
+        }
         switch (user.role) {
           case 'patient':
             navigate('/dashboard')
@@ -82,7 +101,7 @@ const Login = () => {
       <div className="w-full max-w-md animate-fade-in">
         <Card>
           <CardHeader>
-            <CardTitle className="text-center">Sign In to DoktorABC</CardTitle>
+            <CardTitle as="h1" className="text-center">Sign In to DoktorABC</CardTitle>
             <p className="text-center text-gray-600 text-sm mt-2">
               Welcome back! Please sign in to continue
             </p>
@@ -133,7 +152,7 @@ const Login = () => {
                     const account = demoAccounts[e.target.value]
                     if (account) handleDemoLogin(account)
                   }}
-                  defaultValue=""
+                  defaultValue={preselectedIndex >= 0 ? String(preselectedIndex) : ''}
                 >
                   <option value="">Select a demo account...</option>
                   {demoAccounts.map((account, index) => (
