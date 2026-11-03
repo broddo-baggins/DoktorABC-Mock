@@ -63,7 +63,9 @@ const Header = () => {
   const menuRef = useRef(null)
 
   const portal = isAuthenticated ? PORTAL_NAV[user?.role] : null
-  const firstName = user?.name?.replace(/^Dr\.?\s+/, '').split(' ')[0]
+  // People show their first name; organisation accounts (a pharmacy) show their role.
+  const isPerson = user && ['patient', 'doctor', 'support', 'customer-service'].includes(user.role)
+  const firstName = isPerson ? user?.name?.replace(/^Dr\.?\s+/, '').split(' ')[0] : user && 'Pharmacy'
 
   // Close menus on navigation, outside click and Escape.
   useEffect(() => {

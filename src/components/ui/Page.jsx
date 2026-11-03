@@ -38,8 +38,8 @@ export const PageHeader = ({ title, description, kicker, back, actions, classNam
 // A figure with its label. Numbers are mono and tabular; icons are optional and quiet.
 export const Stat = ({ label, value, unit, note, icon: Icon, tone = 'default', className }) => (
   <div className={cn('bg-[var(--surface)] border border-[var(--line)] rounded-xl px-5 py-4 flex flex-col gap-3 min-w-0', className)}>
-    <div className="flex items-center justify-between gap-2">
-      <p className="text-sm font-medium text-[var(--ink-2)] truncate">{label}</p>
+    <div className="flex items-start justify-between gap-2">
+      <p className="text-sm font-medium leading-snug text-[var(--ink-2)]">{label}</p>
       {Icon && (
         <Icon
           aria-hidden="true"
