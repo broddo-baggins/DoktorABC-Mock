@@ -1,236 +1,258 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { CheckCircle, Camera, FileText, ArrowRight } from 'lucide-react'
+import { Check, Camera, ArrowRight, MapPin, Clock, Phone, LogIn } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, ErrorState } from '../../components/ui/Page'
+import { cn } from '../../utils/cn'
+
+const DOCTOR_PHOTOS = {
+  'doctor-001': '/images/doctor-emily.jpg',
+  'doctor-002': '/images/doctor-james.jpg',
+  'doctor-003': '/images/doctor-alexandra.jpg',
+}
 
 const TreatmentDay = () => {
   const { appointmentId } = useParams()
   const navigate = useNavigate()
-  const { appointments, getTreatmentById, updateAppointment } = useAppState()
+  const { appointments, getTreatmentById, updateAppointment, getDoctors } = useAppState()
   const toast = useToast()
-  
+
   const appointment = appointments.find(apt => apt.id === appointmentId)
   const treatment = getTreatmentById(appointment?.treatmentId)
-  
+  const doctor = getDoctors().find(d => d.id === appointment?.doctorId)
+
   const [checkedIn, setCheckedIn] = useState(false)
   const [beforePhotos, setBeforePhotos] = useState([])
   const [afterPhotos, setAfterPhotos] = useState([])
   const [treatmentComplete, setTreatmentComplete] = useState(false)
 
-  const timeline = [
-    { step: 'Check-In', completed: checkedIn, icon: CheckCircle },
-    { step: 'Identity Verification', completed: checkedIn, icon: CheckCircle },
-    { step: 'Before Photos', completed: beforePhotos.length > 0, icon: Camera },
-    { step: 'Treatment', completed: treatmentComplete, icon: FileText },
-    { step: 'After Photos', completed: afterPhotos.length > 0, icon: Camera },
-    { step: 'Aftercare Instructions', completed: treatmentComplete, icon: FileText }
-  ]
-
   const handleCheckIn = () => {
     setCheckedIn(true)
-    toast.success('Checked in successfully!')
+    toast.success('Checked in. The clinic knows you are here.')
   }
 
   const handleBeforePhotos = () => {
     setBeforePhotos(['before-1.jpg', 'before-2.jpg'])
-    toast.success('Before photos uploaded')
+    toast.success('Before photos saved to your record')
   }
 
   const handleTreatmentComplete = () => {
     setTreatmentComplete(true)
-    toast.success('Treatment completed!')
+    toast.success('Treatment complete')
   }
 
   const handleAfterPhotos = () => {
     setAfterPhotos(['after-1.jpg', 'after-2.jpg'])
-    toast.success('After photos uploaded')
+    toast.success('After photos saved to your record')
   }
 
   const handleComplete = () => {
     updateAppointment(appointmentId, { status: 'completed' })
-    toast.success('All set! Follow-up scheduled.')
+    toast.success('All set. Your follow-up is on your dashboard.')
     navigate(`/aftercare/${treatment?.id}`)
   }
 
   if (!appointment || !treatment) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <p className="text-center text-gray-500">Appointment not found</p>
-      </div>
+      <ErrorState
+        title="Appointment not found"
+        description="This treatment appointment may have been moved. Your dashboard lists everything that is booked."
+        action={<Button onClick={() => navigate('/dashboard')}>Back to dashboard</Button>}
+      />
     )
   }
 
-  return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Treatment Day</h1>
-        <p className="text-gray-600">{treatment.name}</p>
-        <Badge variant="success" className="mt-2">In Progress</Badge>
-      </div>
-
-      {/* Timeline */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Treatment Progress</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {timeline.map((item, idx) => (
-              <div
-                key={idx}
-                className={`flex items-center ${
-                  item.completed ? 'opacity-100' : 'opacity-50'
-                }`}
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mr-4 ${
-                    item.completed
-                      ? 'bg-accent-600 text-white'
-                      : 'bg-gray-200 text-gray-400'
-                  }`}
-                >
-                  {item.completed ? (
-                    <CheckCircle className="w-5 h-5" />
-                  ) : (
-                    <span className="font-bold">{idx + 1}</span>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className={`font-medium ${item.completed ? 'text-gray-900' : 'text-gray-500'}`}>
-                    {item.step}
-                  </p>
-                </div>
-                {item.completed && (
-                  <CheckCircle className="w-5 h-5 text-accent-600" />
-                )}
-              </div>
+  const timeline = [
+    {
+      step: 'Check in',
+      completed: checkedIn,
+      body: (
+        <>
+          <p>Let the clinic know you have arrived. Reception will confirm your appointment.</p>
+          <Button onClick={handleCheckIn} className="mt-4">
+            <LogIn aria-hidden="true" />
+            Check in now
+          </Button>
+        </>
+      ),
+    },
+    { step: 'Identity check', completed: checkedIn, detail: 'Done at reception when you check in.' },
+    {
+      step: 'Before photos',
+      completed: beforePhotos.length > 0,
+      body: (
+        <>
+          <p>Your practitioner takes photos for your private record, so results can be compared later.</p>
+          <Button onClick={handleBeforePhotos} className="mt-4">
+            <Camera aria-hidden="true" />
+            Take before photos
+          </Button>
+        </>
+      ),
+    },
+    {
+      step: 'Treatment',
+      completed: treatmentComplete,
+      body: (
+        <>
+          <p>A qualified practitioner gives your treatment. It usually takes 15 to 30 minutes.</p>
+          <ul className="mt-3 flex flex-col gap-1.5 text-sm">
+            {['Area cleansed and prepared', 'Numbing cream applied if needed', 'Injections given'].map(t => (
+              <li key={t} className="flex items-center gap-2">
+                <Check className="size-4 text-[var(--pine)]" aria-hidden="true" />
+                {t}
+              </li>
             ))}
+          </ul>
+          <Button onClick={handleTreatmentComplete} className="mt-4">
+            <Check aria-hidden="true" />
+            Mark complete
+          </Button>
+        </>
+      ),
+    },
+    {
+      step: 'After photos',
+      completed: afterPhotos.length > 0,
+      body: (
+        <>
+          <p>A second set of photos, taken the same way, so you can track your results over time.</p>
+          <Button onClick={handleAfterPhotos} className="mt-4">
+            <Camera aria-hidden="true" />
+            Take after photos
+          </Button>
+        </>
+      ),
+    },
+    {
+      step: 'Aftercare',
+      completed: treatmentComplete && afterPhotos.length > 0 && appointment.status === 'completed',
+      body: (
+        <>
+          <p>Your treatment is done. For the next 24 hours:</p>
+          <ul className="mt-3 grid sm:grid-cols-2 gap-x-6 gap-y-1.5 text-sm">
+            {[
+              'Do not touch the area for 4 hours',
+              'Sleep upright tonight',
+              'No exercise for 24 hours',
+              'No alcohol for 24 hours',
+              'Results show in 3 to 5 days',
+            ].map(t => (
+              <li key={t} className="flex items-start gap-2">
+                <Check className="size-4 mt-0.5 shrink-0 text-[var(--pine)]" aria-hidden="true" />
+                {t}
+              </li>
+            ))}
+          </ul>
+          <Button onClick={handleComplete} className="mt-5">
+            Full aftercare guide
+            <ArrowRight aria-hidden="true" />
+          </Button>
+        </>
+      ),
+    },
+  ]
+
+  // The current step is the first one not done; identity check rides on check-in.
+  const current = timeline.findIndex(t => !t.completed && t.body)
+  const doneCount = timeline.filter(t => t.completed).length
+
+  const when = new Date(appointment.datetime)
+
+  return (
+    <Page narrow>
+      <PageHeader
+        back={{ to: '/dashboard', label: 'Dashboard' }}
+        title="Treatment day"
+        description={treatment.name}
+      />
+
+      {/* Where and with whom */}
+      <section aria-label="Appointment" className="bg-[var(--surface)] border border-[var(--line)] rounded-xl overflow-hidden grid sm:grid-cols-[14rem_1fr]">
+        <img src="/images/clinic-room.jpg" alt="Treatment room at the partner clinic" className="w-full h-40 sm:h-full object-cover bg-[var(--sunk)]" />
+        <div className="px-5 py-5 flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="primary">{doneCount === timeline.length ? 'Complete' : 'In progress'}</Badge>
+            <span className="label-mono">{appointment.id.toUpperCase()}</span>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Action Cards */}
-      <div className="space-y-6">
-        {!checkedIn && (
-          <Card className="bg-primary-50 border-primary-200">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Step 1: Check-In</h3>
-              <p className="text-gray-700 mb-4">
-                Please check in using the app to let the clinic know you've arrived.
-              </p>
-              <Button onClick={handleCheckIn}>
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Check In Now
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {checkedIn && beforePhotos.length === 0 && (
-          <Card className="bg-blue-50 border-blue-200">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Step 2: Before Photos</h3>
-              <p className="text-gray-700 mb-4">
-                The practitioner will take before photos for your records.
-              </p>
-              <Button onClick={handleBeforePhotos}>
-                <Camera className="w-4 h-4 mr-2" />
-                Capture Before Photos
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {beforePhotos.length > 0 && !treatmentComplete && (
-          <Card className="bg-purple-50 border-purple-200">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Step 3: Treatment</h3>
-              <p className="text-gray-700 mb-4">
-                Your treatment is now being administered by a qualified practitioner. 
-                This typically takes 15-30 minutes.
-              </p>
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-accent-600 mr-2" />
-                  <span>Area cleansed and prepared</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-accent-600 mr-2" />
-                  <span>Numbing applied (if needed)</span>
-                </div>
-                <div className="flex items-center text-sm text-gray-700">
-                  <CheckCircle className="w-4 h-4 text-accent-600 mr-2" />
-                  <span>Precise injections administered</span>
-                </div>
-              </div>
-              <Button onClick={handleTreatmentComplete}>
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Mark Treatment Complete
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {treatmentComplete && afterPhotos.length === 0 && (
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Step 4: After Photos</h3>
-              <p className="text-gray-700 mb-4">
-                Let's capture after photos to track your results over time.
-              </p>
-              <Button onClick={handleAfterPhotos}>
-                <Camera className="w-4 h-4 mr-2" />
-                Capture After Photos
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {treatmentComplete && afterPhotos.length > 0 && (
-          <Card className="bg-accent-50 border-accent-200">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold mb-4">Treatment Complete!</h3>
-              <p className="text-gray-700 mb-4">
-                Your treatment is complete. Please review the aftercare instructions carefully.
-              </p>
-              <div className="bg-white rounded-lg p-4 mb-4">
-                <h4 className="font-semibold mb-2">Immediate Aftercare:</h4>
-                <ul className="space-y-1 text-sm text-gray-700">
-                  <li>• Avoid touching the treated area for 4 hours</li>
-                  <li>• Sleep upright tonight</li>
-                  <li>• No exercise for 24 hours</li>
-                  <li>• Avoid alcohol for 24 hours</li>
-                  <li>• Results visible in 3-5 days</li>
-                </ul>
-              </div>
-              <Button onClick={handleComplete} className="w-full">
-                <ArrowRight className="w-4 h-4 mr-2" />
-                Continue to Full Aftercare Guide
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Clinic Contact */}
-      <Card className="mt-8">
-        <CardContent className="p-6">
-          <h4 className="font-semibold mb-2">Need Help?</h4>
-          <p className="text-sm text-gray-600 mb-3">
-            If you have any concerns or questions during your visit, please speak with the clinic staff immediately.
+          <p className="flex items-start gap-2 text-[var(--ink)]">
+            <MapPin className="size-4 mt-1 shrink-0 text-[var(--ink-3)]" aria-hidden="true" />
+            {appointment.location}
           </p>
-          <p className="text-sm text-gray-600">
-            For urgent concerns after leaving: Call 24/7 support at +44 20 7123 4567
+          <p className="flex items-center gap-2 text-[var(--ink-2)] text-sm">
+            <Clock className="size-4 shrink-0 text-[var(--ink-3)]" aria-hidden="true" />
+            <span className="figure">
+              {when.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })},{' '}
+              {when.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} / {appointment.duration} min
+            </span>
           </p>
-        </CardContent>
-      </Card>
-    </div>
+          {doctor && (
+            <div className="flex items-center gap-3 pt-3 mt-auto border-t border-[var(--line)]">
+              {DOCTOR_PHOTOS[doctor.id] && (
+                <img src={DOCTOR_PHOTOS[doctor.id]} alt="" className="size-10 rounded-full object-cover object-top bg-[var(--sunk)]" />
+              )}
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-[var(--ink)]">{doctor.name}</p>
+                <p className="label-mono">{doctor.title}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Progress: the steps are the page */}
+      <section aria-labelledby="progress" className="mt-10">
+        <div className="flex items-baseline justify-between mb-4">
+          <h2 id="progress" className="text-lg font-semibold text-[var(--ink)]">Your visit</h2>
+          <p className="figure text-sm text-[var(--ink-3)]">{doneCount} of {timeline.length} done</p>
+        </div>
+        <ol className="bg-[var(--surface)] border border-[var(--line)] rounded-xl px-5 py-2">
+          {timeline.map((item, idx) => {
+            const isCurrent = idx === current
+            return (
+              <li key={item.step} className="relative flex gap-4 py-3.5" aria-current={isCurrent ? 'step' : undefined}>
+                <span className="relative flex flex-col items-center shrink-0" aria-hidden="true">
+                  <span
+                    className={cn(
+                      'grid place-items-center size-7 rounded-full figure text-xs',
+                      item.completed && 'bg-[var(--pine)] text-[var(--on-pine)]',
+                      isCurrent && 'border-2 border-[var(--pine)] text-[var(--pine)] bg-[var(--surface)]',
+                      !item.completed && !isCurrent && 'border border-[var(--line-strong)] text-[var(--ink-3)]'
+                    )}
+                  >
+                    {item.completed ? <Check className="size-4" /> : idx + 1}
+                  </span>
+                  {idx < timeline.length - 1 && <span className="absolute top-8 -bottom-4 w-px bg-[var(--line)]" />}
+                </span>
+                <div className="min-w-0 flex-1 pt-0.5">
+                  <p className={cn('font-medium', item.completed || isCurrent ? 'text-[var(--ink)]' : 'text-[var(--ink-3)]')}>
+                    {item.step}
+                    {item.completed && <span className="sr-only"> (done)</span>}
+                  </p>
+                  {item.detail && !isCurrent && <p className="text-sm text-[var(--ink-3)]">{item.detail}</p>}
+                  {isCurrent && item.body && <div className="mt-2 text-[0.9375rem] text-[var(--ink-2)] pb-2">{item.body}</div>}
+                </div>
+              </li>
+            )
+          })}
+        </ol>
+      </section>
+
+      <section aria-labelledby="help" className="mt-10 flex flex-col sm:flex-row gap-4 sm:items-center justify-between rounded-xl border border-[var(--line)] px-5 py-4">
+        <div>
+          <h2 id="help" className="font-semibold text-[var(--ink)]">Need help?</h2>
+          <p className="text-sm text-[var(--ink-2)] mt-0.5">During your visit, speak to the clinic team. After you leave, call us any time.</p>
+        </div>
+        <a href="tel:+442071234567" className="inline-flex items-center gap-2 h-11 px-4 rounded-lg border border-[var(--line-strong)] bg-[var(--surface)] text-[var(--ink)] font-medium hover:bg-[var(--sunk)] shrink-0">
+          <Phone className="size-4" aria-hidden="true" />
+          <span className="figure">+44 20 7123 4567</span>
+        </a>
+      </section>
+    </Page>
   )
 }
 
 export default TreatmentDay
-
