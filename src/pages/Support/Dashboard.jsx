@@ -12,8 +12,9 @@ const SupportDashboard = () => {
   const { user } = useAuth()
   const { getTicketsByAssignee } = useAppState()
   const tickets = getTicketsByAssignee(user.id)
-  const openTickets = tickets.filter(t => t.status === 'open')
-  const urgentTickets = tickets.filter(t => t.priority === 'urgent')
+  // Anything not yet resolved still needs work, including 'in-progress'
+  const activeTickets = tickets.filter(t => t.status !== 'resolved')
+  const urgentTickets = activeTickets.filter(t => t.priority === 'urgent')
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
@@ -28,7 +29,7 @@ const SupportDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Open Tickets</p>
-                <p className="text-2xl font-bold">{openTickets.length}</p>
+                <p className="text-2xl font-bold">{activeTickets.length}</p>
               </div>
               <AlertCircle className="w-8 h-8 text-red-600" />
             </div>
@@ -77,9 +78,9 @@ const SupportDashboard = () => {
           </div>
         </CardHeader>
         <CardContent>
-          {tickets.length > 0 ? (
+          {activeTickets.length > 0 ? (
             <div className="space-y-3">
-              {tickets.slice(0, 5).map(ticket => (
+              {activeTickets.slice(0, 5).map(ticket => (
                 <div key={ticket.id} className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">{ticket.subject}</h4>

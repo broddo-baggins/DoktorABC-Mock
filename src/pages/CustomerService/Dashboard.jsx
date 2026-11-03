@@ -12,7 +12,7 @@ const CustomerServiceDashboard = () => {
   const { user } = useAuth()
   const { getTicketsByAssignee } = useAppState()
   const tickets = getTicketsByAssignee(user.id).filter(t => t.type === 'customer-service')
-  const openInquiries = tickets.filter(t => t.status === 'open')
+  const openInquiries = tickets.filter(t => t.status !== 'resolved')
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
@@ -82,7 +82,7 @@ const CustomerServiceDashboard = () => {
                 <div key={ticket.id} className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">{ticket.subject}</h4>
-                    <Badge variant={ticket.status === 'open' ? 'warning' : 'success'}>
+                    <Badge variant={ticket.status === 'resolved' ? 'success' : 'warning'}>
                       {ticket.status}
                     </Badge>
                   </div>

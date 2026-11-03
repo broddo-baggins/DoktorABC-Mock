@@ -6,29 +6,33 @@ import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { selectableProps } from '../../utils/a11y'
 
 const InquiryManagement = () => {
   const { user } = useAuth()
   const { getTicketsByAssignee, addMessageToTicket, updateTicket } = useAppState()
   const toast = useToast()
   const tickets = getTicketsByAssignee(user.id).filter(t => t.type === 'customer-service')
-  const [selectedTicket, setSelectedTicket] = useState(null)
+  // Keep only the id so the open thread re-renders with new replies and status changes
+  const [selectedId, setSelectedId] = useState(null)
+  const selectedTicket = tickets.find(t => t.id === selectedId) || null
   const [reply, setReply] = useState('')
 
   const handleReply = (ticketId) => {
     if (!reply.trim()) return
     addMessageToTicket(ticketId, {
       sender: user.id,
-      content: reply
+      content: reply.trim()
     })
+    if (selectedTicket?.status === 'open') updateTicket(ticketId, { status: 'in-progress' })
     setReply('')
     toast.success('Reply sent')
   }
 
   const handleResolve = (ticketId) => {
-    updateTicket(ticketId, { status: 'resolved' })
+    updateTicket(ticketId, { status: 'resolved', resolvedAt: new Date().toISOString() })
     toast.success('Inquiry resolved')
-    setSelectedTicket(null)
+    setSelectedId(null)
   }
 
   return (
@@ -49,11 +53,11 @@ const InquiryManagement = () => {
                     className={`p-3 border rounded-lg cursor-pointer hover:border-primary-300 ${
                       selectedTicket?.id === ticket.id ? 'border-primary-600 bg-primary-50' : ''
                     }`}
-                    onClick={() => setSelectedTicket(ticket)}
+                    {...selectableProps(() => setSelectedId(ticket.id), selectedTicket?.id === ticket.id)}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <p className="font-semibold text-sm">{ticket.subject}</p>
-                      <Badge variant={ticket.status === 'open' ? 'warning' : 'success'} className="text-xs">
+                      <Badge variant={ticket.status === 'resolved' ? 'success' : 'warning'} className="text-xs">
                         {ticket.status}
                       </Badge>
                     </div>
@@ -74,7 +78,7 @@ const InquiryManagement = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>{selectedTicket.subject}</CardTitle>
-                  <Badge variant={selectedTicket.status === 'open' ? 'warning' : 'success'}>
+                  <Badge variant={selectedTicket.status === 'resolved' ? 'success' : 'warning'}>
                     {selectedTicket.status}
                   </Badge>
                 </div>
@@ -91,7 +95,7 @@ const InquiryManagement = () => {
                   ))}
                 </div>
 
-                {selectedTicket.status === 'open' && (
+                {selectedTicket.status !== 'resolved' && (
                   <>
                     <Textarea
                       label="Your Reply"
