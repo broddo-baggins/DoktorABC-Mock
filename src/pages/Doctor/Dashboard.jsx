@@ -1,17 +1,21 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, Users, FileText, Clock } from 'lucide-react'
+import { CalendarDays, Users, FileText, Clock, Star, ClipboardCheck } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, Stat, StatGrid, EmptyState, BarList } from '../../components/ui/Page'
+import {
+  Panel, PanelLink, DataTable, ShortcutList, RecordList,
+  fmtDate, fmtTime, fmtNumber, todayLine, patientName, countBy, sentence,
+} from '../portalParts'
 
 const DoctorDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { getAppointmentsByDoctor, prescriptions } = useAppState()
-  
+  const { getAppointmentsByDoctor, prescriptions, getTreatmentById } = useAppState()
+
   const appointments = getAppointmentsByDoctor(user.id)
   const pendingReviews = appointments.filter(apt => apt.status === 'pending')
   const todaysAppointments = appointments.filter(apt => {
@@ -20,168 +24,138 @@ const DoctorDashboard = () => {
     return aptDate === today
   })
   const pendingPrescriptions = prescriptions.filter(rx => rx.doctorId === user.id && rx.status === 'pending')
+  const byStatus = countBy(appointments, 'status')
+  const treatmentName = (id) => getTreatmentById(id)?.name ?? sentence(id)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Doctor Dashboard</h1>
-        <p className="text-gray-600">Welcome, {user.name}</p>
-      </div>
+    <Page className="animate-fade-in">
+      <PageHeader
+        kicker={`Doctor portal / ${todayLine()}`}
+        title={`Welcome, ${user.name}`}
+        description="Patients waiting for your review come first. Everything else can wait."
+        actions={
+          pendingReviews.length > 0 && (
+            <Button onClick={() => navigate(`/doctor/review/${pendingReviews[0].patientId}`)}>
+              <ClipboardCheck aria-hidden="true" />
+              Review next patient
+            </Button>
+          )
+        }
+      />
 
-      {/* Stats */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Pending Reviews</p>
-                <p className="text-2xl font-bold">{pendingReviews.length}</p>
-              </div>
-              <Users className="w-8 h-8 text-primary-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Today's Consults</p>
-                <p className="text-2xl font-bold">{todaysAppointments.length}</p>
-              </div>
-              <Calendar className="w-8 h-8 text-accent-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Prescriptions</p>
-                <p className="text-2xl font-bold">{pendingPrescriptions.length}</p>
-              </div>
-              <FileText className="w-8 h-8 text-purple-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Rating</p>
-                <p className="text-2xl font-bold">{user.profile.rating}</p>
-              </div>
-              <div className="text-yellow-500 text-2xl">⭐</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <StatGrid className="mb-8">
+        <Stat label="To review" value={pendingReviews.length} icon={Users} tone={pendingReviews.length ? 'warn' : 'default'} />
+        <Stat label="Consults today" value={todaysAppointments.length} icon={CalendarDays} />
+        <Stat label="To sign" value={pendingPrescriptions.length} icon={FileText} />
+        <Stat label="Rating" value={user.profile.rating} unit="/ 5" icon={Star} />
+      </StatGrid>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          {/* Pending Reviews */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Pending Patient Reviews</CardTitle>
-                <Button size="sm" onClick={() => navigate('/doctor/treatments')}>View All</Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {pendingReviews.length > 0 ? (
-                <div className="space-y-3">
-                  {pendingReviews.slice(0, 5).map(apt => (
-                    <div
-                      key={apt.id}
-                      className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 cursor-pointer"
-                      onClick={() => navigate(`/doctor/review/${apt.patientId}`)}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">Patient #{apt.patientId.slice(-6)}</h4>
-                        <Badge variant="warning">Pending Review</Badge>
-                      </div>
-                      <p className="text-sm text-gray-600 capitalize">{apt.type} • {apt.treatmentId}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-gray-500 py-8">No pending reviews</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Today's Schedule */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Today's Schedule</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {todaysAppointments.length > 0 ? (
-                <div className="space-y-3">
-                  {todaysAppointments.map(apt => (
-                    <div key={apt.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
+          <Panel
+            id="pending-reviews"
+            title="Waiting for your review"
+            action={<PanelLink to="/doctor/treatments">View all</PanelLink>}
+            bodyClassName={pendingReviews.length ? 'py-0' : undefined}
+          >
+            {pendingReviews.length > 0 ? (
+              <DataTable
+                caption="Appointments waiting for review"
+                rows={pendingReviews.slice(0, 5)}
+                columns={[
+                  {
+                    key: 'patient', header: 'Patient', primary: true,
+                    render: apt => (
                       <div>
-                        <p className="font-medium">{new Date(apt.datetime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
-                        <p className="text-sm text-gray-600">Patient #{apt.patientId.slice(-6)}</p>
+                        <p className="font-medium">{patientName(apt.patientId)}</p>
+                        <p className="label-mono">{apt.patientId}</p>
                       </div>
-                      <Badge>{apt.type}</Badge>
+                    ),
+                  },
+                  {
+                    key: 'request', header: 'Request',
+                    render: apt => (
+                      <div>
+                        <p>{treatmentName(apt.treatmentId)}</p>
+                        <p className="text-[0.8125rem] text-[var(--ink-3)]">{sentence(apt.type)}</p>
+                      </div>
+                    ),
+                  },
+                  { key: 'date', header: 'Booked for', render: apt => <span className="figure">{fmtDate(apt.datetime)}</span> },
+                  { key: 'status', header: 'Status', render: () => <Badge variant="warning">Pending review</Badge> },
+                  {
+                    key: 'action', header: <span className="sr-only">Action</span>, align: 'right', mobileFooter: true,
+                    render: apt => (
+                      <Button size="sm" variant="secondary" onClick={() => navigate(`/doctor/review/${apt.patientId}`)}>
+                        Review
+                      </Button>
+                    ),
+                  },
+                ]}
+              />
+            ) : (
+              <EmptyState compact icon={ClipboardCheck} title="No pending reviews" description="New questionnaires appear here as soon as a patient submits one." />
+            )}
+          </Panel>
+
+          <Panel id="today" title="Today's schedule">
+            {todaysAppointments.length > 0 ? (
+              <ol className="-my-1 divide-y divide-[var(--line)]">
+                {todaysAppointments.map(apt => (
+                  <li key={apt.id} className="flex items-center gap-4 py-3">
+                    <span className="figure text-base font-medium w-14 shrink-0">{fmtTime(apt.datetime)}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{patientName(apt.patientId)}</p>
+                      <p className="text-[0.8125rem] text-[var(--ink-3)] truncate">{treatmentName(apt.treatmentId)}</p>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-gray-500 py-8">No appointments today</p>
-              )}
-            </CardContent>
-          </Card>
+                    <Badge status={apt.type}>{sentence(apt.type)}</Badge>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <EmptyState
+                compact
+                icon={CalendarDays}
+                title="No appointments today"
+                description="Open more hours and patients can book you from tomorrow."
+                action={<Button variant="secondary" size="sm" onClick={() => navigate('/doctor/availability')}>Set availability</Button>}
+              />
+            )}
+          </Panel>
+
+          <Panel id="caseload" title="Your caseload">
+            <BarList
+              rows={['pending', 'scheduled', 'completed'].map(s => ({ label: sentence(s), value: byStatus[s] ?? 0 }))}
+              caption="Your appointments by status, from the appointment record."
+            />
+          </Panel>
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/doctor/prescriptions')}>
-                  <FileText className="w-4 h-4 mr-2" />
-                  Manage Prescriptions
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/doctor/treatments')}>
-                  <Users className="w-4 h-4 mr-2" />
-                  View Patients
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/doctor/availability')}>
-                  <Clock className="w-4 h-4 mr-2" />
-                  Set Availability
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex flex-col gap-6 min-w-0">
+          <Panel id="shortcuts" title="Shortcuts">
+            <ShortcutList
+              items={[
+                { label: 'Manage prescriptions', hint: 'Issued, active and filled', icon: FileText, onClick: () => navigate('/doctor/prescriptions') },
+                { label: 'View patients', hint: 'Every treatment you oversee', icon: Users, onClick: () => navigate('/doctor/treatments') },
+                { label: 'Set availability', hint: 'Your weekly consulting hours', icon: Clock, onClick: () => navigate('/doctor/availability') },
+              ]}
+            />
+          </Panel>
 
-          <Card className="bg-primary-50 border-primary-200">
-            <CardContent className="p-4">
-              <h4 className="font-semibold text-primary-900 mb-2">Your Stats</h4>
-              <div className="space-y-2 text-sm text-primary-800">
-                <div className="flex justify-between">
-                  <span>Total Consultations:</span>
-                  <span className="font-semibold">{user.profile.totalConsultations}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Years Experience:</span>
-                  <span className="font-semibold">{user.profile.yearsExperience}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Patient Rating:</span>
-                  <span className="font-semibold">{user.profile.rating} ⭐</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Panel id="record" title="Your record">
+            <RecordList
+              items={[
+                ['Total consultations', fmtNumber(user.profile.totalConsultations)],
+                ['Years of experience', user.profile.yearsExperience],
+                ['Patient rating', `${user.profile.rating} / 5`],
+                ...(user.profile.languages ? [['Languages', user.profile.languages.join(', '), { text: true }]] : []),
+              ]}
+            />
+          </Panel>
         </div>
       </div>
-    </div>
+    </Page>
   )
 }
 
 export default DoctorDashboard
-

@@ -1,85 +1,110 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Package } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
+import { Panel, DataTable, FilterTabs, ORDER_STAGE, patientName, fmtDate } from '../portalParts'
 
 const OrderManagement = () => {
   const { user } = useAuth()
   const { getPrescriptionsByPharmacy, updatePrescription } = useAppState()
   const toast = useToast()
   const prescriptions = getPrescriptionsByPharmacy(user.id)
+  const [filter, setFilter] = useState('all')
 
   const handleStatusChange = (id, newStatus) => {
     updatePrescription(id, { status: newStatus })
     toast.success(`Order ${newStatus}`)
   }
 
+  const count = (s) => prescriptions.filter(rx => rx.status === s).length
+  const shown = filter === 'all' ? prescriptions : prescriptions.filter(rx => rx.status === filter)
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Order Management</h1>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>All Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {prescriptions.length > 0 ? (
-            <div className="space-y-4">
-              {prescriptions.map(rx => (
-                <div key={rx.id} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold">{rx.medication}</h4>
-                      <p className="text-sm text-gray-600">Order #{rx.id}</p>
-                    </div>
-                    <Badge variant={rx.status === 'filled' ? 'success' : 'warning'}>
-                      {rx.status}
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                    <div>
-                      <p className="text-gray-600">Patient ID:</p>
-                      <p className="font-medium">{rx.patientId}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Dosage:</p>
-                      <p className="font-medium">{rx.dosage}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Quantity:</p>
-                      <p className="font-medium">{rx.quantity}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Price:</p>
-                      <p className="font-medium">€{rx.price}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {rx.status === 'pending' && (
-                      <Button size="sm" onClick={() => handleStatusChange(rx.id, 'active')}>
-                        Mark as Preparing
-                      </Button>
-                    )}
-                    {rx.status === 'active' && (
-                      <Button size="sm" onClick={() => handleStatusChange(rx.id, 'filled')}>
-                        Mark as Ready
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+    <Page className="animate-fade-in">
+      <PageHeader
+        kicker={`Pharmacy portal / ${user.name}`}
+        title="Orders"
+        description="Move each prescription from new, to preparing, to ready for the courier."
+      />
+
+      <Panel id="orders" title="All orders" bodyClassName={prescriptions.length ? 'pt-4 pb-0' : undefined}>
+        {prescriptions.length > 0 ? (
+          <>
+            <div className="mb-4">
+              <FilterTabs
+                label="Filter by stage"
+                value={filter}
+                onChange={setFilter}
+                options={[
+                  { value: 'all', label: 'All', count: prescriptions.length },
+                  { value: 'pending', label: 'New', count: count('pending') },
+                  { value: 'active', label: 'Preparing', count: count('active') },
+                  { value: 'filled', label: 'Ready', count: count('filled') },
+                ]}
+              />
             </div>
-          ) : (
-            <p className="text-center text-gray-500 py-8">No orders yet</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            {shown.length > 0 ? (
+              <DataTable
+                wide
+                caption="Orders"
+                rows={shown}
+                columns={[
+                  {
+                    key: 'order', header: 'Order', primary: true,
+                    render: rx => (
+                      <div>
+                        <p className="font-medium">{rx.medication}</p>
+                        <p className="label-mono">Order {rx.id} / issued {fmtDate(rx.issuedDate)}</p>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'patient', header: 'Patient',
+                    render: rx => (
+                      <div>
+                        <p className="whitespace-nowrap">{patientName(rx.patientId)}</p>
+                        <p className="label-mono">{rx.patientId}</p>
+                      </div>
+                    ),
+                  },
+                  { key: 'dosage', header: 'Dosage', render: rx => <span className="figure">{rx.dosage}</span> },
+                  { key: 'qty', header: 'Qty', align: 'right', render: rx => <span className="figure">{rx.quantity}</span> },
+                  { key: 'price', header: 'Price', align: 'right', render: rx => <span className="figure">€{rx.price}</span> },
+                  { key: 'stage', header: 'Stage', render: rx => <Badge variant={ORDER_STAGE[rx.status]?.variant}>{ORDER_STAGE[rx.status]?.label ?? rx.status}</Badge> },
+                  {
+                    key: 'action', header: <span className="sr-only">Action</span>, align: 'right', mobileFooter: true,
+                    render: rx => (
+                      <>
+                        {rx.status === 'pending' && (
+                          <Button size="sm" variant="secondary" onClick={() => handleStatusChange(rx.id, 'active')}>
+                            Mark as preparing
+                          </Button>
+                        )}
+                        {rx.status === 'active' && (
+                          <Button size="sm" variant="secondary" onClick={() => handleStatusChange(rx.id, 'filled')}>
+                            Mark as ready
+                          </Button>
+                        )}
+                        {rx.status === 'filled' && <span className="text-sm text-[var(--ink-3)]">With courier desk</span>}
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            ) : (
+              <EmptyState compact icon={Package} title="Nothing at this stage" description="Choose another stage above to see its orders." />
+            )}
+          </>
+        ) : (
+          <EmptyState icon={Package} title="No orders yet" description="Prescriptions routed to this pharmacy will appear here." />
+        )}
+      </Panel>
+    </Page>
   )
 }
 
 export default OrderManagement
-

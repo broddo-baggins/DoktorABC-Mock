@@ -1,7 +1,8 @@
 import React from 'react'
-import { Truck } from 'lucide-react'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
+import { Truck, MapPin } from 'lucide-react'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
+import { Panel, todayLine } from '../portalParts'
 
 const DeliveryCoordination = () => {
   const mockDeliveries = [
@@ -9,39 +10,48 @@ const DeliveryCoordination = () => {
     { id: 'del-002', orderId: 'rx-002', address: '45 Oxford Road, Manchester', status: 'dispatched', timeSlot: '16:00-18:00' }
   ]
 
+  const tone = { preparing: 'warning', dispatched: 'success' }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Delivery Coordination</h1>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Today's Deliveries</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+    <Page className="animate-fade-in">
+      <PageHeader
+        kicker={`Pharmacy portal / ${todayLine()}`}
+        title="Delivery"
+        description="Today's courier slots, in the order they leave the counter."
+      />
+
+      <Panel id="deliveries" title="Today's deliveries" bodyClassName={mockDeliveries.length ? 'py-0' : undefined}>
+        {mockDeliveries.length > 0 ? (
+          <ol className="-mx-5 md:-mx-6 divide-y divide-[var(--line)]">
             {mockDeliveries.map(delivery => (
-              <div key={delivery.id} className="p-4 border rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center">
-                    <Truck className="w-5 h-5 mr-3 text-primary-600" />
-                    <div>
-                      <p className="font-semibold">Delivery #{delivery.id}</p>
-                      <p className="text-sm text-gray-600">{delivery.address}</p>
-                    </div>
-                  </div>
-                  <Badge variant={delivery.status === 'dispatched' ? 'success' : 'warning'}>
-                    {delivery.status}
-                  </Badge>
+              <li key={delivery.id} className="grid grid-cols-[auto_1fr] md:grid-cols-[9rem_1fr_auto] gap-x-4 gap-y-2 items-center px-5 md:px-6 py-4">
+                <div className="row-span-2 md:row-span-1">
+                  <p className="figure text-lg font-medium leading-none">{delivery.timeSlot.split('-')[0]}</p>
+                  <p className="label-mono mt-1">until {delivery.timeSlot.split('-')[1]}</p>
                 </div>
-                <p className="text-sm text-gray-600">Time slot: {delivery.timeSlot}</p>
-              </div>
+                <div className="min-w-0">
+                  <p className="font-medium flex items-center gap-2">
+                    <Truck className="size-4 text-[var(--ink-3)] shrink-0" aria-hidden="true" />
+                    Delivery <span className="figure">{delivery.id}</span>
+                  </p>
+                  <p className="text-sm text-[var(--ink-2)] flex items-center gap-2 mt-0.5">
+                    <MapPin className="size-4 text-[var(--ink-3)] shrink-0" aria-hidden="true" />
+                    {delivery.address}
+                  </p>
+                  <p className="label-mono mt-1">Order {delivery.orderId}</p>
+                </div>
+                <div className="md:justify-self-end">
+                  <Badge variant={tone[delivery.status] ?? 'default'}>{delivery.status}</Badge>
+                </div>
+              </li>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </ol>
+        ) : (
+          <EmptyState icon={Truck} title="No deliveries today" description="Orders marked as ready are booked onto the next courier slot." />
+        )}
+      </Panel>
+    </Page>
   )
 }
 
 export default DeliveryCoordination
-
