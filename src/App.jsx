@@ -1,9 +1,10 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AppStateProvider } from './contexts/AppStateContext'
 import { ToastProvider } from './components/ui/Toast'
 import ScrollToTop from './components/ScrollToTop'
+import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Layout/Header'
 import Footer from './components/Layout/Footer'
 
@@ -62,6 +63,7 @@ import InquiryManagement from './pages/CustomerService/InquiryManagement'
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) {
     return (
@@ -72,7 +74,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    // Remember where the visitor was going so Login can send them back there.
+    return <Navigate to="/login" replace state={{ from: location }} />
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -83,11 +86,13 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 }
 
 const AppContent = () => {
+  const { pathname } = useLocation()
   return (
     <div className="flex flex-col min-h-screen">
       <ScrollToTop />
       <Header />
       <main className="flex-1">
+        <ErrorBoundary resetKey={pathname}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
@@ -212,7 +217,7 @@ const AppContent = () => {
             }
           />
           <Route
-            path="/doctor/review/:patientId"
+            path="/doctor/review/:appointmentId"
             element={
               <ProtectedRoute allowedRoles={['doctor']}>
                 <PatientReview />
@@ -333,6 +338,7 @@ const AppContent = () => {
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </main>
       <Footer />
     </div>
