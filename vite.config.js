@@ -14,7 +14,7 @@ export default defineConfig({
       : '/'),
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   server: {
@@ -22,12 +22,14 @@ export default defineConfig({
     open: true
   },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react'],
-          'utils-vendor': ['clsx', 'tailwind-merge']
+        codeSplitting: {
+          groups: [
+            { name: 'react-vendor', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
+            { name: 'ui-vendor', test: /node_modules[\\/]lucide-react[\\/]/ },
+            { name: 'utils-vendor', test: /node_modules[\\/](clsx|tailwind-merge)[\\/]/ }
+          ]
         }
       }
     },
