@@ -12,8 +12,10 @@ const InventoryManagement = () => {
   const toast = useToast()
   const inventory = getInventoryByPharmacy(user.id)
 
+  // Restock well above the reorder level, whatever that level is
   const handleReorder = (itemId) => {
-    updateInventoryItem(itemId, { stockLevel: 100 })
+    const item = inventory.find(i => i.id === itemId)
+    updateInventoryItem(itemId, { stockLevel: item.stockLevel + item.reorderLevel * 3 })
     toast.success('Reorder placed')
   }
 

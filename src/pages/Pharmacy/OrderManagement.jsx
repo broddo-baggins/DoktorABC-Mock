@@ -8,13 +8,17 @@ import Badge from '../../components/ui/Badge'
 
 const OrderManagement = () => {
   const { user } = useAuth()
-  const { getPrescriptionsByPharmacy, updatePrescription } = useAppState()
+  const { getPrescriptionsByPharmacy, updatePrescription, getPatientById } = useAppState()
   const toast = useToast()
   const prescriptions = getPrescriptionsByPharmacy(user.id)
 
+  // pending (new) -> preparing -> filled (ready to ship) -> dispatched; 'active' is an issued order being prepared
+  const statusLabel = { pending: 'new', active: 'preparing', preparing: 'preparing', filled: 'ready', dispatched: 'dispatched' }
+  const statusVariant = { pending: 'info', active: 'warning', preparing: 'warning', filled: 'success', dispatched: 'primary' }
+
   const handleStatusChange = (id, newStatus) => {
     updatePrescription(id, { status: newStatus })
-    toast.success(`Order ${newStatus}`)
+    toast.success(newStatus === 'filled' ? 'Order ready to ship' : `Order ${newStatus}`)
   }
 
   return (
@@ -35,14 +39,14 @@ const OrderManagement = () => {
                       <h4 className="font-semibold">{rx.medication}</h4>
                       <p className="text-sm text-gray-600">Order #{rx.id}</p>
                     </div>
-                    <Badge variant={rx.status === 'filled' ? 'success' : 'warning'}>
-                      {rx.status}
+                    <Badge variant={statusVariant[rx.status] || 'default'}>
+                      {statusLabel[rx.status] || rx.status}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm mb-3">
                     <div>
-                      <p className="text-gray-600">Patient ID:</p>
-                      <p className="font-medium">{rx.patientId}</p>
+                      <p className="text-gray-600">Patient:</p>
+                      <p className="font-medium">{getPatientById(rx.patientId)?.name || rx.patientId}</p>
                     </div>
                     <div>
                       <p className="text-gray-600">Dosage:</p>
@@ -59,11 +63,11 @@ const OrderManagement = () => {
                   </div>
                   <div className="flex gap-2">
                     {rx.status === 'pending' && (
-                      <Button size="sm" onClick={() => handleStatusChange(rx.id, 'active')}>
+                      <Button size="sm" onClick={() => handleStatusChange(rx.id, 'preparing')}>
                         Mark as Preparing
                       </Button>
                     )}
-                    {rx.status === 'active' && (
+                    {(rx.status === 'active' || rx.status === 'preparing') && (
                       <Button size="sm" onClick={() => handleStatusChange(rx.id, 'filled')}>
                         Mark as Ready
                       </Button>

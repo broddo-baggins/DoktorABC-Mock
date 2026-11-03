@@ -15,7 +15,8 @@ const PharmacyDashboard = () => {
   const prescriptions = getPrescriptionsByPharmacy(user.id)
   const inventory = getInventoryByPharmacy(user.id)
   const pendingOrders = prescriptions.filter(rx => rx.status === 'pending')
-  const lowStock = inventory.filter(item => item.stockLevel <= item.reorderLevel)
+  const readyToShip = prescriptions.filter(rx => rx.status === 'filled')
+const lowStock = inventory.filter(item => item.stockLevel <= item.reorderLevel)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
@@ -42,7 +43,7 @@ const PharmacyDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Ready to Ship</p>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-2xl font-bold">{readyToShip.length}</p>
               </div>
               <Truck className="w-8 h-8 text-accent-600" />
             </div>
