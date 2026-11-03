@@ -6,7 +6,7 @@ import Badge from '../../components/ui/Badge'
 
 const PrescriptionManagement = () => {
   const { user } = useAuth()
-  const { prescriptions } = useAppState()
+  const { prescriptions, getPatientById } = useAppState()
   const doctorPrescriptions = prescriptions.filter(rx => rx.doctorId === user.id)
 
   return (
@@ -28,7 +28,7 @@ const PrescriptionManagement = () => {
                   </div>
                   <div className="text-sm text-gray-600">
                     <p>Dosage: {rx.dosage}</p>
-                    <p>Patient ID: {rx.patientId}</p>
+                    <p>Patient: {getPatientById(rx.patientId)?.name || rx.patientId}</p>
                     <p>Issued: {rx.issuedDate}</p>
                   </div>
                 </div>

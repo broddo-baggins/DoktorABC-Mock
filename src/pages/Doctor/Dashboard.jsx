@@ -6,19 +6,24 @@ import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { selectableProps } from '../../utils/a11y'
 
 const DoctorDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { getAppointmentsByDoctor, prescriptions } = useAppState()
-  
+  const { getAppointmentsByDoctor, prescriptions, getPatientById } = useAppState()
+
   const appointments = getAppointmentsByDoctor(user.id)
-  const pendingReviews = appointments.filter(apt => apt.status === 'pending')
-  const todaysAppointments = appointments.filter(apt => {
-    const aptDate = new Date(apt.datetime).toDateString()
-    const today = new Date().toDateString()
-    return aptDate === today
-  })
+  // Treatment bookings are clinic appointments, not requests for the doctor to review
+  const pendingReviews = appointments.filter(apt => apt.status === 'pending' && apt.type !== 'treatment')
+  const todaysAppointments = appointments
+    .filter(apt => {
+      const aptDate = new Date(apt.datetime).toDateString()
+      const today = new Date().toDateString()
+      return aptDate === today && apt.status !== 'cancelled'
+    })
+    .sort((a, b) => new Date(a.datetime) - new Date(b.datetime))
+  const patientName = (patientId) => getPatientById(patientId)?.name || `Patient #${patientId.slice(-6)}`
   const pendingPrescriptions = prescriptions.filter(rx => rx.doctorId === user.id && rx.status === 'pending')
 
   return (
@@ -93,10 +98,10 @@ const DoctorDashboard = () => {
                     <div
                       key={apt.id}
                       className="p-4 border border-gray-200 rounded-lg hover:border-primary-300 cursor-pointer"
-                      onClick={() => navigate(`/doctor/review/${apt.patientId}`)}
+                      {...selectableProps(() => navigate(`/doctor/review/${apt.id}`))}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">Patient #{apt.patientId.slice(-6)}</h4>
+                        <h4 className="font-semibold">{patientName(apt.patientId)}</h4>
                         <Badge variant="warning">Pending Review</Badge>
                       </div>
                       <p className="text-sm text-gray-600 capitalize">{apt.type} • {apt.treatmentId}</p>
@@ -121,9 +126,16 @@ const DoctorDashboard = () => {
                     <div key={apt.id} className="flex items-center justify-between py-3 border-b last:border-b-0">
                       <div>
                         <p className="font-medium">{new Date(apt.datetime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</p>
-                        <p className="text-sm text-gray-600">Patient #{apt.patientId.slice(-6)}</p>
+                        <p className="text-sm text-gray-600">{patientName(apt.patientId)}</p>
                       </div>
-                      <Badge>{apt.type}</Badge>
+                      <div className="flex items-center gap-2">
+                        <Badge>{apt.type}</Badge>
+                        {apt.location === 'Virtual' && apt.status !== 'completed' && (
+                          <Button size="sm" onClick={() => navigate(`/doctor/consultation/${apt.id}`)}>
+                            Start
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -172,7 +184,7 @@ const DoctorDashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span>Patient Rating:</span>
-                  <span className="font-semibold">{user.profile.rating} ⭐</span>
+                  <span className="font-semibold">{user.profile.rating} <span aria-hidden="true">⭐</span></span>
                 </div>
               </div>
             </CardContent>
