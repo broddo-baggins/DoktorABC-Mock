@@ -104,7 +104,7 @@ export const RxLabel = ({ code, meta, status, children, className, as: Tag = 'di
     <div className="flex items-center justify-between gap-3 px-4 pt-3 pb-2.5">
       <p className="label-mono truncate">
         {code}
-        {meta && <span className="text-[var(--ink-3)]"> / {meta}</span>}
+        {meta && <span> / {meta}</span>}
       </p>
       {status}
     </div>

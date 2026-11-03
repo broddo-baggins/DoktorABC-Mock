@@ -179,7 +179,8 @@
     font-family: var(--font-data);
     font-size: 0.75rem;
     letter-spacing: 0.02em;
-    color: var(--ink-3);
+    /* ink-2, not ink-3: 12px Plex Mono strokes anti-alias lighter than their colour. */
+    color: var(--ink-2);
   }
   .figure { font-family: var(--font-data); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
   .container-page { max-width: var(--content-max); margin-inline: auto; padding-inline: 16px; }

@@ -15,7 +15,9 @@ const Button = React.forwardRef(({
   const baseStyles =
     'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium select-none ' +
     'transition-[background-color,border-color,color,transform] duration-[var(--dur-fast)] ease-[var(--ease-out)] ' +
-    'active:translate-y-px disabled:opacity-45 disabled:cursor-not-allowed disabled:active:translate-y-0 ' +
+    'active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 ' +
+    // Disabled reads as "not yet", still legible: ink-3 on sunk is 4.96:1.
+    'disabled:bg-[var(--sunk)] disabled:text-[var(--ink-3)] disabled:border-[var(--line)] disabled:hover:bg-[var(--sunk)] ' +
     '[&_svg]:size-[1.1em] [&_svg]:shrink-0'
 
   const primary = 'bg-[var(--pine)] text-[var(--on-pine)] hover:bg-[var(--pine-hover)] active:bg-[var(--pine-press)]'

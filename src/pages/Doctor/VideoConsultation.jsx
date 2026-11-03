@@ -46,7 +46,7 @@ const VideoConsultation = () => {
       <div className="grid lg:grid-cols-[minmax(0,1fr)_320px] gap-6 items-start">
         <div className="min-w-0">
           {/* The call stage is a media surface, so it is dark like a video player. */}
-          <div className="relative aspect-video min-h-[260px] rounded-2xl bg-[var(--ink)] overflow-hidden grid place-items-center">
+          <div className="relative w-full h-[260px] sm:h-auto sm:aspect-video rounded-2xl bg-[var(--ink)] overflow-hidden grid place-items-center">
             <div className="text-center px-6">
               <span className="mx-auto grid place-items-center size-20 md:size-24 rounded-full bg-gray-800 text-[var(--ink-on-dark)] text-2xl md:text-3xl font-semibold">
                 {initials}

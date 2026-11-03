@@ -91,7 +91,7 @@ const PatientDashboard = () => {
                           <MapPin className="size-4 shrink-0 mt-0.5 text-[var(--ink-3)]" aria-hidden="true" />
                           <span>
                             {next.location}
-                            <span className="text-[var(--ink-3)] figure whitespace-nowrap"> / {next.duration} min</span>
+                            <span className="text-[var(--ink-2)] figure whitespace-nowrap"> / {next.duration} min</span>
                           </span>
                         </p>
                       </div>
