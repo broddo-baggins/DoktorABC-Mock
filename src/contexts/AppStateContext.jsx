@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { storage } from '../utils/storage'
+import { rebaseSeedDates } from '../utils/seedDates'
+import { localDateKey } from '../utils/dates'
+import { useAuth } from './AuthContext'
 import treatmentsData from '../data/treatments.json'
 import appointmentsData from '../data/appointments.json'
 import prescriptionsData from '../data/prescriptions.json'
@@ -19,18 +22,19 @@ export const useAppState = () => {
 
 export const AppStateProvider = ({ children }) => {
   // Initialize state from localStorage or default data
+  const { user } = useAuth()
   const [treatments] = useState(treatmentsData)
-  const [appointments, setAppointments] = useState(() => 
-    storage.get('appointments', appointmentsData)
+  const [appointments, setAppointments] = useState(() =>
+    storage.get('appointments', rebaseSeedDates(appointmentsData))
   )
   const [prescriptions, setPrescriptions] = useState(() =>
-    storage.get('prescriptions', prescriptionsData)
+    storage.get('prescriptions', rebaseSeedDates(prescriptionsData))
   )
   const [inventory, setInventory] = useState(() =>
     storage.get('inventory', inventoryData)
   )
   const [tickets, setTickets] = useState(() =>
-    storage.get('tickets', ticketsData)
+    storage.get('tickets', rebaseSeedDates(ticketsData))
   )
   const [cart, setCart] = useState(() => storage.get('cart', []))
   const [questionnaires, setQuestionnaires] = useState(() =>
@@ -62,12 +66,15 @@ export const AppStateProvider = ({ children }) => {
     storage.set('questionnaires', questionnaires)
   }, [questionnaires])
 
+  // Ids from Date.now() alone collide when two records are created in the same millisecond.
+  const newId = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+
   // Appointment functions
   const createAppointment = (appointmentData) => {
     const newAppointment = {
-      id: `appt-${Date.now()}`,
-      ...appointmentData,
-      status: 'pending'
+      id: newId('appt'),
+      status: 'pending',
+      ...appointmentData
     }
     setAppointments(prev => [...prev, newAppointment])
     return newAppointment
@@ -94,10 +101,10 @@ export const AppStateProvider = ({ children }) => {
   // Prescription functions
   const createPrescription = (prescriptionData) => {
     const newPrescription = {
-      id: `rx-${Date.now()}`,
+      id: newId('rx'),
       ...prescriptionData,
       status: 'pending',
-      issuedDate: new Date().toISOString().split('T')[0]
+      issuedDate: localDateKey()
     }
     setPrescriptions(prev => [...prev, newPrescription])
     return newPrescription
@@ -131,7 +138,7 @@ export const AppStateProvider = ({ children }) => {
   // Ticket functions
   const createTicket = (ticketData) => {
     const newTicket = {
-      id: `ticket-${Date.now()}`,
+      id: newId('ticket'),
       ...ticketData,
       status: 'open',
       createdAt: new Date().toISOString(),
@@ -161,7 +168,7 @@ export const AppStateProvider = ({ children }) => {
             messages: [
               ...ticket.messages,
               {
-                id: `msg-${Date.now()}`,
+                id: newId('msg'),
                 ...message,
                 timestamp: new Date().toISOString()
               }
@@ -184,7 +191,7 @@ export const AppStateProvider = ({ children }) => {
 
   // Cart functions
   const addToCart = (item) => {
-    setCart(prev => [...prev, { ...item, id: Date.now() }])
+    setCart(prev => [...prev, { ...item, id: newId('cart') }])
   }
 
   const removeFromCart = (itemId) => {
@@ -195,11 +202,13 @@ export const AppStateProvider = ({ children }) => {
     setCart([])
   }
 
-  // Questionnaire functions
+  // Questionnaire functions (answers belong to one patient, not to everyone on this browser)
+  const questionnaireKey = (treatmentId) => `${user?.id || 'anonymous'}:${treatmentId}`
+
   const saveQuestionnaire = (treatmentId, data) => {
     setQuestionnaires(prev => ({
       ...prev,
-      [treatmentId]: {
+      [questionnaireKey(treatmentId)]: {
         ...data,
         savedAt: new Date().toISOString()
       }
@@ -207,7 +216,7 @@ export const AppStateProvider = ({ children }) => {
   }
 
   const getQuestionnaire = (treatmentId) => {
-    return questionnaires[treatmentId] || null
+    return questionnaires[questionnaireKey(treatmentId)] || null
   }
 
   // Helper functions
@@ -221,6 +230,20 @@ export const AppStateProvider = ({ children }) => {
 
   const getTreatmentById = (id) => {
     return treatments.find(t => t.id === id)
+  }
+
+  // Patient record for staff views (demo data plus accounts registered on this browser), never with a password
+  const getPatientById = (id) => {
+    const patient = [...usersData, ...storage.get('registeredUsers', [])]
+      .find(u => u.id === id && u.role === 'patient')
+    if (!patient) return null
+    const { password: _, ...rest } = patient
+    return rest
+  }
+
+  // A patient's questionnaire, for the doctor reviewing it
+  const getQuestionnaireFor = (patientId, treatmentId) => {
+    return questionnaires[`${patientId}:${treatmentId}`] || null
   }
 
   const value = {
@@ -270,6 +293,8 @@ export const AppStateProvider = ({ children }) => {
     getDoctors,
     getPharmacies,
     getTreatmentById,
+    getPatientById,
+    getQuestionnaireFor,
   }
 
   return (
