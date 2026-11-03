@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Calendar as CalendarIcon, Clock, Video, User, Star, CheckCircle } from 'lucide-react'
+import { Video, Star, CheckCircle } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
+import { Summary, ChoiceButton, FlowTitle } from '../../components/ui/Flow'
 import Badge from '../../components/ui/Badge'
-import Select from '../../components/ui/Select'
-import { upcomingDateKeys, localDateTimeISO, formatDateKey } from '../../utils/dates'
-import { selectableProps } from '../../utils/a11y'
+import { upcomingDateKeys, localDateTimeISO, formatDateKey, parseLocalDate } from '../../utils/dates'
+import { DOCTOR_PHOTOS } from '../../utils/doctorPhotos'
 
 const BookConsultation = () => {
   const navigate = useNavigate()
@@ -68,208 +67,137 @@ const BookConsultation = () => {
     navigate(`/consultation/waiting/${appointment.id}`)
   }
 
+  const doctor = doctors.find(d => d.id === selectedDoctor)
+  const longDate = (key) => formatDateKey(key, { weekday: 'long', day: 'numeric', month: 'long' })
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Book Video Consultation</h1>
-        <p className="text-gray-600">For: {treatment.name}</p>
-      </div>
+    <div className="container-page py-8 md:py-12">
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 lg:gap-12 items-start">
+        <div className="min-w-0 flex flex-col gap-10">
+          <FlowTitle
+            kicker={`VIDEO CONSULTATION / ${treatment.id.toUpperCase()}`}
+            title="Book a video consultation"
+            description={`For ${treatment.name}. Choose a doctor, then a time that suits you.`}
+          />
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Select Doctor */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Your Doctor</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {doctors.map(doctor => (
-                  <div
-                    key={doctor.id}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      selectedDoctor === doctor.id
-                        ? 'border-primary-600 bg-primary-50'
-                        : 'border-gray-200 hover:border-primary-300'
-                    }`}
-                    {...selectableProps(() => setSelectedDoctor(doctor.id), selectedDoctor === doctor.id)}
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold text-lg">{doctor.name}</h3>
-                            <p className="text-sm text-gray-600">{doctor.title}</p>
-                          </div>
-                          <div className="flex items-center">
-                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-                            <span className="font-semibold">{doctor.profile.rating}</span>
-                          </div>
-                        </div>
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {doctor.specialization.slice(0, 3).map((spec, idx) => (
-                            <Badge key={idx} variant="default" className="text-xs">
-                              {spec}
-                            </Badge>
-                          ))}
-                        </div>
-                        <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                          {doctor.profile.bio}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {doctor.profile.totalConsultations} consultations • {doctor.profile.yearsExperience} years experience
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Select Date & Time */}
-          {selectedDoctor && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Select Date & Time</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Select
-                    label="Consultation Date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                  >
-                    <option value="">Select a date...</option>
-                    {availableDates.map(date => (
-                      <option key={date} value={date}>
-                        {formatDateKey(date, {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                      </option>
-                    ))}
-                  </Select>
-
-                  {selectedDate && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Available Time Slots
-                      </label>
-                      <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                        {timeSlots.map(time => (
-                          <button
-                            key={time}
-                            type="button"
-                            aria-pressed={selectedTime === time}
-                            onClick={() => setSelectedTime(time)}
-                            className={`p-2 text-sm rounded-lg border-2 transition-all ${
-                              selectedTime === time
-                                ? 'border-primary-600 bg-primary-50 text-primary-700 font-semibold'
-                                : 'border-gray-200 hover:border-primary-300'
-                            }`}
-                          >
-                            {time}
-                          </button>
+          {/* Doctor */}
+          <fieldset>
+            <legend className="text-lg font-semibold text-[var(--ink)] mb-4">Your doctor</legend>
+            <div className="flex flex-col gap-3">
+              {doctors.map(d => (
+                <ChoiceButton key={d.id} selected={selectedDoctor === d.id} onClick={() => setSelectedDoctor(d.id)} className="p-4 md:p-5">
+                  <span className="flex items-start gap-4">
+                    {DOCTOR_PHOTOS[d.id] ? (
+                      <img src={DOCTOR_PHOTOS[d.id]} alt="" className="size-16 rounded-full object-cover object-top shrink-0 border border-[var(--line)]" />
+                    ) : (
+                      <span className="grid place-items-center size-16 rounded-full bg-[var(--sunk)] text-[var(--ink-2)] font-semibold text-lg shrink-0">
+                        {d.name.replace(/^Dr\.?\s+/, '')[0]}
+                      </span>
+                    )}
+                    <span className="flex-1 min-w-0">
+                      <span className="flex flex-wrap items-start justify-between gap-x-4 gap-y-1">
+                        <span>
+                          <span className="block text-lg font-semibold text-[var(--ink)]">{d.name}</span>
+                          <span className="block text-sm text-[var(--ink-3)]">{d.title}</span>
+                        </span>
+                        <span className="flex items-center gap-1 text-sm">
+                          <Star className="size-4 fill-[var(--star)] text-[var(--star)]" aria-hidden="true" />
+                          <span className="figure text-[var(--ink)]">{d.profile.rating}</span>
+                          <span className="sr-only">out of 5</span>
+                        </span>
+                      </span>
+                      <span className="mt-2.5 flex flex-wrap gap-1.5">
+                        {d.specialization.slice(0, 3).map((spec, idx) => (
+                          <Badge key={idx} variant="default">{spec}</Badge>
                         ))}
-                      </div>
-                    </div>
-                  )}
+                      </span>
+                      <span className="block mt-2.5 text-sm text-[var(--ink-2)] line-clamp-2">{d.profile.bio}</span>
+                      <span className="block mt-2 label-mono">
+                        {d.profile.totalConsultations} consultations / {d.profile.yearsExperience} years
+                      </span>
+                    </span>
+                  </span>
+                </ChoiceButton>
+              ))}
+            </div>
+          </fieldset>
+
+          {/* Date and time */}
+          {selectedDoctor && (
+            <fieldset className="animate-fade-in">
+              <legend className="text-lg font-semibold text-[var(--ink)] mb-4">Date</legend>
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap snap-x">
+                {availableDates.map(date => {
+                  const d = parseLocalDate(date)
+                  return (
+                    <ChoiceButton
+                      key={date}
+                      selected={selectedDate === date}
+                      onClick={() => { setSelectedDate(date); setSelectedTime('') }}
+                      className="snap-start shrink-0 w-[4.5rem] py-2.5 text-center"
+                      aria-label={longDate(date)}
+                    >
+                      <span className="block text-xs text-[var(--ink-3)]">{d.toLocaleDateString('en-GB', { weekday: 'short' })}</span>
+                      <span className="block figure text-xl text-[var(--ink)]">{d.getDate()}</span>
+                      <span className="block text-xs text-[var(--ink-3)]">{d.toLocaleDateString('en-GB', { month: 'short' })}</span>
+                    </ChoiceButton>
+                  )
+                })}
+              </div>
+
+              {selectedDate && (
+                <div className="mt-8 animate-fade-in">
+                  <p className="text-lg font-semibold text-[var(--ink)] mb-1">Time</p>
+                  <p className="text-sm text-[var(--ink-3)] mb-4">{longDate(selectedDate)}, in your local time</p>
+                  <div className="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-7 gap-2">
+                    {timeSlots.map(time => (
+                      <ChoiceButton
+                        key={time}
+                        selected={selectedTime === time}
+                        onClick={() => setSelectedTime(time)}
+                        className="h-11 figure text-sm text-center"
+                      >
+                        {time}
+                      </ChoiceButton>
+                    ))}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+              )}
+            </fieldset>
           )}
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-24">
-            <CardHeader>
-              <CardTitle>Consultation Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-start">
-                  <Video className="w-5 h-5 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium">Video Consultation</p>
-                    <p className="text-sm text-gray-600">30 minutes</p>
-                  </div>
-                </div>
-
-                {selectedDoctor && (
-                  <div className="flex items-start">
-                    <User className="w-5 h-5 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Doctor</p>
-                      <p className="text-sm text-gray-600">
-                        {doctors.find(d => d.id === selectedDoctor)?.name}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedDate && (
-                  <div className="flex items-start">
-                    <CalendarIcon className="w-5 h-5 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Date</p>
-                      <p className="text-sm text-gray-600">
-                        {formatDateKey(selectedDate, {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric'
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {selectedTime && (
-                  <div className="flex items-start">
-                    <Clock className="w-5 h-5 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="font-medium">Time</p>
-                      <p className="text-sm text-gray-600">{selectedTime}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-semibold">Consultation Fee</span>
-                    <span className="text-2xl font-bold text-primary-600">
-                      €{treatment.price.consultation}
-                    </span>
-                  </div>
-
-                  <Button
-                    className="w-full"
-                    onClick={handleBooking}
-                    disabled={!selectedDoctor || !selectedDate || !selectedTime}
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Confirm Booking
-                  </Button>
-
-                  <p className="text-xs text-gray-500 text-center mt-3">
-                    You'll receive a confirmation email with video call link
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Summary */}
+        <aside className="lg:sticky lg:top-24" aria-label="Consultation summary">
+          <Summary
+            code="VIDEO CONSULTATION"
+            meta="30 MIN"
+            title={treatment.name}
+            rows={[
+              { label: 'Doctor', value: doctor?.name ?? 'Not chosen', muted: !doctor },
+              { label: 'Date', value: selectedDate ? formatDateKey(selectedDate, { day: 'numeric', month: 'long', year: 'numeric' }) : 'Not chosen', muted: !selectedDate, mono: !!selectedDate },
+              { label: 'Time', value: selectedTime || 'Not chosen', muted: !selectedTime, mono: !!selectedTime },
+            ]}
+            total={{ label: 'Consultation fee', value: `€${treatment.price.consultation}` }}
+          >
+            <Button
+              size="lg"
+              className="w-full mt-5"
+              onClick={handleBooking}
+              disabled={!selectedDoctor || !selectedDate || !selectedTime}
+            >
+              <CheckCircle aria-hidden="true" />
+              Confirm booking
+            </Button>
+            <p className="mt-3 flex items-start gap-2 text-[0.8125rem] text-[var(--ink-3)]">
+              <Video className="size-4 shrink-0 mt-px" aria-hidden="true" />
+              The video link opens from your consultation waiting room and your dashboard.
+            </p>
+          </Summary>
+        </aside>
       </div>
     </div>
   )
 }
 
 export default BookConsultation
-

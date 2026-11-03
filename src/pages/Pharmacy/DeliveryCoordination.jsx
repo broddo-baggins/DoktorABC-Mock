@@ -1,11 +1,12 @@
 import React from 'react'
-import { Truck } from 'lucide-react'
+import { Truck, MapPin } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
+import { Panel, todayLine, fmtTime } from '../../components/portal/PortalParts'
 
 const DeliveryCoordination = () => {
   const { user } = useAuth()
@@ -25,49 +26,61 @@ const DeliveryCoordination = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Delivery Coordination</h1>
+    <Page className="animate-fade-in">
+      <PageHeader
+        kicker={`Pharmacy portal / ${todayLine()}`}
+        title="Delivery"
+        description="Orders that are ready for the courier, and the ones already on their way."
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Today's Deliveries</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {deliveries.length > 0 ? (
-            <div className="space-y-4">
-              {deliveries.map(rx => {
-                const patient = getPatientById(rx.patientId)
-                return (
-                  <div key={rx.id} className="p-4 border rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center">
-                        <Truck className="w-5 h-5 mr-3 text-primary-600" />
-                        <div>
-                          <p className="font-semibold">Order #{rx.id} • {rx.medication}</p>
-                          <p className="text-sm text-gray-600">
-                            {patient?.name || rx.patientId} • {formatAddress(patient?.address)}
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant={rx.status === 'dispatched' ? 'success' : 'warning'}>
-                        {rx.status === 'dispatched' ? 'dispatched' : 'ready'}
-                      </Badge>
-                    </div>
-                    {rx.status === 'filled' && (
-                      <Button size="sm" onClick={() => handleDispatch(rx.id)}>
-                        Mark as Dispatched
+      <Panel id="deliveries" title="Today's deliveries" bodyClassName={deliveries.length ? 'py-0' : undefined}>
+        {deliveries.length > 0 ? (
+          <ol className="-mx-5 md:-mx-6 divide-y divide-[var(--line)]">
+            {deliveries.map(rx => {
+              const patient = getPatientById(rx.patientId)
+              const dispatched = rx.status === 'dispatched'
+              return (
+                <li key={rx.id} className="grid grid-cols-[auto_1fr] md:grid-cols-[9rem_1fr_auto] gap-x-4 gap-y-2 items-center px-5 md:px-6 py-4">
+                  <div className="row-span-2 md:row-span-1">
+                    {dispatched ? (
+                      <>
+                        <p className="figure text-lg font-medium leading-none">{fmtTime(rx.dispatchedAt)}</p>
+                        <p className="label-mono mt-1">dispatched</p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="figure text-lg font-medium leading-none">Next</p>
+                        <p className="label-mono mt-1">courier slot</p>
+                      </>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium flex items-center gap-2">
+                      <Truck className="size-4 text-[var(--ink-3)] shrink-0" aria-hidden="true" />
+                      <span className="min-w-0 break-words">Order #{rx.id} / {rx.medication}</span>
+                    </p>
+                    <p className="text-sm text-[var(--ink-2)] flex items-center gap-2 mt-0.5">
+                      <MapPin className="size-4 text-[var(--ink-3)] shrink-0" aria-hidden="true" />
+                      <span className="min-w-0 break-words">{patient?.name || 'Unknown patient'} / {formatAddress(patient?.address)}</span>
+                    </p>
+                  </div>
+                  <div className="col-start-2 md:col-start-auto md:justify-self-end flex flex-wrap items-center gap-2">
+                    <Badge variant={dispatched ? 'success' : 'warning'}>{dispatched ? 'dispatched' : 'ready'}</Badge>
+                    {!dispatched && (
+                      <Button size="sm" variant="secondary" onClick={() => handleDispatch(rx.id)}>
+                        Mark as dispatched
                       </Button>
                     )}
                   </div>
-                )
-              })}
-            </div>
-          ) : (
-            <p className="text-center text-gray-500 py-8">No deliveries waiting</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                </li>
+              )
+            })}
+          </ol>
+        ) : (
+          <EmptyState icon={Truck} title="No deliveries waiting" description="Orders marked as ready in Orders appear here for the courier." />
+        )}
+      </Panel>
+    </Page>
   )
 }
 

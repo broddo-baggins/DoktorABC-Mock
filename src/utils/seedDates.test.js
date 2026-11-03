@@ -69,8 +69,9 @@ describe('vercel.json CSP', () => {
     const vercel = JSON.parse(readFileSync(new URL('../../vercel.json', import.meta.url), 'utf8'))
     const csp = vercel.headers.flatMap(h => h.headers).find(h => h.key === 'Content-Security-Policy').value
     expect(csp).toContain(hash)
-    expect(csp).toContain('https://fonts.googleapis.com')
-    expect(csp).toContain('https://fonts.gstatic.com')
+    // Fonts are self-hosted (@fontsource); only doctor avatars without a local photo come from Unsplash.
+    expect(csp).toMatch(/font-src 'self';/)
+    expect(csp).not.toContain('fonts.googleapis.com')
     expect(csp).toContain('https://images.unsplash.com')
   })
 })

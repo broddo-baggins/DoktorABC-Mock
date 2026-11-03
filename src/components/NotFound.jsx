@@ -1,18 +1,29 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, SearchX } from 'lucide-react'
 
 /**
  * Shown when a URL parameter points at a record that does not exist
- * (or that the signed-in user may not see).
+ * (or that the signed-in user may not see). Same quiet card as ErrorState,
+ * but the title is the page's h1.
  */
 const NotFound = ({ title = 'Not found', message, backTo = '/', backLabel = 'Back to home' }) => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
-      {message && <p className="text-gray-500 mb-6">{message}</p>}
-      <Link to={backTo} className="text-primary-600 hover:text-primary-700 font-medium">
-        {backLabel}
-      </Link>
+    <div className="container-page py-16 md:py-24">
+      <div className="max-w-md mx-auto bg-[var(--surface)] border border-[var(--line)] rounded-2xl flex flex-col items-center text-center py-14 px-6">
+        <span className="grid place-items-center size-12 rounded-full bg-[var(--sunk)] text-[var(--ink-2)] mb-4">
+          <SearchX className="size-5" aria-hidden="true" />
+        </span>
+        <h1 className="text-base font-semibold text-[var(--ink)]">{title}</h1>
+        {message && <p className="mt-1.5 text-sm text-[var(--ink-3)] max-w-[42ch]">{message}</p>}
+        <Link
+          to={backTo}
+          className="mt-5 inline-flex items-center gap-1.5 h-10 px-4 rounded-lg text-sm font-medium text-[var(--pine)] hover:bg-[var(--pine-tint)]"
+        >
+          <ArrowLeft className="size-4" aria-hidden="true" />
+          {backLabel}
+        </Link>
+      </div>
     </div>
   )
 }

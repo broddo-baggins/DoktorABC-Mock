@@ -4,7 +4,7 @@ import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
+import { AlertCircle, Check } from 'lucide-react'
 
 const Register = () => {
   const navigate = useNavigate()
@@ -93,7 +93,7 @@ const Register = () => {
       const result = register(userData)
 
       if (result.success) {
-        toast.success('Registration successful! Welcome to DoktorABC')
+        toast.success('Account created. Welcome to DoktorABC')
         navigate('/dashboard')
       } else {
         if (result.error?.includes('email')) setErrors({ email: result.error })
@@ -106,120 +106,151 @@ const Register = () => {
     }
   }
 
+  const set = (key) => (e) => setFormData({ ...formData, [key]: e.target.value })
+
   return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-50 py-12 px-4">
-      <div className="w-full max-w-md animate-fade-in">
-        <Card>
-          <CardHeader>
-            <CardTitle as="h1" className="text-center">Create Your Account</CardTitle>
-            <p className="text-center text-gray-600 text-sm mt-2">
-              Join over 600,000 patients using DoktorABC
-            </p>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                label="Full Name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="John Doe"
-                error={errors.name}
-              />
+    <div className="container-page py-10 md:py-16">
+      <div className="grid lg:grid-cols-[minmax(0,520px)_minmax(0,1fr)] gap-10 lg:gap-16 items-start">
+        <section aria-labelledby="register-title">
+          <h1 id="register-title" className="text-[1.75rem] md:text-[2.25rem] leading-[1.1] font-semibold tracking-[-0.025em]">
+            Create your account
+          </h1>
+          <p className="mt-3 text-[var(--ink-2)]">
+            One account for consultations, prescriptions and repeat orders. It takes about a minute.
+          </p>
 
-              <Input
-                label="Email Address"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="your.email@example.com"
-                error={errors.email}
-              />
+          <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-5" noValidate>
+            <Input
+              label="Full name"
+              type="text"
+              autoComplete="name"
+              value={formData.name}
+              onChange={set('name')}
+              error={errors.name}
+              required
+            />
 
+            <Input
+              label="Email address"
+              type="email"
+              autoComplete="email"
+              value={formData.email}
+              onChange={set('email')}
+              placeholder="you@example.com"
+              error={errors.email}
+              required
+            />
+
+            <div className="grid sm:grid-cols-2 gap-5">
               <Input
-                label="Date of Birth"
+                label="Date of birth"
                 type="date"
+                autoComplete="bday"
                 value={formData.dateOfBirth}
-                onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                onChange={set('dateOfBirth')}
                 error={errors.dateOfBirth}
+                required
               />
 
               <Input
-                label="Phone Number"
+                label="Phone number"
                 type="tel"
+                autoComplete="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={set('phone')}
                 placeholder="+44 7700 900000"
                 error={errors.phone}
+                required
               />
+            </div>
 
+            <div className="grid sm:grid-cols-2 gap-5">
+              {/* No `required` prop here: Field appends " (required)" to the label, and the e2e
+                  suite finds this field by its exact accessible name "Password". */}
               <Input
                 label="Password"
                 type="password"
+                autoComplete="new-password"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
+                onChange={set('password')}
+                hint="Required, at least 6 characters"
                 error={errors.password}
+                aria-required="true"
               />
 
               <Input
-                label="Confirm Password"
+                label="Confirm password"
                 type="password"
+                autoComplete="new-password"
                 value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                placeholder="••••••••"
+                onChange={set('confirmPassword')}
                 error={errors.confirmPassword}
+                required
               />
+            </div>
 
-              <div className="flex items-start">
+            <div>
+              <div className="flex items-start gap-3">
                 <input
-                  id="register-agree-terms"
+                  id="agree-terms"
                   type="checkbox"
                   checked={formData.agreeToTerms}
                   onChange={(e) => setFormData({ ...formData, agreeToTerms: e.target.checked })}
                   aria-invalid={errors.agreeToTerms ? true : undefined}
-                  className="mt-1 mr-2"
+                  aria-describedby={errors.agreeToTerms ? 'agree-terms-error' : undefined}
+                  className="mt-0.5 size-5 shrink-0 accent-[var(--pine)] rounded"
                 />
-                <label htmlFor="register-agree-terms" className="text-sm text-gray-600">
+                <label htmlFor="agree-terms" className="text-sm text-[var(--ink-2)]">
                   I agree to the{' '}
-                  <Link to="/terms" className="text-primary-600 hover:underline">
-                    Terms and Conditions
+                  <Link to="/terms" className="text-[var(--pine)] underline underline-offset-4">
+                    terms and conditions
                   </Link>{' '}
-                  and{' '}
-                  <Link to="/privacy" className="text-primary-600 hover:underline">
-                    Privacy Policy
+                  and the{' '}
+                  <Link to="/privacy" className="text-[var(--pine)] underline underline-offset-4">
+                    privacy policy
                   </Link>
                 </label>
               </div>
               {errors.agreeToTerms && (
-                <p className="text-sm text-red-600">{errors.agreeToTerms}</p>
+                <p id="agree-terms-error" role="alert" className="mt-2 flex items-start gap-1.5 text-[0.8125rem] font-medium text-[var(--danger-ink)]">
+                  <AlertCircle className="size-4 mt-px shrink-0" aria-hidden="true" />
+                  {errors.agreeToTerms}
+                </p>
               )}
-
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={loading}
-              >
-                {loading ? 'Creating account...' : 'Create Account'}
-              </Button>
-            </form>
-
-            <div className="mt-6 text-center text-sm">
-              <span className="text-gray-600">Already have an account? </span>
-              <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-                Sign in
-              </Link>
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="mt-4 text-center text-xs text-gray-500">
-          <p>This is a demo mock application for training purposes.</p>
-        </div>
+            <Button type="submit" size="lg" className="w-full sm:w-auto sm:self-start" disabled={loading}>
+              {loading ? 'Creating account' : 'Create account'}
+            </Button>
+          </form>
+
+          <p className="mt-6 text-sm text-[var(--ink-2)]">
+            Already have an account?{' '}
+            <Link to="/login" className="font-medium text-[var(--pine)] underline underline-offset-4 hover:text-[var(--pine-hover)]">
+              Sign in
+            </Link>
+          </p>
+        </section>
+
+        <aside className="hidden lg:block sticky top-24">
+          <figure className="rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)]">
+            <img src="/images/dropper.jpg" alt="A hand holding an amber dropper bottle" className="w-full aspect-[4/3] object-cover" />
+            <figcaption className="p-6">
+              <p className="font-semibold text-[var(--ink)]">What your account keeps</p>
+              <ul className="mt-3 space-y-2.5 text-sm text-[var(--ink-2)]">
+                {['Your questionnaire answers, so repeat orders are quicker', 'Every prescription with its dose and expiry', 'Appointments, deliveries and aftercare notes'].map(item => (
+                  <li key={item} className="flex gap-2.5">
+                    <Check className="size-4 mt-0.5 shrink-0 text-[var(--pine)]" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </figcaption>
+          </figure>
+        </aside>
       </div>
     </div>
   )
 }
 
 export default Register
-

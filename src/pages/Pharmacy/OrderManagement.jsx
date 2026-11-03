@@ -1,89 +1,116 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { Package } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
+import { Panel, DataTable, FilterTabs, fmtDate } from '../../components/portal/PortalParts'
+
+// pending (new) -> preparing -> filled (ready to ship) -> dispatched; 'active' is an issued order being prepared
+const STAGE = { pending: 'new', active: 'preparing', preparing: 'preparing', filled: 'ready', dispatched: 'dispatched' }
+const STAGE_VARIANT = { new: 'warning', preparing: 'primary', ready: 'success', dispatched: 'default' }
+const stageOf = (rx) => STAGE[rx.status] ?? rx.status
 
 const OrderManagement = () => {
   const { user } = useAuth()
   const { getPrescriptionsByPharmacy, updatePrescription, getPatientById } = useAppState()
   const toast = useToast()
   const prescriptions = getPrescriptionsByPharmacy(user.id)
-
-  // pending (new) -> preparing -> filled (ready to ship) -> dispatched; 'active' is an issued order being prepared
-  const statusLabel = { pending: 'new', active: 'preparing', preparing: 'preparing', filled: 'ready', dispatched: 'dispatched' }
-  const statusVariant = { pending: 'info', active: 'warning', preparing: 'warning', filled: 'success', dispatched: 'primary' }
+  const [filter, setFilter] = useState('all')
 
   const handleStatusChange = (id, newStatus) => {
     updatePrescription(id, { status: newStatus })
     toast.success(newStatus === 'filled' ? 'Order ready to ship' : `Order ${newStatus}`)
   }
 
+  const count = (stage) => prescriptions.filter(rx => stageOf(rx) === stage).length
+  const shown = filter === 'all' ? prescriptions : prescriptions.filter(rx => stageOf(rx) === filter)
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Order Management</h1>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>All Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {prescriptions.length > 0 ? (
-            <div className="space-y-4">
-              {prescriptions.map(rx => (
-                <div key={rx.id} className="p-4 border rounded-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <div>
-                      <h4 className="font-semibold">{rx.medication}</h4>
-                      <p className="text-sm text-gray-600">Order #{rx.id}</p>
-                    </div>
-                    <Badge variant={statusVariant[rx.status] || 'default'}>
-                      {statusLabel[rx.status] || rx.status}
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 text-sm mb-3">
-                    <div>
-                      <p className="text-gray-600">Patient:</p>
-                      <p className="font-medium">{getPatientById(rx.patientId)?.name || rx.patientId}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Dosage:</p>
-                      <p className="font-medium">{rx.dosage}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Quantity:</p>
-                      <p className="font-medium">{rx.quantity}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600">Price:</p>
-                      <p className="font-medium">€{rx.price}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    {rx.status === 'pending' && (
-                      <Button size="sm" onClick={() => handleStatusChange(rx.id, 'preparing')}>
-                        Mark as Preparing
-                      </Button>
-                    )}
-                    {(rx.status === 'active' || rx.status === 'preparing') && (
-                      <Button size="sm" onClick={() => handleStatusChange(rx.id, 'filled')}>
-                        Mark as Ready
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
+    <Page className="animate-fade-in">
+      <PageHeader
+        kicker={`Pharmacy portal / ${user.name}`}
+        title="Orders"
+        description="Move each prescription from new, to preparing, to ready for the courier."
+      />
+
+      <Panel id="orders" title="All orders" bodyClassName={prescriptions.length ? 'pt-4 pb-0' : undefined}>
+        {prescriptions.length > 0 ? (
+          <>
+            <div className="mb-4">
+              <FilterTabs
+                label="Filter by stage"
+                value={filter}
+                onChange={setFilter}
+                options={[
+                  { value: 'all', label: 'All', count: prescriptions.length },
+                  { value: 'new', label: 'New', count: count('new') },
+                  { value: 'preparing', label: 'Preparing', count: count('preparing') },
+                  { value: 'ready', label: 'Ready', count: count('ready') },
+                  { value: 'dispatched', label: 'Dispatched', count: count('dispatched') },
+                ]}
+              />
             </div>
-          ) : (
-            <p className="text-center text-gray-500 py-8">No orders yet</p>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            {shown.length > 0 ? (
+              <DataTable
+                wide
+                caption="Orders"
+                rows={shown}
+                columns={[
+                  {
+                    key: 'order', header: 'Order', primary: true,
+                    render: rx => (
+                      <div>
+                        <p className="font-medium">{rx.medication}</p>
+                        <p className="label-mono">Order #{rx.id} / issued {fmtDate(rx.issuedDate)}</p>
+                      </div>
+                    ),
+                  },
+                  {
+                    key: 'patient', header: 'Patient',
+                    render: rx => (
+                      <div>
+                        <p className="whitespace-nowrap">{getPatientById(rx.patientId)?.name ?? 'Unknown patient'}</p>
+                        <p className="label-mono">{rx.patientId}</p>
+                      </div>
+                    ),
+                  },
+                  { key: 'dosage', header: 'Dosage', render: rx => <span className="figure">{rx.dosage}</span> },
+                  { key: 'qty', header: 'Qty', align: 'right', render: rx => <span className="figure">{rx.quantity}</span> },
+                  { key: 'price', header: 'Price', align: 'right', render: rx => <span className="figure">€{rx.price}</span> },
+                  { key: 'stage', header: 'Stage', render: rx => <Badge variant={STAGE_VARIANT[stageOf(rx)]}>{stageOf(rx)}</Badge> },
+                  {
+                    key: 'action', header: <span className="sr-only">Action</span>, align: 'right', mobileFooter: true,
+                    render: rx => (
+                      <>
+                        {rx.status === 'pending' && (
+                          <Button size="sm" variant="secondary" onClick={() => handleStatusChange(rx.id, 'preparing')}>
+                            Mark as preparing
+                          </Button>
+                        )}
+                        {(rx.status === 'active' || rx.status === 'preparing') && (
+                          <Button size="sm" variant="secondary" onClick={() => handleStatusChange(rx.id, 'filled')}>
+                            Mark as ready
+                          </Button>
+                        )}
+                        {rx.status === 'filled' && <span className="text-sm text-[var(--ink-3)]">With courier desk</span>}
+                      </>
+                    ),
+                  },
+                ]}
+              />
+            ) : (
+              <EmptyState compact icon={Package} title="Nothing at this stage" description="Choose another stage above to see its orders." />
+            )}
+          </>
+        ) : (
+          <EmptyState icon={Package} title="No orders yet" description="Prescriptions routed to this pharmacy will appear here." />
+        )}
+      </Panel>
+    </Page>
   )
 }
 
 export default OrderManagement
-

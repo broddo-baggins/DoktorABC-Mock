@@ -58,11 +58,9 @@ export async function loginAs(page, role) {
 export async function expectNoA11yViolations(page, { exclude = [] } = {}) {
   let builder = new AxeBuilder({ page })
     // options() replaces the whole run config, so it must come before withTags/disableRules.
-    // axe's CSSOM preload re-fetches cross-origin stylesheets (Google Fonts), which the CSP's connect-src rightly blocks.
+    // axe's CSSOM preload re-fetches stylesheets; the page's own CSS is all it needs.
     .options({ preload: false })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-    // Colour contrast belongs to the visual redesign branch (redesign/2026-11).
-    .disableRules(['color-contrast'])
   for (const sel of exclude) builder = builder.exclude(sel)
   const results = await builder.analyze()
   const summary = results.violations.map(v => `${v.id} (${v.impact}): ${v.help} -> ${v.nodes.slice(0, 3).map(n => n.target.join(' ')).join(' | ')}`)
@@ -70,6 +68,9 @@ export async function expectNoA11yViolations(page, { exclude = [] } = {}) {
 }
 
 export async function expectNoHorizontalScroll(page) {
-  const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+  // Measured against the configured viewport: on a mobile viewport Chrome zooms out to fit a too-wide page,
+  // which widens window.innerWidth along with it and would hide the overflow.
+  const width = page.viewportSize().width
+  const overflow = await page.evaluate(w => document.documentElement.scrollWidth - w, width)
   expect(overflow, 'page should not scroll horizontally').toBeLessThanOrEqual(0)
 }

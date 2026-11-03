@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Video, FileText, Clock, CheckCircle } from 'lucide-react'
+import { Video, FileText, CheckCircle2, Circle, Clock } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useAuth } from '../../contexts/AuthContext'
 import NotFound from '../../components/NotFound'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, SectionTitle } from '../../components/ui/Page'
+import { DOCTOR_PHOTOS } from '../../utils/doctorPhotos'
+
+const PREP = [
+  { title: 'Find a quiet, private space', detail: 'Good light and little background noise help the doctor see and hear you.' },
+  { title: 'Test your camera and microphone', detail: 'Your browser will ask for permission when you join.' },
+  { title: 'Have your questions ready', detail: 'Write them down so nothing is forgotten.' },
+]
 
 const ConsultationWaiting = () => {
   const { id } = useParams()
@@ -31,7 +38,8 @@ const ConsultationWaiting = () => {
     const hours = Math.floor(ms / (1000 * 60 * 60))
     const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60))
     const seconds = Math.floor((ms % (1000 * 60)) / 1000)
-    return `${hours}h ${minutes}m ${seconds}s`
+    const pad = (n) => String(n).padStart(2, '0')
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
   }
 
   const handleJoinConsultation = () => {
@@ -43,153 +51,134 @@ const ConsultationWaiting = () => {
   }
 
   if (!appointment) {
-    return <NotFound title="Appointment not found" backTo="/dashboard" backLabel="Back to dashboard" />
+    return (
+      <NotFound
+        title="Appointment not found"
+        message="This consultation may have been cancelled or moved. Your dashboard lists everything that is booked."
+        backTo="/dashboard"
+        backLabel="Back to dashboard"
+      />
+    )
   }
 
+  const checklist = [
+    questionnaireDone
+      ? { title: 'Medical questionnaire completed', detail: 'Your answers have been shared with the doctor.', done: true }
+      : { title: 'Complete your medical questionnaire', detail: 'Your doctor will review it before the consultation.' },
+    ...PREP,
+  ]
+
+  const statusLabel = { pending: 'Awaiting confirmation', scheduled: 'Scheduled', completed: 'Completed' }[appointment.status] || appointment.status
+
+  const when = new Date(appointment.datetime).toLocaleString('en-GB', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  })
+
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Video Consultation</h1>
-        <Badge variant={appointment.status === 'completed' ? 'success' : appointment.status === 'pending' ? 'warning' : 'primary'}>
-          {{ pending: 'Awaiting confirmation', scheduled: 'Scheduled', completed: 'Completed' }[appointment.status] || appointment.status}
-        </Badge>
-      </div>
+    <Page narrow>
+      <PageHeader
+        back={{ to: '/dashboard', label: 'Dashboard' }}
+        title="Your video consultation"
+        description={treatment ? `${treatment.name} with ${doctor?.name ?? 'your doctor'}.` : undefined}
+      />
 
-      {/* Countdown */}
-      <Card className="mb-8 bg-gradient-to-br from-primary-600 to-primary-800 text-white border-0">
-        <CardContent className="p-8 text-center">
-          <Clock className="w-16 h-16 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Your consultation starts in:</h2>
-          <div className="text-4xl font-mono font-bold">
-            {formatTimeLeft(timeLeft)}
+      {/* When: the countdown and the way in */}
+      <section aria-labelledby="when" className="bg-[var(--surface)] border border-[var(--line)] rounded-xl">
+        <div className="px-6 py-6 md:px-8 md:py-7 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <h2 id="when" className="text-sm font-medium text-[var(--ink-2)]">
+                {timeLeft > 0 ? 'Starts in' : appointment.status === 'completed' ? 'Consultation finished' : 'Start time reached'}
+              </h2>
+              <Badge status={appointment.status}>{statusLabel}</Badge>
+            </div>
+            <p className="figure text-[2.75rem] md:text-[3.25rem] leading-none font-medium text-[var(--ink)]" aria-live="off">
+              {formatTimeLeft(timeLeft)}
+            </p>
+            <p className="mt-3 flex items-center gap-1.5 text-sm text-[var(--ink-2)]">
+              <Clock className="size-4 text-[var(--ink-3)]" aria-hidden="true" />
+              <span className="figure">{when}</span>
+            </p>
           </div>
-          <p className="text-primary-100 mt-4">
-            {new Date(appointment.datetime).toLocaleString('en-GB', {
-              weekday: 'long',
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })}
-          </p>
-        </CardContent>
-      </Card>
+          <div className="flex flex-col-reverse sm:flex-row gap-2">
+            <Button variant="secondary" onClick={() => navigate(`/questionnaire/${appointment.treatmentId}`)}>
+              <FileText aria-hidden="true" />
+              {questionnaireDone ? 'View my questionnaire' : 'Complete questionnaire'}
+            </Button>
+            <Button size="lg" onClick={handleJoinConsultation}>
+              <Video aria-hidden="true" />
+              Join consultation
+            </Button>
+          </div>
+        </div>
+        <p className="px-6 md:px-8 py-3 border-t border-[var(--line)] text-[0.8125rem] text-[var(--ink-3)]">
+          Joining opens 5 minutes before the start time. In this demo you can join at any time.
+        </p>
+      </section>
 
-      <div className="grid md:grid-cols-2 gap-8 mb-8">
-        {/* Doctor Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Doctor</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-2xl">👨‍⚕️</span>
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg">{doctor?.name}</h3>
-                <p className="text-sm text-gray-600">{doctor?.title}</p>
-              </div>
+      {/* Who */}
+      {doctor && (
+        <section aria-labelledby="doctor" className="mt-10">
+          <SectionTitle><span id="doctor">Your doctor</span></SectionTitle>
+          <div className="flex flex-col sm:flex-row gap-5">
+            {DOCTOR_PHOTOS[doctor.id] && (
+              <img
+                src={DOCTOR_PHOTOS[doctor.id]}
+                alt={`Portrait of ${doctor.name}`}
+                className="w-28 h-28 sm:w-32 sm:h-32 rounded-xl object-cover object-top shrink-0 bg-[var(--sunk)]"
+                loading="lazy"
+              />
+            )}
+            <div className="min-w-0">
+              <h3 className="text-lg font-semibold text-[var(--ink)]">{doctor.name}</h3>
+              <p className="label-mono mt-0.5">{doctor.title}{doctor.licenseNumber ? ` / ${doctor.licenseNumber}` : ''}</p>
+              <p className="mt-3 text-[0.9375rem] text-[var(--ink-2)] leading-relaxed max-w-[60ch]">{doctor.profile.bio}</p>
             </div>
-            <p className="text-sm text-gray-700">{doctor?.profile.bio}</p>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
+      )}
 
-        {/* Treatment Info */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Treatment</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <h3 className="font-semibold mb-2">{treatment?.name}</h3>
-            <p className="text-sm text-gray-600 mb-4">{treatment?.description}</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Duration:</span>
-                <span className="font-medium">{appointment.duration} minutes</span>
+      {/* What */}
+      {treatment && (
+        <section aria-labelledby="about" className="mt-10">
+          <SectionTitle><span id="about">About this appointment</span></SectionTitle>
+          <dl className="grid grid-cols-2 sm:grid-cols-3 gap-px bg-[var(--line)] border border-[var(--line)] rounded-xl overflow-hidden">
+            {[
+              ['Treatment', treatment.name],
+              ['Type', <span className="capitalize">{appointment.type}</span>],
+              ['Length', <span className="figure">{appointment.duration} min</span>],
+            ].map(([k, v]) => (
+              <div key={k} className="bg-[var(--surface)] px-4 py-3.5 last:col-span-2 sm:last:col-span-1">
+                <dt className="text-[0.8125rem] text-[var(--ink-3)]">{k}</dt>
+                <dd className="mt-0.5 font-medium text-[var(--ink)]">{v}</dd>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Type:</span>
-                <span className="font-medium capitalize">{appointment.type}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            ))}
+          </dl>
+          <p className="mt-3 text-sm text-[var(--ink-2)] max-w-[65ch]">{treatment.description}</p>
+        </section>
+      )}
 
-      {/* Pre-Consultation Checklist */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Pre-Consultation Checklist</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ul className="space-y-3">
-            <li className="flex items-start">
-              <CheckCircle className={`w-5 h-5 mr-3 flex-shrink-0 mt-0.5 ${questionnaireDone ? 'text-accent-600' : 'text-gray-300'}`} />
+      {/* Before you join */}
+      <section aria-labelledby="prep" className="mt-10">
+        <SectionTitle><span id="prep">Before you join</span></SectionTitle>
+        <ul className="bg-[var(--surface)] border border-[var(--line)] rounded-xl divide-y divide-[var(--line)]">
+          {checklist.map(item => (
+            <li key={item.title} className="flex items-start gap-3 px-5 py-4">
+              {item.done ? (
+                <CheckCircle2 className="size-5 mt-0.5 shrink-0 text-[var(--pine)]" aria-label="Done" />
+              ) : (
+                <Circle className="size-5 mt-0.5 shrink-0 text-[var(--line-strong)]" aria-hidden="true" />
+              )}
               <div>
-                <p className="font-medium">
-                  {questionnaireDone ? 'Medical questionnaire completed' : 'Complete your medical questionnaire'}
-                </p>
-                <p className="text-sm text-gray-600">
-                  {questionnaireDone
-                    ? 'Your responses have been shared with the doctor'
-                    : 'Your doctor will review it before the consultation'}
-                </p>
+                <p className="font-medium text-[var(--ink)]">{item.title}</p>
+                <p className="text-sm text-[var(--ink-3)] mt-0.5">{item.detail}</p>
               </div>
             </li>
-            <li className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-accent-600 mr-3 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium">Find a quiet, private space</p>
-                <p className="text-sm text-gray-600">Ensure good lighting and minimal background noise</p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-accent-600 mr-3 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium">Test your camera and microphone</p>
-                <p className="text-sm text-gray-600">Make sure your devices are working properly</p>
-              </div>
-            </li>
-            <li className="flex items-start">
-              <CheckCircle className="w-5 h-5 text-accent-600 mr-3 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="font-medium">Have your questions ready</p>
-                <p className="text-sm text-gray-600">Prepare any questions you want to ask the doctor</p>
-              </div>
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
-
-      {/* Action Buttons */}
-      <div className="flex gap-4 justify-center">
-        <Button
-          variant="outline"
-          onClick={() => navigate(`/questionnaire/${appointment.treatmentId}`)}
-        >
-          <FileText className="w-4 h-4 mr-2" />
-          {questionnaireDone ? 'View My Questionnaire' : 'Complete Questionnaire'}
-        </Button>
-        <Button
-          onClick={handleJoinConsultation}
-          size="lg"
-          className="bg-accent-600 hover:bg-accent-700"
-        >
-          <Video className="w-5 h-5 mr-2" />
-          Join Consultation
-        </Button>
-      </div>
-
-      <p className="text-center text-sm text-gray-500 mt-6">
-        The "Join" button will become active 5 minutes before your scheduled time.
-        <br />
-        For this demo, you can join anytime.
-      </p>
-    </div>
+          ))}
+        </ul>
+      </section>
+    </Page>
   )
 }
 
 export default ConsultationWaiting
-

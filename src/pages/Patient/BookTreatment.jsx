@@ -1,16 +1,15 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { MapPin, Star, Clock, Calendar, CheckCircle, User } from 'lucide-react'
+import { MapPin, Star, CheckCircle } from 'lucide-react'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
-import Select from '../../components/ui/Select'
+import { Stepper, Summary, ChoiceButton, FlowTitle } from '../../components/ui/Flow'
 import Badge from '../../components/ui/Badge'
 import NotFound from '../../components/NotFound'
-import { upcomingDateKeys, localDateTimeISO, formatDateKey } from '../../utils/dates'
-import { selectableProps } from '../../utils/a11y'
+import { upcomingDateKeys, localDateTimeISO, formatDateKey, parseLocalDate } from '../../utils/dates'
+import { DOCTOR_PHOTOS } from '../../utils/doctorPhotos'
 
 const BookTreatment = () => {
   const { planId } = useParams()
@@ -18,7 +17,7 @@ const BookTreatment = () => {
   const { createAppointment, appointments, getTreatmentById, getDoctors } = useAppState()
   const { user } = useAuth()
   const toast = useToast()
-  
+
   // Treatments are booked from the patient's own completed consultation
   const consultationApt = appointments.find(apt =>
     apt.id === planId && apt.patientId === user?.id && apt.type === 'consultation' && apt.status === 'completed'
@@ -26,7 +25,7 @@ const BookTreatment = () => {
   const treatment = getTreatmentById(consultationApt?.treatmentId)
   const doctors = getDoctors()
   const assignedDoctor = doctors.find(d => d.id === consultationApt?.doctorId)
-  
+
   const [selectedClinic, setSelectedClinic] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
   const [selectedTime, setSelectedTime] = useState('')
@@ -95,281 +94,195 @@ const BookTreatment = () => {
       ]
     })
 
-    toast.success('Treatment appointment booked successfully!')
+    toast.success('Treatment booked')
     navigate(`/payment/${appointment.id}`)
   }
 
   if (!treatment) {
-    return <NotFound title="Treatment plan not found" backTo="/dashboard" backLabel="Back to dashboard" />
+    return (
+      <NotFound
+        title="Treatment plan not found"
+        message="We could not find the consultation this booking belongs to. Your dashboard lists every plan."
+        backTo="/dashboard"
+        backLabel="Back to dashboard"
+      />
+    )
   }
 
+  const clinic = clinics.find(c => c.id === selectedClinic)
+  const longDate = (key) => formatDateKey(key, { weekday: 'long', day: 'numeric', month: 'long' })
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Book Treatment Appointment</h1>
-        <p className="text-gray-600">For: {treatment.name}</p>
-      </div>
+    <div className="container-page py-8 md:py-12">
+      <Stepper steps={['Clinic and time', 'Payment', 'Treatment day']} current={1} />
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          {/* Assigned Doctor */}
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_340px] gap-8 lg:gap-12 items-start">
+        <div className="min-w-0 flex flex-col gap-10">
+          <FlowTitle
+            kicker={`TREATMENT / ${treatment.id.toUpperCase()}`}
+            title="Book your treatment"
+            description={`For ${treatment.name}. Your doctor approved this plan; choose where and when.`}
+          />
+
+          {/* Assigned doctor */}
           {assignedDoctor && (
-            <Card className="bg-gradient-to-r from-primary-50 to-blue-50 border-primary-200">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-primary-600 mr-2" />
-                  Your Assigned Doctor
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-start gap-4">
-                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0 border-2 border-primary-200">
-                    <User className="w-10 h-10 text-primary-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900">{assignedDoctor.name}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{assignedDoctor.title}</p>
-                    <div className="flex items-center mb-3">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-                      <span className="font-semibold text-sm mr-3">{assignedDoctor.profile.rating}</span>
-                      <span className="text-xs text-gray-600">
-                        {assignedDoctor.profile.totalConsultations} treatments • {assignedDoctor.profile.yearsExperience} years experience
-                      </span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {assignedDoctor.specialization.slice(0, 3).map((spec, idx) => (
-                        <Badge key={idx} variant="default" className="text-xs">
-                          {spec}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+            <section aria-labelledby="doctor-title" className="flex items-start gap-4 rounded-xl border border-[var(--line)] bg-[var(--surface)] p-5">
+              {DOCTOR_PHOTOS[assignedDoctor.id] ? (
+                <img src={DOCTOR_PHOTOS[assignedDoctor.id]} alt="" className="size-16 rounded-full object-cover object-top shrink-0 border border-[var(--line)]" />
+              ) : (
+                <span className="grid place-items-center size-16 rounded-full bg-[var(--sunk)] text-[var(--ink-2)] font-semibold text-lg shrink-0">
+                  {assignedDoctor.name.replace(/^Dr\.?\s+/, '')[0]}
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="flex items-center gap-1.5 text-sm text-[var(--pine)] font-medium">
+                  <CheckCircle className="size-4" aria-hidden="true" />
+                  Your assigned doctor
+                </p>
+                <h2 id="doctor-title" className="mt-1 text-lg font-semibold text-[var(--ink)]">{assignedDoctor.name}</h2>
+                <p className="text-sm text-[var(--ink-3)]">{assignedDoctor.title}</p>
+                <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                  <span className="flex items-center gap-1">
+                    <Star className="size-4 fill-[var(--star)] text-[var(--star)]" aria-hidden="true" />
+                    <span className="figure text-[var(--ink)]">{assignedDoctor.profile.rating}</span>
+                  </span>
+                  <span className="label-mono">{assignedDoctor.profile.totalConsultations} treatments / {assignedDoctor.profile.yearsExperience} years</span>
+                </p>
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {assignedDoctor.specialization.slice(0, 3).map((spec, idx) => (
+                    <Badge key={idx} variant="default">{spec}</Badge>
+                  ))}
                 </div>
-                <div className="mt-4 p-3 bg-white rounded-lg border border-primary-200">
-                  <p className="text-sm text-gray-700">
-                    <strong>{assignedDoctor.name.split(' ')[1]}</strong> will perform your treatment at your selected clinic location.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Select Clinic */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Partner Clinic</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {clinics.map(clinic => (
-                  <div
-                    key={clinic.id}
-                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                      selectedClinic === clinic.id
-                        ? 'border-primary-600 bg-primary-50'
-                        : 'border-gray-200 hover:border-primary-300'
-                    }`}
-                    {...selectableProps(() => setSelectedClinic(clinic.id), selectedClinic === clinic.id)}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div>
-                        <h3 className="font-semibold text-lg">{clinic.name}</h3>
-                        <div className="flex items-center text-sm text-gray-600 mt-1">
-                          <MapPin className="w-4 h-4 mr-1" />
-                          {clinic.address}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <div className="flex items-center">
-                          <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-                          <span className="font-semibold">{clinic.rating}</span>
-                        </div>
-                        <p className="text-xs text-gray-500">{clinic.reviews} reviews</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <Badge variant="default">{clinic.distance} away</Badge>
-                      <span className="text-gray-600">
-                        Next available: {formatDateKey(clinic.nextAvailable)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                <p className="mt-3 text-sm text-[var(--ink-2)]">
+                  {assignedDoctor.name} will carry out your treatment at the clinic you choose.
+                </p>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Select Date & Time */}
-          {selectedClinic && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Select Date & Time</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <Select
-                    label="Appointment Date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                  >
-                    <option value="">Select a date...</option>
-                    {availableDates.map(date => (
-                      <option key={date} value={date}>
-                        {formatDateKey(date, {
-                          weekday: 'long',
-                          day: 'numeric',
-                          month: 'long'
-                        })}
-                      </option>
-                    ))}
-                  </Select>
-
-                  {selectedDate && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Available Time Slots
-                      </label>
-                      <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
-                        {timeSlots.map(time => (
-                          <button
-                            key={time}
-                            type="button"
-                            aria-pressed={selectedTime === time}
-                            onClick={() => setSelectedTime(time)}
-                            className={`p-2 text-sm rounded-lg border-2 transition-all ${
-                              selectedTime === time
-                                ? 'border-primary-600 bg-primary-50 text-primary-700 font-semibold'
-                                : 'border-gray-200 hover:border-primary-300'
-                            }`}
-                          >
-                            {time}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            </section>
           )}
 
-          {/* Pre-Treatment Instructions */}
-          {selectedDate && selectedTime && (
-            <Card className="bg-blue-50 border-blue-200">
-              <CardHeader>
-                <CardTitle>Pre-Treatment Instructions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Avoid alcohol 24 hours before treatment</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Avoid blood thinners 48 hours before</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Arrive with clean face (no makeup)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm">Bring photo ID for verification</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-24">
-            <CardHeader>
-              <CardTitle>Appointment Summary</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {assignedDoctor && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Your Doctor</p>
-                    <div className="flex items-center">
-                      <User className="w-4 h-4 mr-2 text-primary-600" />
-                      <span className="font-semibold">{assignedDoctor.name}</span>
-                    </div>
-                    <div className="flex items-center mt-1">
-                      <Star className="w-3 h-3 fill-yellow-400 text-yellow-400 mr-1" />
-                      <span className="text-xs text-gray-600">{assignedDoctor.profile.rating} rating</span>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Treatment</p>
-                  <p className="font-semibold">{treatment.name}</p>
-                </div>
-
-                {selectedClinic && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Clinic</p>
-                    <p className="font-semibold">{clinics.find(c => c.id === selectedClinic)?.name}</p>
-                  </div>
-                )}
-
-                {selectedDate && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Date</p>
-                    <div className="flex items-center">
-                      <Calendar className="w-4 h-4 mr-2 text-primary-600" />
-                      <span className="font-semibold">
-                        {formatDateKey(selectedDate, {
-                          day: 'numeric',
-                          month: 'long'
-                        })}
+          {/* Clinic */}
+          <fieldset>
+            <legend className="text-lg font-semibold text-[var(--ink)] mb-4">Partner clinic</legend>
+            <div className="flex flex-col gap-2">
+              {clinics.map(c => (
+                <ChoiceButton key={c.id} selected={selectedClinic === c.id} onClick={() => setSelectedClinic(c.id)} className="p-4">
+                  <span className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                    <span>
+                      <span className="block font-semibold text-[var(--ink)]">{c.name}</span>
+                      <span className="flex items-center gap-1.5 mt-1 text-sm text-[var(--ink-3)]">
+                        <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
+                        {c.address}
                       </span>
-                    </div>
-                  </div>
-                )}
-
-                {selectedTime && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Time</p>
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-2 text-primary-600" />
-                      <span className="font-semibold">{selectedTime}</span>
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t">
-                  <div className="flex justify-between items-center mb-4">
-                    <span className="font-semibold">Treatment Cost</span>
-                    <span className="text-2xl font-bold text-primary-600">
-                      €{treatment.price.treatment}
                     </span>
-                  </div>
+                    <span className="flex sm:flex-col sm:items-end gap-x-4 gap-y-0.5 text-sm shrink-0">
+                      <span className="flex items-center gap-1">
+                        <Star className="size-3.5 fill-[var(--star)] text-[var(--star)]" aria-hidden="true" />
+                        <span className="figure text-[var(--ink)]">{c.rating}</span>
+                        <span className="text-[var(--ink-3)]">(<span className="figure">{c.reviews}</span> reviews)</span>
+                      </span>
+                      <span className="figure text-[var(--ink-2)]">{c.distance} away</span>
+                    </span>
+                  </span>
+                  <span className="block mt-2 text-sm text-[var(--ink-3)]">
+                    Next available <span className="figure text-[var(--ink-2)]">{formatDateKey(c.nextAvailable)}</span>
+                  </span>
+                </ChoiceButton>
+              ))}
+            </div>
+          </fieldset>
 
-                  <Button
-                    className="w-full"
-                    onClick={handleBooking}
-                    disabled={!selectedClinic || !selectedDate || !selectedTime}
-                  >
-                    Confirm Booking
-                  </Button>
-
-                  <p className="text-xs text-gray-500 text-center mt-3">
-                    You'll receive confirmation via email and SMS
-                  </p>
-                </div>
+          {/* Date and time */}
+          {selectedClinic && (
+            <fieldset className="animate-fade-in">
+              <legend className="text-lg font-semibold text-[var(--ink)] mb-4">Date</legend>
+              <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap snap-x">
+                {availableDates.map(date => {
+                  const d = parseLocalDate(date)
+                  return (
+                    <ChoiceButton
+                      key={date}
+                      selected={selectedDate === date}
+                      onClick={() => setSelectedDate(date)}
+                      className="snap-start shrink-0 w-[4.5rem] py-2.5 text-center"
+                      aria-label={longDate(date)}
+                    >
+                      <span className="block text-xs text-[var(--ink-3)]">{d.toLocaleDateString('en-GB', { weekday: 'short' })}</span>
+                      <span className="block figure text-xl text-[var(--ink)]">{d.getDate()}</span>
+                      <span className="block text-xs text-[var(--ink-3)]">{d.toLocaleDateString('en-GB', { month: 'short' })}</span>
+                    </ChoiceButton>
+                  )
+                })}
               </div>
-            </CardContent>
-          </Card>
+
+              {selectedDate && (
+                <div className="mt-8 animate-fade-in" role="group" aria-labelledby="time-title">
+                  <h2 id="time-title" className="text-lg font-semibold text-[var(--ink)] mb-1">Time</h2>
+                  <p className="text-sm text-[var(--ink-3)] mb-4">{longDate(selectedDate)}</p>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+                    {timeSlots.map(time => (
+                      <ChoiceButton
+                        key={time}
+                        selected={selectedTime === time}
+                        onClick={() => setSelectedTime(time)}
+                        className="h-11 figure text-sm text-center"
+                      >
+                        {time}
+                      </ChoiceButton>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </fieldset>
+          )}
+
+          {/* Pre-treatment instructions */}
+          {selectedDate && selectedTime && (
+            <section aria-labelledby="pre-title" className="rounded-xl bg-[var(--pine-wash)] border border-[var(--pine-tint)] p-5 animate-fade-in">
+              <h2 id="pre-title" className="font-semibold text-[var(--ink)] mb-3">Before your treatment</h2>
+              <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+                {[
+                  'Avoid alcohol for 24 hours before',
+                  'Avoid blood thinners for 48 hours before',
+                  'Arrive with a clean face, no make-up',
+                  'Bring photo ID for verification',
+                ].map(item => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-[var(--ink-2)]">
+                    <CheckCircle className="size-4 mt-0.5 shrink-0 text-[var(--pine)]" aria-hidden="true" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </div>
+
+        {/* Summary */}
+        <aside className="lg:sticky lg:top-24" aria-label="Appointment summary">
+          <Summary
+            code="APPOINTMENT"
+            meta="45 MIN"
+            title={treatment.name}
+            rows={[
+              ...(assignedDoctor ? [{ label: 'Doctor', value: assignedDoctor.name }] : []),
+              { label: 'Clinic', value: clinic?.name ?? 'Not chosen', muted: !clinic },
+              { label: 'Date', value: selectedDate ? formatDateKey(selectedDate, { day: 'numeric', month: 'long' }) : 'Not chosen', muted: !selectedDate, mono: !!selectedDate },
+              { label: 'Time', value: selectedTime || 'Not chosen', muted: !selectedTime, mono: !!selectedTime },
+            ]}
+            total={{ label: 'Treatment cost', value: `€${treatment.price.treatment}` }}
+          >
+            <Button
+              size="lg"
+              className="w-full mt-5"
+              onClick={handleBooking}
+              disabled={!selectedClinic || !selectedDate || !selectedTime}
+            >
+              Continue to payment
+            </Button>
+          </Summary>
+        </aside>
       </div>
     </div>
   )
 }
 
 export default BookTreatment
-

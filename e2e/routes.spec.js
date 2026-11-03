@@ -64,7 +64,11 @@ for (const route of ROUTES) {
       await expect(page.locator('main h1, main h2').first()).toBeVisible()
       await expect(page).toHaveTitle(/DoktorABC/)
 
-      const hrefs = await page.$$eval('a[href]', as => as.map(a => a.getAttribute('href')))
+      const hrefs = await page.$$eval('a[href]', as => as.map(a => {
+        const h = a.getAttribute('href')
+        // An in-page anchor (the skip link) is fine when its target is on the page.
+        return /^#./.test(h) && document.getElementById(h.slice(1)) ? null : h
+      }).filter(h => h !== null))
       const dead = hrefs.filter(h => {
         if (/^(mailto:|tel:|https?:)/.test(h)) return false
         if (!h.startsWith('/')) return true // '#', '' and relative junk

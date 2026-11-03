@@ -1,9 +1,18 @@
-import { test, expect, loginAs, expectNoA11yViolations } from './fixtures.js'
+import { test, expect, loginAs, expectNoA11yViolations, expectNoHorizontalScroll } from './fixtures.js'
 
 // One test per user flow. Each runs at desktop 1440x900 and mobile 390x844 (see playwright.config.js),
 // and the fixture fails it on any console error or failed request.
 
-const toast = (page, text) => page.getByRole('status').getByText(text)
+// Error toasts are role="alert", the rest role="status".
+const toast = (page, text) => page.getByRole('region', { name: 'Notifications' }).getByText(text)
+// A stat tile's figure, found by its label (Support "Urgent", CS "Open inquiries").
+// The innermost div holding both the label and a figure is the tile itself (outer ones hold every tile).
+const statValue = (page, label) =>
+  page.locator('div', { has: page.getByText(label, { exact: true }) })
+    .filter({ has: page.locator('p.figure') }).last().locator('p.figure')
+// Portal lists are a table on desktop and a list on phones; only one is visible.
+const visibleRow = (page, text) =>
+  page.getByRole('row').or(page.getByRole('listitem')).filter({ hasText: text, visible: true })
 const VALID_CARD = { number: '4242 4242 4242 4242', expiry: '12/30', cvc: '123' }
 
 async function signIn(page, email, password = 'demo123') {
@@ -45,7 +54,7 @@ test.describe('auth', () => {
 
   test('register validates, creates a persistent account and rejects a duplicate email', async ({ page }) => {
     await page.goto('/register')
-    await page.getByRole('button', { name: /create account/i }).click()
+    await page.getByRole('main').getByRole('button', { name: /create account/i }).click()
     await expect(page.getByLabel('Full Name')).toHaveAttribute('aria-invalid', 'true')
 
     const email = `new.patient.${Date.now()}@example.com`
@@ -56,7 +65,7 @@ test.describe('auth', () => {
     await page.getByLabel('Password', { exact: true }).fill('secret123')
     await page.getByLabel('Confirm Password').fill('secret123')
     await page.getByRole('checkbox').check()
-    await page.getByRole('button', { name: /create account/i }).click()
+    await page.getByRole('main').getByRole('button', { name: /create account/i }).click()
     await expect(page).toHaveURL(/\/dashboard$/)
 
     // Sign out, then sign back in with the new account
@@ -75,7 +84,7 @@ test.describe('auth', () => {
     await page.getByLabel('Password', { exact: true }).fill('secret123')
     await page.getByLabel('Confirm Password').fill('secret123')
     await page.getByRole('checkbox').check()
-    await page.getByRole('button', { name: /create account/i }).click()
+    await page.getByRole('main').getByRole('button', { name: /create account/i }).click()
     await expect(page).toHaveURL(/\/register$/)
     await expect(page.getByLabel('Email Address')).toHaveAttribute('aria-invalid', 'true')
   })
@@ -134,16 +143,18 @@ test.describe('visitor', () => {
 
   test('contact form validates and creates a ticket that customer service sees', async ({ page }) => {
     await page.goto('/contact')
-    // Empty required fields are stopped by the browser
+    // Empty fields are refused and flagged
     await page.getByRole('button', { name: /send/i }).click()
-    expect(await page.getByLabel('Your Name').evaluate(el => el.validity.valid)).toBe(false)
-    // Blank-but-filled fields get past the browser and are caught by the form
+    await expect(toast(page, 'Please fill in every field with valid details')).toBeVisible()
+    await expect(page.getByLabel('Your Name')).toHaveAttribute('aria-invalid', 'true')
+    // Blank-but-filled fields are trimmed and refused too
     await page.getByLabel('Your Name').fill('   ')
     await page.getByLabel('Email Address').fill('vera@example.com')
     await page.getByLabel('Subject').selectOption('delivery')
     await page.getByLabel('Your Message').fill('   ')
     await page.getByRole('button', { name: /send/i }).click()
-    await expect(toast(page, 'Please fill in every field with valid details')).toBeVisible()
+    await expect(page.getByLabel('Your Name')).toHaveAttribute('aria-invalid', 'true')
+    await expect(page.getByLabel('Your Message')).toHaveAttribute('aria-invalid', 'true')
 
     await page.getByLabel('Your Name').fill('Vera Visitor')
     await page.getByLabel('Email Address').fill('vera@example.com')
@@ -175,8 +186,10 @@ test.describe('patient', () => {
 
     await expect(page).toHaveURL(/\/book-consultation$/)
     await page.getByRole('button', { name: /Dr\. Emily Watson/ }).click()
-    const date = page.getByLabel('Consultation Date')
-    await date.selectOption({ index: 1 })
+    // The 14-day date strip scrolls inside its row and must not widen the page
+    await expectNoHorizontalScroll(page)
+    // Dates are buttons named by the full date; take the second one offered
+    await page.getByRole('group', { name: 'Date' }).getByRole('button').nth(1).click()
     await page.getByRole('button', { name: '10:00' }).click()
     await page.getByRole('button', { name: 'Confirm Booking' }).click()
     await expect(page).toHaveURL(/\/consultation\/waiting\//)
@@ -241,9 +254,9 @@ test.describe('patient', () => {
     await page.reload()
     await expect(page.getByLabel('Full Name')).toHaveValue('Sarah J. Johnson')
 
-    await page.getByRole('button', { name: 'Change Password' }).first().click()
+    await page.getByRole('tab', { name: /password/i }).click()
     await page.getByLabel('Current Password').fill('demo123')
-    await page.getByLabel('New Password', { exact: true }).fill('newpass1')
+    await page.getByLabel('New password', { exact: true }).fill('newpass1')
     await page.getByLabel('Confirm New Password').fill('different')
     await page.getByRole('button', { name: /change password|update password/i }).last().click()
     await expect(toast(page, 'New passwords do not match')).toBeVisible()
@@ -288,16 +301,21 @@ test.describe('doctor', () => {
 
   test('availability validates hours and persists', async ({ page }) => {
     await page.goto('/doctor/availability')
-    const monday = page.getByLabel('monday hours')
-    await monday.fill('9-5')
+    const start = page.getByLabel('Monday start')
+    const end = page.getByLabel('Monday end')
+    // End before start is refused
+    await start.fill('17:00')
+    await end.fill('09:00')
     await page.getByRole('button', { name: 'Save Availability' }).click()
     await expect(toast(page, 'Please fix the highlighted hours')).toBeVisible()
-    await expect(monday).toHaveAttribute('aria-invalid', 'true')
-    await monday.fill('08:00-12:00')
+    await expect(start).toHaveAttribute('aria-invalid', 'true')
+    await start.fill('08:00')
+    await end.fill('12:00')
     await page.getByRole('button', { name: 'Save Availability' }).click()
     await expect(toast(page, 'Availability updated successfully')).toBeVisible()
     await page.reload()
-    await expect(page.getByLabel('monday hours')).toHaveValue('08:00-12:00')
+    await expect(page.getByLabel('Monday start')).toHaveValue('08:00')
+    await expect(page.getByLabel('Monday end')).toHaveValue('12:00')
   })
 })
 
@@ -306,16 +324,16 @@ test.describe('pharmacy', () => {
 
   test('an order moves new -> preparing -> ready -> dispatched', async ({ page }) => {
     await page.goto('/pharmacy/orders')
-    const order = page.locator('div.p-4.border.rounded-lg').filter({ hasText: 'Order #rx-009' })
+    const order = visibleRow(page, 'Order #rx-009')
     await order.getByRole('button', { name: 'Mark as Preparing' }).click()
     await order.getByRole('button', { name: 'Mark as Ready' }).click()
     await expect(toast(page, 'Order ready to ship')).toBeVisible()
-    await expect(order.getByText('ready', { exact: true })).toBeVisible()
+    await expect(order.getByText('ready', { exact: true }).first()).toBeVisible()
 
     await page.goto('/pharmacy/delivery')
-    const delivery = page.locator('div.p-4.border.rounded-lg').filter({ hasText: 'Order #rx-009' })
+    const delivery = visibleRow(page, 'Order #rx-009')
     await delivery.getByRole('button', { name: 'Mark as Dispatched' }).click()
-    await expect(delivery.getByText('dispatched', { exact: true })).toBeVisible()
+    await expect(delivery.getByText('dispatched', { exact: true }).first()).toBeVisible()
   })
 
   test('reorder restocks a low item', async ({ page }) => {
@@ -334,10 +352,9 @@ test.describe('support and customer service', () => {
     await loginAs(page, 'support')
     await page.goto('/support/dashboard')
     // ticket-003 is resolved (and urgent); ticket-004 is open
-    await expect(page.getByText('Inventory sync error')).toBeVisible()
+    await expect(page.getByText('Inventory sync error').filter({ visible: true })).toBeVisible()
     await expect(page.getByText('Video consultation not loading')).toHaveCount(0)
-    const urgent = page.locator('p', { hasText: /^Urgent$/ }).locator('xpath=following-sibling::p[1]')
-    await expect(urgent).toHaveText('0')
+    await expect(statValue(page, 'Urgent')).toHaveText('0')
 
     await page.goto('/support/tickets')
     await page.getByRole('button', { name: 'Mark as Resolved' }).first().click()
@@ -348,13 +365,16 @@ test.describe('support and customer service', () => {
   test('customer service counts in-progress inquiries as open', async ({ page }) => {
     await loginAs(page, 'customer-service')
     await page.goto('/customer-service/dashboard')
-    const open = page.locator('p', { hasText: /^Open Inquiries$/ }).locator('xpath=following-sibling::p[1]')
-    await expect(open).toHaveText('3')
+    await expect(statValue(page, 'Open inquiries')).toHaveText('3')
   })
 
-  test('a reply shows in the open thread, also on in-progress inquiries, and resolving closes it', async ({ page }) => {
+  test('a reply shows in the open thread, also on in-progress inquiries, and resolving closes it', async ({ page, isMobile }) => {
     await loginAs(page, 'customer-service')
     await page.goto('/customer-service/inquiries')
+    // On phones the list hides while a thread is open; this goes back to it.
+    const backToList = async () => {
+      if (isMobile) await page.getByRole('button', { name: 'All inquiries' }).click()
+    }
 
     // in-progress inquiry can be answered
     await page.getByRole('button', { name: /Delivery address change/ }).click()
@@ -363,21 +383,24 @@ test.describe('support and customer service', () => {
     await expect(toast(page, 'Reply sent')).toBeVisible()
     await expect(page.getByText('Address updated, thanks!')).toBeVisible()
     await expect(page.getByLabel('Your Reply')).toHaveValue('')
+    await backToList()
 
     // keyboard selection works and an open inquiry moves to in-progress once answered
     const card = page.getByRole('button', { name: /Question about treatment timing/ })
     await card.focus()
     await page.keyboard.press('Enter')
-    await expect(card).toHaveAttribute('aria-pressed', 'true')
     await page.getByLabel('Your Reply').fill('Avoid the gym for 24 hours.')
     await page.getByRole('button', { name: 'Send Reply' }).click()
     await expect(page.getByText('Avoid the gym for 24 hours.')).toBeVisible()
-    await expect(card.getByText('in-progress')).toBeVisible()
+    await backToList()
+    if (!isMobile) await expect(card).toHaveAttribute('aria-pressed', 'true')
+    await expect(card.getByText('In progress')).toBeVisible()
 
+    if (isMobile) await card.click()
     await page.getByRole('button', { name: 'Mark as Resolved' }).click()
     await expect(toast(page, 'Inquiry resolved')).toBeVisible()
-    await expect(page.getByText('Select an inquiry to view details')).toBeVisible()
-    await expect(card.getByText('resolved')).toBeVisible()
+    if (!isMobile) await expect(page.getByText('Select an inquiry', { exact: true })).toBeVisible()
+    await expect(card.getByText('Resolved')).toBeVisible()
   })
 })
 

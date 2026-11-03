@@ -1,36 +1,51 @@
 import React from 'react'
 import { cn } from '../../utils/cn'
 
-const Button = React.forwardRef(({ 
-  className, 
-  variant = 'primary', 
+// One primary (pine) action per view. `accent` and `outline` are kept as
+// aliases so older call sites resolve to the same two-tier system.
+const Button = React.forwardRef(({
+  className,
+  variant = 'primary',
   size = 'md',
-  children, 
+  children,
   disabled,
-  ...props 
+  type = 'button',
+  ...props
 }, ref) => {
-  const baseStyles = 'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
-  
+  const baseStyles =
+    'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium select-none ' +
+    'transition-[background-color,border-color,color,transform] duration-[var(--dur-fast)] ease-[var(--ease-out)] ' +
+    'active:translate-y-px disabled:cursor-not-allowed disabled:active:translate-y-0 ' +
+    // Disabled reads as "not yet", still legible: ink-3 on sunk is 4.96:1.
+    'disabled:bg-[var(--sunk)] disabled:text-[var(--ink-3)] disabled:border-[var(--line)] disabled:hover:bg-[var(--sunk)] ' +
+    '[&_svg]:size-[1.1em] [&_svg]:shrink-0'
+
+  const primary = 'bg-[var(--pine)] text-[var(--on-pine)] hover:bg-[var(--pine-hover)] active:bg-[var(--pine-press)]'
+  const secondary =
+    'bg-[var(--surface)] text-[var(--ink)] border border-[var(--line-strong)] hover:bg-[var(--sunk)] hover:border-[var(--ink-3)]'
+
   const variants = {
-    primary: 'bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-600/40',
-    secondary: 'bg-neutral-200 text-neutral-900 hover:bg-neutral-300 focus:ring-neutral-500',
-    accent: 'bg-accent-500 text-white hover:bg-accent-600 focus:ring-accent-500 shadow-lg shadow-accent-500/30 hover:shadow-xl hover:shadow-accent-600/40',
-    outline: 'border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500 hover:shadow-md',
-    ghost: 'text-neutral-700 hover:bg-neutral-100 focus:ring-neutral-500',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 shadow-lg shadow-red-500/30',
+    primary,
+    accent: primary,
+    secondary,
+    outline: secondary,
+    ghost: 'text-[var(--ink-2)] hover:text-[var(--ink)] hover:bg-[var(--sunk)]',
+    danger: 'bg-[var(--danger)] text-[var(--on-pine)] hover:bg-[var(--danger-ink)]',
+    'danger-quiet': 'text-[var(--danger-ink)] border border-[var(--line-strong)] bg-[var(--surface)] hover:bg-[var(--danger-tint)] hover:border-[var(--danger)]',
   }
-  
+
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    sm: 'h-9 px-3 text-sm',
+    md: 'h-11 px-4 text-[0.9375rem]',
+    lg: 'h-[52px] px-6 text-base',
   }
 
   return (
     <button
-      className={cn(baseStyles, variants[variant], sizes[size], className)}
+      className={cn(baseStyles, variants[variant] ?? primary, sizes[size], className)}
       ref={ref}
       disabled={disabled}
+      type={type}
       {...props}
     >
       {children}
@@ -41,4 +56,3 @@ const Button = React.forwardRef(({
 Button.displayName = 'Button'
 
 export default Button
-
