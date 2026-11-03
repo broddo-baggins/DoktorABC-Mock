@@ -1,6 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { readFileSync } from 'fs'
+
+// `vite preview` serves the same security headers as Vercel, so the e2e suite runs under the real CSP.
+// HSTS and upgrade-insecure-requests are left out locally because preview is plain http.
+const vercelHeaders = Object.fromEntries(
+  JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8'))
+    .headers.find(h => h.source === '/(.*)').headers
+    .filter(h => h.key !== 'Strict-Transport-Security')
+    .map(h => [h.key, h.value.replace(/;\s*upgrade-insecure-requests/, '')])
+)
 
 export default defineConfig({
   plugins: [react()],
@@ -14,20 +24,29 @@ export default defineConfig({
       : '/'),
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
+      '@': path.resolve(import.meta.dirname, './src'),
     },
   },
   server: {
     port: 3000,
     open: true
   },
+  preview: {
+    headers: vercelHeaders
+  },
+  test: {
+    // e2e/*.spec.js belongs to Playwright
+    include: ['src/**/*.test.{js,jsx}']
+  },
   build: {
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'ui-vendor': ['framer-motion', 'lucide-react'],
-          'utils-vendor': ['clsx', 'tailwind-merge']
+        codeSplitting: {
+          groups: [
+            { name: 'react-vendor', test: /node_modules[\\/](react|react-dom|react-router|react-router-dom|scheduler)[\\/]/ },
+            { name: 'ui-vendor', test: /node_modules[\\/]lucide-react[\\/]/ },
+            { name: 'utils-vendor', test: /node_modules[\\/](clsx|tailwind-merge)[\\/]/ }
+          ]
         }
       }
     },

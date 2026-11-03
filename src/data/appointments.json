@@ -61,6 +61,19 @@
     "location": "Virtual",
     "notes": "2-week post-treatment check-in",
     "outcome": null
+  },
+  {
+    "id": "appt-005",
+    "patientId": "patient-002",
+    "doctorId": "doctor-001",
+    "treatmentId": "dermal-fillers-lips",
+    "type": "consultation",
+    "status": "scheduled",
+    "datetime": "2025-10-28T12:00:00Z",
+    "duration": 30,
+    "location": "Virtual",
+    "notes": "First consultation about lip fillers.",
+    "outcome": null
   }
 ]
 

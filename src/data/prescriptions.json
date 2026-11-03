@@ -122,6 +122,36 @@
     "expiryDate": "2026-03-20",
     "instructions": "Apply to injection sites twice daily for 7-10 days post-treatment to reduce bruising and aid healing.",
     "price": 18
+  },
+  {
+    "id": "rx-009",
+    "patientId": "patient-001",
+    "doctorId": "doctor-001",
+    "medication": "Arnica Montana Gel",
+    "dosage": "Apply 3 times daily",
+    "quantity": 1,
+    "refills": 0,
+    "status": "pending",
+    "pharmacyId": "pharmacy-001",
+    "issuedDate": "2025-10-28",
+    "expiryDate": "2026-04-28",
+    "instructions": "Apply gently to treatment area 3 times daily for 5 days to reduce bruising.",
+    "price": 15
+  },
+  {
+    "id": "rx-010",
+    "patientId": "patient-002",
+    "doctorId": "doctor-002",
+    "medication": "Minoxidil 5% Solution",
+    "dosage": "1ml twice daily",
+    "quantity": 3,
+    "refills": 2,
+    "status": "pending",
+    "pharmacyId": "pharmacy-002",
+    "issuedDate": "2025-10-28",
+    "expiryDate": "2026-10-28",
+    "instructions": "Apply 1ml to the scalp twice daily. Do not wash hair for 4 hours after application.",
+    "price": 32
   }
 ]
 

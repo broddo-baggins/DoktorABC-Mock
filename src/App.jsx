@@ -1,11 +1,13 @@
 import React from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { AppStateProvider } from './contexts/AppStateContext'
 import { ToastProvider } from './components/ui/Toast'
 import ScrollToTop from './components/ScrollToTop'
+import ErrorBoundary from './components/ErrorBoundary'
 import Header from './components/Layout/Header'
 import Footer from './components/Layout/Footer'
+import { PageSkeleton } from './components/ui/Page'
 
 // Public Pages
 import Landing from './pages/LandingNew'
@@ -62,17 +64,15 @@ import InquiryManagement from './pages/CustomerService/InquiryManagement'
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-      </div>
-    )
+    return <PageSkeleton />
   }
 
   if (!user) {
-    return <Navigate to="/login" replace />
+    // Remember where the visitor was going so Login can send them back there.
+    return <Navigate to="/login" replace state={{ from: location }} />
   }
 
   if (allowedRoles && !allowedRoles.includes(user.role)) {
@@ -83,11 +83,13 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 }
 
 const AppContent = () => {
+  const { pathname } = useLocation()
   return (
     <div className="flex flex-col min-h-screen">
       <ScrollToTop />
       <Header />
-      <main className="flex-1">
+      <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
+        <ErrorBoundary resetKey={pathname}>
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Landing />} />
@@ -212,7 +214,7 @@ const AppContent = () => {
             }
           />
           <Route
-            path="/doctor/review/:patientId"
+            path="/doctor/review/:appointmentId"
             element={
               <ProtectedRoute allowedRoles={['doctor']}>
                 <PatientReview />
@@ -333,6 +335,7 @@ const AppContent = () => {
           {/* 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </main>
       <Footer />
     </div>

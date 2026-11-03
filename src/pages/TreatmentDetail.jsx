@@ -1,175 +1,205 @@
 import React from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, CheckCircle, Clock, Package } from 'lucide-react'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { ArrowLeft, Check, Clock, Package, ClipboardList, Stethoscope, Truck } from 'lucide-react'
 import { useAppState } from '../contexts/AppStateContext'
 import { useAuth } from '../contexts/AuthContext'
 import Button from '../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
+import NotFound from '../components/NotFound'
+import { useToast } from '../components/ui/Toast'
+import { Page, RxLabel } from '../components/ui/Page'
+import TreatmentGlyph, { CATEGORY_LABELS } from '../components/brand/TreatmentGlyph'
 
 const TreatmentDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { getTreatmentById } = useAppState()
+  const location = useLocation()
+  const { getTreatmentById, addToCart, cart } = useAppState()
   const { isAuthenticated, user } = useAuth()
+  const toast = useToast()
   const treatment = getTreatmentById(id)
 
   if (!treatment) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <p className="text-center text-gray-500">Treatment not found</p>
-      </div>
+      <NotFound
+        title="Treatment not found"
+        message="This treatment may have been renamed or withdrawn. Browse the full list to find what you need."
+        backTo="/categories"
+        backLabel="Browse treatments"
+      />
     )
   }
 
+  const isPatient = isAuthenticated && user?.role === 'patient'
+  // Medication can be ordered; aesthetic procedures are booked at a clinic instead
+  const canAddToCart = treatment.category !== 'aesthetic'
+  const inCart = cart.some(item => item.treatmentId === treatment.id)
+
   const handleStartConsultation = () => {
-    if (!isAuthenticated) {
-      navigate('/login')
-    } else if (user?.role === 'patient') {
+    if (isPatient) {
       navigate(`/questionnaire/${treatment.id}`)
+    } else if (!isAuthenticated) {
+      navigate('/login', { state: { from: { pathname: `/questionnaire/${treatment.id}` } } })
     } else {
-      navigate('/login')
+      toast.info('Consultations are booked from a patient account')
     }
   }
 
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      navigate('/login', { state: { from: location } })
+      return
+    }
+    if (!isPatient) {
+      toast.info('Orders are placed from a patient account')
+      return
+    }
+    addToCart({
+      treatmentId: treatment.id,
+      name: treatment.name,
+      description: treatment.description,
+      price: treatment.price.treatment
+    })
+    toast.success(`${treatment.name} added to cart`)
+  }
+
+  const steps = [
+    { icon: ClipboardList, title: 'Questionnaire', body: 'A few medical questions, on any device.' },
+    { icon: Stethoscope, title: 'Doctor review', body: 'A GMC-registered doctor checks it is right for you.' },
+    { icon: Truck, title: 'Treatment', body: 'Booked at a partner clinic, or delivered next day.' },
+  ]
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
+    <Page>
       <button
-        onClick={() => navigate(-1)}
-        className="flex items-center text-primary-600 hover:text-primary-700 mb-6"
+        type="button"
+        onClick={() => navigate('/categories')}
+        className="inline-flex items-center gap-1.5 -ml-1 mb-6 px-1 h-9 text-sm font-medium text-[var(--ink-2)] hover:text-[var(--ink)] rounded-md"
       >
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Back to Treatments
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Back to treatments
       </button>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Main Content */}
-        <div className="lg:col-span-2">
-          <div className="mb-6">
-            <div className="flex items-start justify-between mb-4">
-              <h1 className="text-4xl font-bold text-gray-900">{treatment.name}</h1>
-              {treatment.popular && (
-                <Badge variant="accent">Popular</Badge>
-              )}
-            </div>
-            <p className="text-xl text-gray-600">{treatment.description}</p>
+      <div className="grid lg:grid-cols-[minmax(0,1fr)_380px] gap-10 lg:gap-14 items-start">
+        {/* Main content */}
+        <div className="min-w-0">
+          <div className="flex items-center gap-3 mb-5">
+            <TreatmentGlyph treatment={treatment} size={44} />
+            <p className="label-mono">{CATEGORY_LABELS[treatment.category] ?? treatment.category}</p>
+            {treatment.popular && <Badge variant="primary">Popular</Badge>}
           </div>
+          <h1 className="text-[2rem] md:text-[2.75rem] leading-[1.08] font-semibold tracking-[-0.03em] text-[var(--ink)] max-w-[20ch]">
+            {treatment.name}
+          </h1>
+          <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[56ch]">{treatment.description}</p>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>About This Treatment</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 leading-relaxed">
-                {treatment.longDescription}
-              </p>
-            </CardContent>
-          </Card>
+          <section className="mt-12" aria-labelledby="about">
+            <h2 id="about" className="text-xl font-semibold mb-3">About this treatment</h2>
+            <p className="text-[var(--ink-2)] leading-relaxed max-w-[68ch]">{treatment.longDescription}</p>
+          </section>
 
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Benefits</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <section className="mt-12 grid md:grid-cols-2 gap-10" aria-label="Benefits and suitability">
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Benefits</h2>
               <ul className="space-y-3">
                 {treatment.benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-start">
-                    <CheckCircle className="w-5 h-5 text-accent-600 mr-3 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">{benefit}</span>
+                  <li key={index} className="flex items-start gap-3">
+                    <span className="grid place-items-center size-5 mt-0.5 rounded-full bg-[var(--pine-tint)] text-[var(--pine)] shrink-0">
+                      <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+                    </span>
+                    <span className="text-[var(--ink-2)]">{benefit}</span>
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Suitable For</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold mb-4">Suitable for</h2>
+              <ul className="flex flex-wrap gap-2">
                 {treatment.suitableFor.map((item, index) => (
-                  <Badge key={index} variant="default">{item}</Badge>
+                  <li key={index} className="h-9 inline-flex items-center px-3 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-sm text-[var(--ink-2)]">
+                    {item}
+                  </li>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
+              </ul>
+              <p className="mt-4 text-sm text-[var(--ink-3)] max-w-[44ch]">
+                The doctor confirms suitability from your questionnaire answers.
+              </p>
+            </div>
+          </section>
+
+          <section className="mt-12" aria-labelledby="how">
+            <h2 id="how" className="text-xl font-semibold mb-5">How it works</h2>
+            <ol className="grid sm:grid-cols-3 gap-px bg-[var(--line)] border border-[var(--line)] rounded-xl overflow-hidden">
+              {steps.map(({ icon: Icon, title, body }) => (
+                <li key={title} className="bg-[var(--surface)] p-5">
+                  <Icon className="size-5 text-[var(--pine)] mb-3" strokeWidth={1.75} aria-hidden="true" />
+                  <p className="font-semibold text-[var(--ink)]">{title}</p>
+                  <p className="mt-1 text-sm text-[var(--ink-3)]">{body}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1">
-          <Card className="sticky top-24">
-            <CardContent className="p-6">
-              <div className="mb-6">
-                <h3 className="text-sm text-gray-500 mb-2">Treatment Duration</h3>
-                <div className="flex items-center text-lg font-semibold">
-                  <Clock className="w-5 h-5 mr-2 text-gray-400" />
-                  {treatment.duration}
-                </div>
+        {/* Price label */}
+        <aside className="lg:sticky lg:top-24" aria-label="Pricing and booking">
+          <RxLabel
+            code={`RX ${treatment.id.toUpperCase()}`}
+            status={<span className="inline-flex items-center gap-1.5 text-[0.8125rem] text-[var(--ink-2)]"><Clock className="size-3.5" aria-hidden="true" />{treatment.duration}</span>}
+          >
+            <dl className="divide-y divide-[var(--line)] -my-1">
+              <div className="flex justify-between items-baseline py-2.5">
+                <dt className="text-[var(--ink-2)]">Consultation</dt>
+                <dd className="figure text-lg text-[var(--ink)]">€{treatment.price.consultation}</dd>
               </div>
-
-              <div className="mb-6">
-                <h3 className="text-sm text-gray-500 mb-2">Pricing</h3>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Consultation</span>
-                    <span className="text-lg font-bold">€{treatment.price.consultation}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-700">Treatment</span>
-                    <span className="text-lg font-bold">€{treatment.price.treatment}</span>
-                  </div>
-                  {treatment.price.subscription && (
-                    <div className="flex justify-between items-center pt-2 border-t">
-                      <span className="text-gray-700">Subscription</span>
-                      <span className="text-lg font-bold text-accent-600">
-                        €{treatment.price.subscription}/mo
-                      </span>
-                    </div>
-                  )}
-                </div>
+              <div className="flex justify-between items-baseline py-2.5">
+                <dt className="text-[var(--ink-2)]">Treatment</dt>
+                <dd className="figure text-lg text-[var(--ink)]">€{treatment.price.treatment}</dd>
               </div>
-
-              <div className="mb-6 p-4 bg-primary-50 rounded-lg">
-                <div className="flex items-start">
-                  <Package className="w-5 h-5 text-primary-600 mr-3 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-semibold text-primary-900 mb-1">Free Delivery</h4>
-                    <p className="text-sm text-primary-700">
-                      Next-day delivery included. 2-hour express available in select cities.
-                    </p>
-                  </div>
+              {treatment.price.subscription && (
+                <div className="flex justify-between items-baseline py-2.5">
+                  <dt className="text-[var(--ink-2)]">Subscription</dt>
+                  <dd className="figure text-lg text-[var(--ink)]">
+                    €{treatment.price.subscription}<span className="text-sm text-[var(--ink-3)]">/mo</span>
+                  </dd>
                 </div>
-              </div>
+              )}
+            </dl>
 
-              <div className="space-y-3">
+            <div className="mt-4 flex items-start gap-3 rounded-lg bg-[var(--pine-wash)] p-3.5">
+              <Package className="size-5 text-[var(--pine)] shrink-0 mt-0.5" strokeWidth={1.75} aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold text-[var(--ink)]">Free delivery</p>
+                <p className="text-[0.8125rem] text-[var(--ink-2)]">Next-day delivery included. Two-hour express in selected cities.</p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col gap-2.5">
+              <Button size="lg" className="w-full" onClick={() => navigate(`/quick-book/${treatment.id}`)}>
+                <span>Book from <span className="figure">€{treatment.price.treatment}</span></span>
+              </Button>
+              <Button size="lg" variant="secondary" className="w-full" onClick={handleStartConsultation}>
+                Start with a consultation
+              </Button>
+              {canAddToCart && (
                 <Button
-                  className="w-full bg-accent-600 hover:bg-accent-700"
                   size="lg"
-                  onClick={() => navigate(`/quick-book/${treatment.id}`)}
-                >
-                  Book Now - From €{treatment.price.treatment}
-                </Button>
-                <Button
+                  variant="ghost"
                   className="w-full"
-                  size="lg"
-                  variant="outline"
-                  onClick={handleStartConsultation}
+                  onClick={inCart ? () => navigate('/cart') : handleAddToCart}
                 >
-                  Or Start Consultation First
+                  {inCart ? 'In Cart - View Cart' : 'Add to Cart'}
                 </Button>
-
-                <p className="text-xs text-gray-500 text-center mt-4">
-                  Consultation reviewed by qualified doctors. Prescription issued if appropriate.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              )}
+            </div>
+            <p className="mt-4 text-[0.8125rem] text-[var(--ink-3)]">
+              A qualified doctor reviews every consultation. A prescription is issued only if it is appropriate.
+            </p>
+          </RxLabel>
+        </aside>
       </div>
-    </div>
+    </Page>
   )
 }
 
 export default TreatmentDetail
-

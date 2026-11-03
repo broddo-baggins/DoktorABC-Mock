@@ -1,129 +1,179 @@
 import React, { useState } from 'react'
+import { ArrowLeft, Inbox, MessageSquare, Send, CheckCircle2 } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAppState } from '../../contexts/AppStateContext'
 import { useToast } from '../../components/ui/Toast'
 import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, EmptyState } from '../../components/ui/Page'
+import { fmtDate, fmtDateTime, sentence } from '../../components/portal/PortalParts'
+import { cn } from '../../utils/cn'
 
 const InquiryManagement = () => {
   const { user } = useAuth()
-  const { getTicketsByAssignee, addMessageToTicket, updateTicket } = useAppState()
+  const { getTicketsByAssignee, addMessageToTicket, updateTicket, getPatientById } = useAppState()
   const toast = useToast()
   const tickets = getTicketsByAssignee(user.id).filter(t => t.type === 'customer-service')
-  const [selectedTicket, setSelectedTicket] = useState(null)
+  // Keep the id, not a copy, so new replies and status changes show in the open thread straight away.
+  const [selectedId, setSelectedId] = useState(null)
+  const selectedTicket = tickets.find(t => t.id === selectedId) ?? null
+  const setSelectedTicket = (ticket) => setSelectedId(ticket?.id ?? null)
+  // Visitors who wrote through the contact form have no patient record, only the name they gave
+  const senderName = (id, ticket) => getPatientById(id)?.name ?? ticket?.contactName ?? 'Unknown sender'
+  // A message is from the patient (or visitor) who opened the ticket, otherwise from a colleague
+  const messageFrom = (sender, ticket) =>
+    getPatientById(sender)?.name ??
+    (sender && (sender === ticket.patientId || sender === ticket.contactEmail) ? senderName(sender, ticket) : 'Care team')
   const [reply, setReply] = useState('')
 
   const handleReply = (ticketId) => {
     if (!reply.trim()) return
     addMessageToTicket(ticketId, {
       sender: user.id,
-      content: reply
+      content: reply.trim()
     })
+    if (selectedTicket?.status === 'open') updateTicket(ticketId, { status: 'in-progress' })
     setReply('')
     toast.success('Reply sent')
   }
 
   const handleResolve = (ticketId) => {
-    updateTicket(ticketId, { status: 'resolved' })
+    updateTicket(ticketId, { status: 'resolved', resolvedAt: new Date().toISOString() })
     toast.success('Inquiry resolved')
-    setSelectedTicket(null)
+    setSelectedId(null)
   }
 
+  const openCount = tickets.filter(t => t.status !== 'resolved').length
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Inquiry Management</h1>
-      
-      <div className="grid lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>All Inquiries</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {tickets.map(ticket => (
-                  <div
-                    key={ticket.id}
-                    className={`p-3 border rounded-lg cursor-pointer hover:border-primary-300 ${
-                      selectedTicket?.id === ticket.id ? 'border-primary-600 bg-primary-50' : ''
-                    }`}
-                    onClick={() => setSelectedTicket(ticket)}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <p className="font-semibold text-sm">{ticket.subject}</p>
-                      <Badge variant={ticket.status === 'open' ? 'warning' : 'success'} className="text-xs">
-                        {ticket.status}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-gray-600">{ticket.category}</p>
-                  </div>
-                ))}
-                {tickets.length === 0 && (
-                  <p className="text-center text-gray-500 py-4 text-sm">No inquiries</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <Page className="animate-fade-in">
+      <PageHeader
+        kicker={`Customer service / ${openCount} awaiting reply`}
+        title="Inquiries"
+        description="Pick an inquiry, reply to the patient, and resolve it when they have what they need."
+      />
 
-        <div className="lg:col-span-2">
-          {selectedTicket ? (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>{selectedTicket.subject}</CardTitle>
-                  <Badge variant={selectedTicket.status === 'open' ? 'warning' : 'success'}>
-                    {selectedTicket.status}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4 mb-6">
-                  {selectedTicket.messages.map(msg => (
-                    <div key={msg.id} className="p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-gray-700">{msg.content}</p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        {new Date(msg.timestamp).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {selectedTicket.status === 'open' && (
-                  <>
-                    <Textarea
-                      label="Your Reply"
-                      value={reply}
-                      onChange={(e) => setReply(e.target.value)}
-                      rows={4}
-                      placeholder="Type your response..."
-                    />
-                    <div className="flex gap-2 mt-4">
-                      <Button onClick={() => handleReply(selectedTicket.id)}>
-                        Send Reply
-                      </Button>
-                      <Button variant="outline" onClick={() => handleResolve(selectedTicket.id)}>
-                        Mark as Resolved
-                      </Button>
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+      <div className="grid lg:grid-cols-[360px_minmax(0,1fr)] gap-6 items-start">
+        {/* Inbox list: hidden on phones while a thread is open. */}
+        <section
+          aria-labelledby="inbox-title"
+          className={cn('bg-[var(--surface)] border border-[var(--line)] rounded-xl overflow-hidden', selectedTicket && 'hidden lg:block')}
+        >
+          <h2 id="inbox-title" className="flex items-center justify-between px-5 h-14 border-b border-[var(--line)] text-[1.0625rem] font-semibold">
+            All inquiries
+            <span className="figure text-sm font-normal text-[var(--ink-3)]">{tickets.length}</span>
+          </h2>
+          {tickets.length > 0 ? (
+            <ul className="divide-y divide-[var(--line)]">
+              {tickets.map(ticket => {
+                const active = selectedTicket?.id === ticket.id
+                return (
+                  <li key={ticket.id}>
+                    <button
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setSelectedTicket(ticket)}
+                      className={cn(
+                        'w-full text-left px-5 py-3.5 flex flex-col gap-1 border-l-[3px] focus-visible:outline-offset-[-2px]',
+                        active ? 'bg-[var(--pine-wash)] border-[var(--pine)]' : 'border-transparent hover:bg-[var(--paper)]'
+                      )}
+                    >
+                      <span className="flex items-start justify-between gap-3">
+                        <span className="font-medium text-[0.9375rem] text-[var(--ink)]">{ticket.subject}</span>
+                        <Badge status={ticket.status} className="shrink-0">{sentence(ticket.status)}</Badge>
+                      </span>
+                      <span className="text-[0.8125rem] text-[var(--ink-3)]">
+                        {senderName(ticket.patientId, ticket)} / {ticket.category}
+                      </span>
+                      <span className="label-mono">{fmtDate(ticket.updatedAt ?? ticket.createdAt)} / {ticket.priority} priority</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           ) : (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <p className="text-gray-500">Select an inquiry to view details</p>
-              </CardContent>
-            </Card>
+            <EmptyState compact icon={Inbox} title="No inquiries" description="Your inbox is clear." />
           )}
-        </div>
+        </section>
+
+        {selectedTicket ? (
+          <section aria-labelledby="thread-title" className="bg-[var(--surface)] border border-[var(--line)] rounded-xl min-w-0">
+            <header className="px-5 md:px-6 pt-4 pb-3">
+              <button
+                type="button"
+                onClick={() => setSelectedTicket(null)}
+                className="lg:hidden inline-flex items-center gap-1.5 h-9 -ml-1 px-1 mb-2 text-sm font-medium text-[var(--ink-2)] rounded-md"
+              >
+                <ArrowLeft className="size-4" aria-hidden="true" />
+                All inquiries
+              </button>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="label-mono">{selectedTicket.id} / {selectedTicket.category}</p>
+                  <h2 id="thread-title" className="mt-1 text-xl font-semibold">{selectedTicket.subject}</h2>
+                  <p className="mt-1 text-sm text-[var(--ink-2)]">From {senderName(selectedTicket.patientId, selectedTicket)}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Badge status={selectedTicket.priority} />
+                  <Badge status={selectedTicket.status}>{sentence(selectedTicket.status)}</Badge>
+                </div>
+              </div>
+            </header>
+            <div className="perforation" />
+
+            <ol className="px-5 md:px-6 py-5 flex flex-col gap-4" aria-label="Messages">
+              {selectedTicket.messages.map(msg => {
+                const mine = msg.sender === user.id
+                return (
+                  <li key={msg.id} className={cn('flex flex-col max-w-[85%] md:max-w-[75%]', mine ? 'self-end items-end' : 'self-start')}>
+                    <div className={cn('px-4 py-3 rounded-xl text-[0.9375rem] leading-relaxed', mine ? 'bg-[var(--pine-tint)] text-[var(--ink)]' : 'bg-[var(--sunk)] text-[var(--ink)]')}>
+                      {msg.content}
+                    </div>
+                    <p className="mt-1.5 text-[0.8125rem] text-[var(--ink-3)]">
+                      {mine ? 'You' : messageFrom(msg.sender, selectedTicket)} <span className="figure">{fmtDateTime(msg.timestamp)}</span>
+                    </p>
+                  </li>
+                )
+              })}
+            </ol>
+
+            {selectedTicket.status !== 'resolved' ? (
+              <div className="px-5 md:px-6 py-5 border-t border-[var(--line)] bg-[var(--paper)] rounded-b-xl">
+                <Textarea
+                  label="Your reply"
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  rows={4}
+                  placeholder="Write to the patient in plain words"
+                />
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <Button onClick={() => handleReply(selectedTicket.id)} disabled={!reply.trim()}>
+                    <Send aria-hidden="true" />
+                    Send reply
+                  </Button>
+                  <Button variant="secondary" onClick={() => handleResolve(selectedTicket.id)}>
+                    <CheckCircle2 aria-hidden="true" />
+                    Mark as resolved
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <p className="px-5 md:px-6 py-4 border-t border-[var(--line)] text-sm text-[var(--ink-3)]">This inquiry is resolved.</p>
+            )}
+          </section>
+        ) : (
+          <div className="hidden lg:block bg-[var(--surface)] border border-[var(--line)] rounded-xl">
+            <EmptyState
+              icon={MessageSquare}
+              title="Select an inquiry"
+              description="Choose a conversation on the left to read the thread and reply."
+            />
+          </div>
+        )}
       </div>
-    </div>
+    </Page>
   )
 }
 
 export default InquiryManagement
-

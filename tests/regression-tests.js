@@ -191,7 +191,7 @@ test('Data', 'REG-D4: Doctor test accounts still exist', () => {
 // Test Group 6: UI Components
 console.log('\n🎨 COMPONENT REGRESSION:');
 
-const uiComponents = ['Button', 'Card', 'Input', 'Modal', 'Toast'];
+const uiComponents = ['Button', 'Card', 'Input', 'Select', 'Textarea', 'Toast'];
 
 uiComponents.forEach((component, idx) => {
   test('Components', `REG-C${idx + 1}: ${component} component exists`, () => {

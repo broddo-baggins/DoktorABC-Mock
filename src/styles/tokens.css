@@ -1,0 +1,84 @@
+/*
+ * DoktorABC "Dispensary" tokens. Source of truth: DESIGN.md and tokens.json.
+ * Never write a raw colour in a component where a token exists.
+ * One theme (light). Contrast ratios are noted against --paper unless stated.
+ */
+:root {
+  /* Ground and surfaces */
+  --paper: #f3f5f4;          /* page ground */
+  --surface: #fbfcfb;        /* cards, inputs, header */
+  --sunk: #e8ecea;           /* wells, table heads, skeletons */
+  --line: #d3dad7;           /* hairlines, card edges (decorative) */
+  --line-strong: #7c8884;    /* input edges, 3.57:1 on surface */
+
+  /* Ink */
+  --ink: #0e1916;            /* headings, body. 16.4:1 */
+  --ink-2: #3b4844;          /* secondary text. 8.7:1 */
+  --ink-3: #5a6763;          /* captions, meta. 5.4:1, 4.96:1 on sunk */
+  --ink-on-dark: #f3f5f4;    /* text on --ink */
+  --ink-on-dark-2: #b5bfbb;  /* secondary on --ink. 9.5:1 */
+
+  /* The one accent: pine. Primary action, links, selection, done. */
+  --pine: #0a5c4e;           /* 7.2:1 on paper; on-pine text 7.7:1 */
+  --pine-hover: #074a3f;
+  --pine-press: #063a32;
+  --pine-tint: #ddebe6;      /* selected rows, accent wells. pine text 6.4:1 */
+  --pine-wash: #eef5f2;
+  --on-pine: #fbfcfb;
+
+  /* Status (semantic only, never decoration) */
+  --warn-ink: #7a4d00;   --warn-tint: #f8edd3;   /* 6.25:1 */
+  --danger: #a8281f;     --danger-ink: #8c1f18;  --danger-tint: #f7e3e0; /* 7.3:1 */
+  --star: #c28e1e;       /* rating glyph fill only, never text */
+
+  /* Focus */
+  --focus: #0a5c4e;
+  --focus-ring: 0 0 0 2px var(--surface), 0 0 0 4px var(--focus);
+
+  /* Type */
+  --font-ui: "Schibsted Grotesk Variable", "Schibsted Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --type-xs: 0.75rem;     /* 12 / 16  meta, label tags */
+  --type-sm: 0.875rem;    /* 14 / 20  dense UI, captions */
+  --type-base: 1rem;      /* 16 / 24  body */
+  --type-lg: 1.125rem;    /* 18 / 28  lead */
+  --type-xl: 1.375rem;    /* 22 / 28  card title */
+  --type-2xl: 1.75rem;    /* 28 / 34  page title (portal) */
+  --type-3xl: 2.25rem;    /* 36 / 40  page title (public) */
+  --type-4xl: 3rem;       /* 48 / 50  section display */
+  --type-5xl: 3.75rem;    /* 60 / 60  hero display, desktop only */
+
+  /* Space: 4 pt base */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 20px; --space-6: 24px; --space-8: 32px; --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+
+  /* Radius: controls 8, cards 12, tags 4, avatars and toggles full */
+  --radius-tag: 4px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --radius-sheet: 16px;
+  --radius-full: 9999px;
+
+  /* Elevation: ink-tinted, never pure black */
+  --shadow-1: 0 1px 2px rgb(14 25 22 / 0.06);
+  --shadow-2: 0 1px 2px rgb(14 25 22 / 0.05), 0 4px 12px rgb(14 25 22 / 0.06);
+  --shadow-3: 0 2px 4px rgb(14 25 22 / 0.06), 0 16px 40px rgb(14 25 22 / 0.12);
+
+  /* Size */
+  --size-control-sm: 36px;
+  --size-control: 44px;     /* minimum target */
+  --size-control-lg: 52px;
+  --header-h: 64px;
+  --content-max: 1240px;
+  --reading-max: 68ch;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur-base: 220ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: 0ms; --dur-base: 0ms; }
+}

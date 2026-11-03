@@ -15,7 +15,7 @@
  * - US-205: As a system, I handle missing data gracefully
  */
 
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 

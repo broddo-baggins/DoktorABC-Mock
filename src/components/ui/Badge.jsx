@@ -1,30 +1,45 @@
 import React from 'react'
 import { cn } from '../../utils/cn'
 
-const Badge = ({ className, variant = 'default', children, ...props }) => {
-  const variants = {
-    default: 'bg-gray-100 text-gray-800',
-    primary: 'bg-primary-100 text-primary-800',
-    accent: 'bg-accent-100 text-accent-800',
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    danger: 'bg-red-100 text-red-800',
-    info: 'bg-blue-100 text-blue-800',
-  }
+// Status tags read like the printed line on a pharmacy label: mono, small caps,
+// square-cornered. Colour carries state only; the word always says it too.
+const tones = {
+  default: 'bg-[var(--sunk)] text-[var(--ink-2)]',
+  primary: 'bg-[var(--pine-tint)] text-[var(--pine-hover)]',
+  accent: 'bg-[var(--pine-tint)] text-[var(--pine-hover)]',
+  success: 'bg-[var(--pine-tint)] text-[var(--pine-hover)]',
+  warning: 'bg-[var(--warn-tint)] text-[var(--warn-ink)]',
+  danger: 'bg-[var(--danger-tint)] text-[var(--danger-ink)]',
+  info: 'bg-[var(--sunk)] text-[var(--ink-2)]',
+  outline: 'border border-[var(--line-strong)] text-[var(--ink-2)]',
+}
 
+// Maps the mock data's status words onto tones, so pages need not.
+const statusTone = {
+  active: 'success', completed: 'success', delivered: 'success', resolved: 'success', approved: 'success',
+  'in stock': 'success', operational: 'success', confirmed: 'success', paid: 'success',
+  scheduled: 'primary', 'in-progress': 'primary', processing: 'primary', shipped: 'primary', 'in transit': 'primary',
+  pending: 'warning', open: 'warning', medium: 'warning', 'low stock': 'warning', 'pending review': 'warning', degraded: 'warning',
+  urgent: 'danger', high: 'danger', critical: 'danger', cancelled: 'danger', rejected: 'danger', 'out of stock': 'danger', expired: 'danger',
+  low: 'default', closed: 'default',
+}
+
+export const toneFor = (status) => statusTone[String(status ?? '').toLowerCase()] ?? 'default'
+
+const Badge = ({ className, variant, status, children, ...props }) => {
+  const tone = variant ?? (status ? toneFor(status) : 'default')
   return (
     <span
       className={cn(
-        'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-        variants[variant],
+        'inline-flex items-center gap-1 h-[22px] px-2 rounded-[var(--radius-tag)] font-mono text-[11px] font-medium uppercase tracking-[0.05em] whitespace-nowrap',
+        tones[tone] ?? tones.default,
         className
       )}
       {...props}
     >
-      {children}
+      {children ?? status}
     </span>
   )
 }
 
 export default Badge
-

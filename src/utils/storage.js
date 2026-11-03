@@ -1,14 +1,22 @@
 // LocalStorage utilities for mock data persistence
 
 export const storage = {
+  // A corrupt or wrongly shaped entry (an old version, a hand edit) is dropped and the default used,
+  // so one bad key cannot crash the pages that read it.
   get(key, defaultValue = null) {
+    let item = null
     try {
-      const item = window.localStorage.getItem(key)
-      return item ? JSON.parse(item) : defaultValue
-    } catch (error) {
-      console.error(`Error reading from localStorage: ${error}`)
-      return defaultValue
+      item = window.localStorage.getItem(key)
+      if (!item) return defaultValue
+      const value = JSON.parse(item)
+      const sameShape = defaultValue === null ||
+        (Array.isArray(defaultValue) === Array.isArray(value) && typeof value === typeof defaultValue && value !== null)
+      if (sameShape) return value
+    } catch {
+      // fall through: unreadable storage or invalid JSON
     }
+    if (item) this.remove(key)
+    return defaultValue
   },
 
   set(key, value) {

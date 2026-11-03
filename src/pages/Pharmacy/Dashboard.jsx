@@ -1,177 +1,145 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Package, Truck, AlertTriangle, DollarSign } from 'lucide-react'
+import { Package, Truck, AlertTriangle, PackageCheck, Boxes } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useAppState } from '../../contexts/AppStateContext'
 import Button from '../../components/ui/Button'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card'
 import Badge from '../../components/ui/Badge'
+import { Page, PageHeader, Stat, StatGrid, EmptyState, BarList } from '../../components/ui/Page'
+import { Panel, PanelLink, DataTable, ShortcutList, RecordList, fmtNumber, todayLine } from '../../components/portal/PortalParts'
 
 const PharmacyDashboard = () => {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { getPrescriptionsByPharmacy, getInventoryByPharmacy } = useAppState()
-  
+  const { getPrescriptionsByPharmacy, getInventoryByPharmacy, getPatientById } = useAppState()
+
   const prescriptions = getPrescriptionsByPharmacy(user.id)
   const inventory = getInventoryByPharmacy(user.id)
   const pendingOrders = prescriptions.filter(rx => rx.status === 'pending')
+  // 'active' (issued) and 'preparing' are both on the bench; 'filled' is ready for the courier
+  const preparing = prescriptions.filter(rx => rx.status === 'active' || rx.status === 'preparing')
+  const readyToShip = prescriptions.filter(rx => rx.status === 'filled')
+  const toDispense = [...pendingOrders, ...preparing]
   const lowStock = inventory.filter(item => item.stockLevel <= item.reorderLevel)
+  const cover = [...inventory]
+    .map(item => ({ label: item.productName, value: item.stockLevel / item.reorderLevel, mark: 1 }))
+    .sort((a, b) => a.value - b.value)
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Pharmacy Dashboard</h1>
-        <p className="text-gray-600">{user.name}</p>
-      </div>
+    <Page className="animate-fade-in">
+      <PageHeader
+        kicker={`Pharmacy portal / ${todayLine()}`}
+        title={user.name}
+        description={user.profile.operatingHours}
+        actions={
+          <Button onClick={() => navigate('/pharmacy/orders')}>
+            <Package aria-hidden="true" />
+            Open orders
+          </Button>
+        }
+      />
 
-      {/* Stats */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">New Orders</p>
-                <p className="text-2xl font-bold">{pendingOrders.length}</p>
-              </div>
-              <Package className="w-8 h-8 text-primary-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Ready to Ship</p>
-                <p className="text-2xl font-bold">0</p>
-              </div>
-              <Truck className="w-8 h-8 text-accent-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Low Stock Alerts</p>
-                <p className="text-2xl font-bold">{lowStock.length}</p>
-              </div>
-              <AlertTriangle className="w-8 h-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold">{user.profile.totalOrders}</p>
-              </div>
-              <DollarSign className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <StatGrid className="mb-8">
+        <Stat label="New orders" value={pendingOrders.length} icon={Package} tone={pendingOrders.length ? 'warn' : 'default'} />
+        <Stat label="Preparing" value={preparing.length} icon={Boxes} />
+        <Stat label="Ready to ship" value={readyToShip.length} icon={PackageCheck} />
+        <Stat label="Low stock" value={lowStock.length} unit={lowStock.length === 1 ? 'line' : 'lines'} icon={AlertTriangle} tone={lowStock.length ? 'warn' : 'default'} />
+      </StatGrid>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-8">
-          {/* New Orders */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>New Prescription Orders</CardTitle>
-                <Button size="sm" onClick={() => navigate('/pharmacy/orders')}>View All</Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {pendingOrders.length > 0 ? (
-                <div className="space-y-3">
-                  {pendingOrders.map(rx => (
-                    <div key={rx.id} className="p-4 border border-gray-200 rounded-lg hover:border-primary-300">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-semibold">{rx.medication}</h4>
-                        <Badge variant="warning">Pending</Badge>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        <p>Patient ID: {rx.patientId}</p>
-                        <p>Quantity: {rx.quantity}</p>
-                        <p>Price: €{rx.price}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center text-gray-500 py-8">No pending orders</p>
-              )}
-            </CardContent>
-          </Card>
+      {lowStock.length > 0 && (
+        <div role="status" className="mb-6 flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 rounded-xl bg-[var(--warn-tint)] text-[var(--warn-ink)]">
+          <AlertTriangle className="size-5 shrink-0" aria-hidden="true" />
+          <p className="flex-1 text-sm">
+            <strong className="font-semibold">{lowStock.length} {lowStock.length === 1 ? 'product is' : 'products are'} at or below the reorder level:</strong>{' '}
+            {lowStock.map(item => `${item.productName} (${item.stockLevel} left)`).join(', ')}.
+          </p>
+          <Button size="sm" variant="secondary" onClick={() => navigate('/pharmacy/inventory')}>Reorder</Button>
+        </div>
+      )}
 
-          {/* Low Stock Alerts */}
-          {lowStock.length > 0 && (
-            <Card className="bg-yellow-50 border-yellow-200">
-              <CardHeader>
-                <CardTitle>Low Stock Alerts</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {lowStock.map(item => (
-                    <div key={item.id} className="flex items-center justify-between py-2">
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 flex flex-col gap-6 min-w-0">
+          <Panel
+            id="to-dispense"
+            title="Orders to dispense"
+            action={<PanelLink to="/pharmacy/orders">View all</PanelLink>}
+            bodyClassName={toDispense.length ? 'py-0' : undefined}
+          >
+            {toDispense.length > 0 ? (
+              <DataTable
+                caption="Orders to dispense"
+                rows={toDispense}
+                columns={[
+                  {
+                    key: 'medication', header: 'Medication', primary: true,
+                    render: rx => (
                       <div>
-                        <p className="font-medium">{item.productName}</p>
-                        <p className="text-sm text-gray-600">SKU: {item.sku}</p>
+                        <p className="font-medium">{rx.medication}</p>
+                        <p className="label-mono">{rx.id} / {rx.dosage}</p>
                       </div>
-                      <Badge variant="warning">{item.stockLevel} units left</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                    ),
+                  },
+                  { key: 'patient', header: 'Patient', render: rx => <span className="whitespace-nowrap">{getPatientById(rx.patientId)?.name ?? 'Unknown patient'}</span> },
+                  { key: 'qty', header: 'Qty', align: 'right', render: rx => <span className="figure">{rx.quantity}</span> },
+                  { key: 'price', header: 'Price', align: 'right', render: rx => <span className="figure">€{rx.price}</span> },
+                  {
+                    key: 'stage', header: 'Stage',
+                    render: rx => rx.status === 'pending'
+                      ? <Badge variant="warning">new</Badge>
+                      : <Badge variant="primary">preparing</Badge>,
+                  },
+                ]}
+              />
+            ) : (
+              <EmptyState
+                compact
+                icon={Package}
+                title="No pending orders"
+                description="New prescriptions from our doctors arrive here as soon as they are signed."
+                action={<Button size="sm" variant="secondary" onClick={() => navigate('/pharmacy/orders')}>View all orders</Button>}
+              />
+            )}
+          </Panel>
+
+          <Panel id="cover" title="Stock cover" action={<PanelLink to="/pharmacy/inventory">Inventory</PanelLink>}>
+            {cover.length > 0 ? (
+              <BarList
+                rows={cover}
+                format={(v) => `${v.toFixed(1)}x`}
+                markLabel="reorder level"
+                caption="Stock on hand as a multiple of each product's reorder level (the tick marks 1x). Below the tick a line turns amber. Source: inventory record."
+              />
+            ) : (
+              <EmptyState compact icon={Boxes} title="No inventory recorded" description="Add products in Inventory to track stock cover." />
+            )}
+          </Panel>
         </div>
 
-        {/* Sidebar */}
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/pharmacy/orders')}>
-                  <Package className="w-4 h-4 mr-2" />
-                  Manage Orders
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/pharmacy/inventory')}>
-                  <AlertTriangle className="w-4 h-4 mr-2" />
-                  Update Inventory
-                </Button>
-                <Button variant="outline" className="w-full justify-start" onClick={() => navigate('/pharmacy/delivery')}>
-                  <Truck className="w-4 h-4 mr-2" />
-                  Delivery Coordination
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex flex-col gap-6 min-w-0">
+          <Panel id="shortcuts" title="Shortcuts">
+            <ShortcutList
+              items={[
+                { label: 'Manage orders', hint: 'Move orders from new to ready', icon: Package, onClick: () => navigate('/pharmacy/orders') },
+                { label: 'Update inventory', hint: 'Stock levels and reorders', icon: Boxes, onClick: () => navigate('/pharmacy/inventory') },
+                { label: 'Delivery coordination', hint: "Today's couriers and slots", icon: Truck, onClick: () => navigate('/pharmacy/delivery') },
+              ]}
+            />
+          </Panel>
 
-          <Card className="bg-primary-50 border-primary-200">
-            <CardContent className="p-4">
-              <h4 className="font-semibold text-primary-900 mb-2">Pharmacy Stats</h4>
-              <div className="space-y-2 text-sm text-primary-800">
-                <div className="flex justify-between">
-                  <span>Total Orders:</span>
-                  <span className="font-semibold">{user.profile.totalOrders}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Rating:</span>
-                  <span className="font-semibold">{user.profile.rating} ⭐</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Panel id="record" title="Pharmacy record">
+            <RecordList
+              items={[
+                ['Total orders', fmtNumber(user.profile.totalOrders)],
+                ['Rating', `${user.profile.rating} / 5`],
+                ['Express delivery', user.profile.expressDelivery ? 'Yes' : 'No', { text: true }],
+                ['Delivery zones', user.profile.deliveryZones?.join(', '), { text: true }],
+              ]}
+            />
+          </Panel>
         </div>
       </div>
-    </div>
+    </Page>
   )
 }
 
 export default PharmacyDashboard
-
