@@ -1,6 +1,16 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { readFileSync } from 'fs'
+
+// `vite preview` serves the same security headers as Vercel, so the e2e suite runs under the real CSP.
+// HSTS and upgrade-insecure-requests are left out locally because preview is plain http.
+const vercelHeaders = Object.fromEntries(
+  JSON.parse(readFileSync(new URL('./vercel.json', import.meta.url), 'utf8'))
+    .headers.find(h => h.source === '/(.*)').headers
+    .filter(h => h.key !== 'Strict-Transport-Security')
+    .map(h => [h.key, h.value.replace(/;\s*upgrade-insecure-requests/, '')])
+)
 
 export default defineConfig({
   plugins: [react()],
@@ -20,6 +30,13 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true
+  },
+  preview: {
+    headers: vercelHeaders
+  },
+  test: {
+    // e2e/*.spec.js belongs to Playwright
+    include: ['src/**/*.test.{js,jsx}']
   },
   build: {
     rolldownOptions: {
