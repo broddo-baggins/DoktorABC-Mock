@@ -78,7 +78,7 @@ const Header = () => {
             {isAuthenticated ? (
               <>
                 {user.role === 'patient' && (
-                  <Link to="/cart" className="relative">
+                  <Link to="/cart" className="relative" aria-label={`Cart, ${cart.length} item${cart.length === 1 ? '' : 's'}`}>
                     <ShoppingCart className="w-6 h-6 text-gray-700 hover:text-primary-600 transition-colors" />
                     {cart.length > 0 && (
                       <span className="absolute -top-2 -right-2 bg-accent-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -90,6 +90,9 @@ const Header = () => {
                 
                 <div className="relative">
                   <button
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={userMenuOpen}
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
                     className="flex items-center space-x-2 text-gray-700 hover:text-primary-600 transition-colors"
                   >
@@ -203,7 +206,10 @@ const Header = () => {
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             className="md:hidden"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? (

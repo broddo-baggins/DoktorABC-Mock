@@ -28,14 +28,15 @@ export const CardHeader = ({ className, children, ...props }) => {
   )
 }
 
-export const CardTitle = ({ className, children, ...props }) => {
+// `as` sets the heading level without changing the look (Tailwind resets heading sizes)
+export const CardTitle = ({ as: Heading = 'h3', className, children, ...props }) => {
   return (
-    <h3
+    <Heading
       className={cn('text-lg font-bold text-neutral-900 tracking-tight', className)}
       {...props}
     >
       {children}
-    </h3>
+    </Heading>
   )
 }
 

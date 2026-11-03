@@ -1,17 +1,21 @@
-import React from 'react'
+import React, { useId } from 'react'
 import { cn } from '../../utils/cn'
 
-const Select = React.forwardRef(({ 
-  className, 
+const Select = React.forwardRef(({
+  className,
   label,
   error,
   children,
-  ...props 
+  id,
+  ...props
 }, ref) => {
+  const generatedId = useId()
+  const fieldId = id || generatedId
+  const errorId = `${fieldId}-error`
   return (
     <div className="w-full">
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-1">
           {label}
         </label>
       )}
@@ -22,12 +26,15 @@ const Select = React.forwardRef(({
           className
         )}
         ref={ref}
+        id={fieldId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? errorId : undefined}
         {...props}
       >
         {children}
       </select>
       {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
+        <p id={errorId} className="mt-1 text-sm text-red-600">{error}</p>
       )}
     </div>
   )

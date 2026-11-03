@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from 'react'
+import React, { createContext, useContext, useState, useCallback, useMemo, useRef } from 'react'
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
@@ -14,9 +14,11 @@ export const useToast = () => {
 
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([])
+  // A counter, not Date.now(): two toasts in the same millisecond must not share a React key.
+  const nextId = useRef(0)
 
   const addToast = useCallback((message, type = 'info', duration = 3000) => {
-    const id = Date.now()
+    const id = ++nextId.current
     setToasts(prev => [...prev, { id, message, type }])
     
     if (duration > 0) {
@@ -30,17 +32,17 @@ export const ToastProvider = ({ children }) => {
     setToasts(prev => prev.filter(toast => toast.id !== id))
   }, [])
 
-  const value = {
+  const value = useMemo(() => ({
     success: (message, duration) => addToast(message, 'success', duration),
     error: (message, duration) => addToast(message, 'error', duration),
     info: (message, duration) => addToast(message, 'info', duration),
     warning: (message, duration) => addToast(message, 'warning', duration),
-  }
+  }), [addToast])
 
   return (
     <ToastContext.Provider value={value}>
       {children}
-      <div className="fixed top-4 right-4 z-50 space-y-2">
+      <div className="fixed top-4 right-4 z-50 space-y-2" role="status" aria-live="polite">
         {toasts.map(toast => (
           <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
         ))}
@@ -74,6 +76,8 @@ const Toast = ({ message, type, onClose }) => {
       {icons[type]}
       <p className="flex-1 text-sm font-medium text-gray-900">{message}</p>
       <button
+        type="button"
+        aria-label="Dismiss notification"
         onClick={onClose}
         className="text-gray-400 hover:text-gray-600 transition-colors"
       >
