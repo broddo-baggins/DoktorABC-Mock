@@ -1,11 +1,85 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowRight, CheckCircle, Clock, Shield, Star, Calendar, MessageCircle, Award, Users, Lock, Heart, Gift, Download, ChevronRight } from 'lucide-react'
+import {
+  ArrowRight, Check, ShieldCheck, Star, Calendar, MessageCircle, BadgeCheck, Lock,
+  Building2, Stethoscope, Pill, Headset, Gift, Share2, ChevronRight, Video, Truck,
+} from 'lucide-react'
 import Button from '../components/ui/Button'
 import { Card, CardContent } from '../components/ui/Card'
 import Badge from '../components/ui/Badge'
 import { useToast } from '../components/ui/Toast'
 import { useAppState } from '../contexts/AppStateContext'
+import TreatmentGlyph from '../components/brand/TreatmentGlyph'
+import { cn } from '../utils/cn'
+
+const DAY_NAMES = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const TIMES = ['09:00', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00']
+
+// Portraits vendored in public/images, matched to the doctor records by id.
+const DOCTOR_PHOTOS = {
+  'doctor-001': '/images/doctor-emily.jpg',
+  'doctor-002': '/images/doctor-james.jpg',
+  'doctor-003': '/images/doctor-alexandra.jpg',
+}
+
+// What each package includes, as the old pricing cards listed it.
+const PACKAGE_NOTES = {
+  'botox-forehead': ['Video consultation included', 'Professional injection treatment', 'Follow-up support included'],
+  'botox-crowsfeet': ['Video consultation included', 'Eye area rejuvenation', '2-week touch-up guarantee'],
+  'dermal-fillers-lips': ['Hyaluronic acid filler', '1 ml premium product', 'Reversible if needed'],
+}
+
+const testimonials = [
+  { name: 'Sarah J.', place: 'London', treatment: 'Botox', text: 'Booked in two minutes, treated the same week. Natural results I love.' },
+  { name: 'Michael K.', place: 'Manchester', treatment: 'Lip filler', text: 'Clear pricing up front. The doctor was professional and the result was better than I expected.' },
+  { name: 'Thomas', date: '07 July', treatment: 'Repeat order', text: 'Very fast delivery. Everything was right. I can only recommend it.' },
+  { name: 'Susann', date: '06 July', treatment: 'Consultation', text: 'Good advice and service. Competent staff. I trust DoktorABC.' },
+  { name: 'Ursula', date: '06 July', treatment: 'Prescription', text: 'The ordering process is simple. After verification my prescription was approved. What more could I ask for?' },
+]
+
+const categories = [
+  { key: 'mens-health', title: "Men's health", items: ['Erectile dysfunction', 'Premature ejaculation', 'Hair loss'] },
+  { key: 'womens-health', title: "Women's health", items: ['Contraceptive pill', 'Cystitis treatment', 'Morning-after pill', 'Bacterial vaginosis', 'Period delay', 'Facial hair removal'] },
+  { key: 'sexual-health', glyph: 'sexual-health', title: 'Sexual health', items: ['Chlamydia', 'Genital herpes', 'Genital warts'] },
+  { key: 'travel-health', title: 'Travel health', items: ['Malaria prevention', "Traveller's diarrhoea"] },
+  { key: 'chronic', title: 'Long-term conditions', items: ['High blood pressure'] },
+  { key: 'wellbeing', title: 'Wellbeing', items: ['Quit smoking'] },
+]
+
+const steps = [
+  { time: '30 sec', title: 'Choose a treatment', text: 'Browse treatments and see the full price before anything else.', icon: Pill },
+  { time: '15 min', title: 'Free consultation', text: 'A video call with a GMC-registered doctor, who decides if it suits you.', icon: Video },
+  { time: '1 min', title: 'Book a slot', text: 'Pick a clinic and a time. Confirmation arrives straight away.', icon: Calendar },
+  { time: '≤ 3 days', title: 'Get treated', text: 'Treatment at a partner clinic, with aftercare and a follow-up.', icon: ShieldCheck },
+]
+
+const portals = [
+  {
+    role: 'doctor', icon: Stethoscope, title: 'Doctors',
+    text: 'Set your own hours and consult by video, with clinical support and professional indemnity included.',
+    points: ['Competitive consultation fees', 'Flexible scheduling tools'], cta: 'Doctor portal',
+  },
+  {
+    role: 'pharmacy', icon: Pill, title: 'Pharmacies',
+    text: 'A direct prescription feed with inventory and delivery tools, and guaranteed payment processing.',
+    points: ['Direct prescription feed', 'Delivery coordination'], cta: 'Pharmacy portal',
+  },
+  {
+    role: 'support', icon: Headset, title: 'Support team',
+    text: 'One place for tickets, system monitoring and patient messages, with performance reporting.',
+    points: ['Unified ticket management', 'Real-time monitoring'], cta: 'Support portal',
+  },
+]
+
+const Stars = ({ value = 5, size = 'size-4' }) => (
+  <span className="inline-flex items-center gap-0.5" aria-label={`Rated ${value} out of 5`}>
+    {[...Array(5)].map((_, i) => (
+      <Star key={i} aria-hidden="true" className={cn(size, 'text-[var(--star)]', i < Math.round(value) ? 'fill-[var(--star)]' : 'fill-none')} />
+    ))}
+  </span>
+)
+
+const Euro = ({ value, className }) => <span className={cn('figure', className)}>€{value}</span>
 
 const Landing = () => {
   const navigate = useNavigate()
@@ -15,1034 +89,695 @@ const Landing = () => {
   const [showStickyBooking, setShowStickyBooking] = useState(false)
   const [selectedDay, setSelectedDay] = useState(3) // Default: day 3 (28th)
   const [selectedTime, setSelectedTime] = useState('14:30') // Default time
+  const heroRef = useRef(null)
 
+  // The booking bar appears once the hero has scrolled out of view.
   useEffect(() => {
-    const handleScroll = () => {
-      setShowStickyBooking(window.scrollY > 800)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    const el = heroRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([entry]) => setShowStickyBooking(!entry.isIntersecting && entry.boundingClientRect.top < 0))
+    io.observe(el)
+    return () => io.disconnect()
   }, [])
 
-  const testimonials = [
-    { name: 'Thomas', date: '07 July', rating: 5, text: 'Very fast delivery. Everything is perfect. I can only give a top recommendation.' },
-    { name: 'Susann', date: '06 July', rating: 5, text: 'Good advice and service. Intelligent and competent staff. I trust DoktorABC' },
-    { name: 'Ursula', date: '06 July', rating: 5, text: 'The ordering process is simple. After verification, my prescription has been approved. What more can I ask for?' }
-  ]
+  const aesthetic = ['botox-forehead', 'botox-crowsfeet', 'dermal-fillers-lips']
+    .map(id => treatments.find(t => t.id === id))
+    .filter(Boolean)
 
-  const categories = [
-    { title: "Men's Health", items: ['Erectile Dysfunction', 'Premature Ejaculation', 'Hair Loss'], color: 'bg-blue-600' },
-    { title: "Women's Health", items: ['Contraceptive Pill', 'Cystitis Treatment', 'Morning-after pill', 'Bacterial Vaginosis', 'Period Delay', 'Facial Hair Removal'], color: 'bg-purple-500' },
-    { title: 'Sexual Health', items: ['Chlamydia', 'Genital Herpes', 'Genital Warts'], color: 'bg-red-500' },
-    { title: 'Travel Health', items: ['Malaria Treatment', "Traveller's Diarrhea"], color: 'bg-green-600' },
-    { title: 'Chronic', items: ['High Blood Pressure'], color: 'bg-orange-500' },
-    { title: 'Wellbeing', items: ['Quit Smoking'], color: 'bg-emerald-600' }
-  ]
+  const confirmSlot = () => {
+    const selectedDayName = DAY_NAMES[selectedDay]
+    const selectedDate = `October ${25 + selectedDay}, 2025`
+    toast.success(`Slot held: ${selectedDayName}, ${selectedDate} at ${selectedTime}`)
+    setTimeout(() => {
+      navigate('/categories', {
+        state: {
+          preselectedTime: selectedTime,
+          preselectedDay: selectedDayName,
+          preselectedDate: selectedDate
+        }
+      })
+    }, 800)
+  }
+
+  const shareReferral = async () => {
+    const link = `${window.location.origin}/register?ref=friend`
+    try {
+      await navigator.clipboard.writeText(link)
+      toast.success('Referral link copied')
+    } catch {
+      toast.info(`Your referral link: ${link}`, 6000)
+    }
+  }
 
   return (
     <div className="animate-fade-in">
-      {/* Sticky Booking Bar */}
+      {/* Booking bar, after the hero */}
       {showStickyBooking && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-primary-600 shadow-2xl p-4 animate-slide-up">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <p className="font-bold text-gray-900 flex items-center gap-2">
-                Ready to Book?
-                <Badge className="bg-accent-600 text-white text-xs px-2 py-0.5">from €279</Badge>
+        <div className="fixed inset-x-0 bottom-0 z-30 bg-[var(--surface)] border-t border-[var(--line)] shadow-[0_-8px_24px_rgb(14_25_22/0.08)] animate-slide-up">
+          <div className="container-page flex items-center justify-between gap-4 py-3">
+            <div className="min-w-0">
+              <p className="font-semibold text-[var(--ink)] leading-tight">
+                Botox from <Euro value={279} />
               </p>
-              <p className="text-xs text-gray-600 flex items-center gap-2 mt-1">
-                <Shield className="w-3 h-3 text-primary-600" />
-                GMC certified • GDPR secure • 600K+ patients treated
-              </p>
+              <p className="text-[0.8125rem] text-[var(--ink-3)] truncate">Free consultation with a GMC-registered doctor</p>
             </div>
-            <Button onClick={() => navigate('/categories')} className="bg-accent-600 hover:bg-accent-700 shadow-lg">
-              Book Now
-            </Button>
+            <Button onClick={() => navigate('/categories')}>Book a consultation</Button>
           </div>
         </div>
       )}
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-        </div>
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6">
-                <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-medium">4.9/5 from 12,450+ patients</span>
-              </div>
-
-              <div className="inline-flex items-center gap-2 bg-accent-500 px-6 py-3 rounded-full mb-6 shadow-lg">
-                <span className="text-2xl font-bold text-white">from €279</span>
-                <span className="text-sm text-accent-100">All-inclusive pricing</span>
-              </div>
-
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Unlock Natural Beauty with Trusted Botox Doctors
+      {/* Hero */}
+      <section ref={heroRef} className="relative overflow-hidden">
+        <div className="container-page pt-10 pb-14 md:pt-16 md:pb-20 lg:pt-20">
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            <div className="lg:col-span-6 xl:col-span-6">
+              <p className="inline-flex items-center gap-2 mb-6 text-sm text-[var(--ink-2)]">
+                <Stars value={5} size="size-3.5" />
+                <span><span className="figure font-medium text-[var(--ink)]">4.9</span> from 12,450 patient reviews</span>
+              </p>
+              <h1 className="text-[2.5rem] leading-[1.04] md:text-[3.25rem] xl:text-[3.75rem] font-semibold tracking-[-0.035em] text-[var(--ink)] max-w-[13ch]">
+                Doctor-led Botox, priced up&nbsp;front.
               </h1>
-              
-              <p className="text-xl md:text-2xl text-primary-100 mb-8 leading-relaxed">
-                Transparent pricing from €279. Board-certified doctors. Personalized treatment. All on one platform.
+              <p className="mt-6 text-lg md:text-xl leading-relaxed text-[var(--ink-2)] max-w-[34ch]">
+                A free video consultation with a GMC-registered doctor. Treatment from <Euro value={279} className="text-[var(--ink)]" />, aftercare included.
               </p>
-
-              <div className="flex flex-col sm:flex-row gap-4 mb-6">
-                <Button size="lg" variant="accent" onClick={() => navigate('/categories')} className="group text-lg shadow-2xl">
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Book Consultation - Free
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <Button size="lg" onClick={() => navigate('/categories')} className="group">
+                  Book a consultation
+                  <ArrowRight className="transition-transform duration-[var(--dur-base)] group-hover:translate-x-0.5" aria-hidden="true" />
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => navigate('/treatment/botox-forehead')} className="bg-white/10 backdrop-blur-sm text-white border-2 border-white hover:bg-white hover:text-primary-600">
-                  View All Prices
+                <Button size="lg" variant="secondary" onClick={() => navigate('/treatment/botox-forehead')}>
+                  See prices
                 </Button>
               </div>
+            </div>
 
-              <p className="text-sm text-primary-200 mb-8 flex items-center justify-center lg:justify-start gap-2">
-                <CheckCircle className="w-4 h-4" />
-                No hidden fees • Instant booking • Treated within 3 days
-              </p>
+            {/* Photograph with the working slot picker over it */}
+            <div className="lg:col-span-6 relative lg:pl-8">
+              <div className="relative ml-auto w-full max-w-[560px] lg:max-w-none">
+                <div className="relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] xl:aspect-[5/5.4] rounded-2xl overflow-hidden bg-[var(--sunk)] lg:w-[78%] lg:ml-auto">
+                  <img
+                    src="/images/doctor-emily.jpg"
+                    alt="Dr. Emily Watson, one of our GMC-registered doctors, in a white coat outdoors"
+                    className="absolute inset-0 size-full object-cover object-[30%_20%] scale-[1.35] origin-[44%_22%]"
+                    fetchpriority="high"
+                  />
+                </div>
 
-              <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
-                  <Award className="w-4 h-4 text-accent-400" />
-                  <span className="text-sm font-medium">GMC Certified</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
-                  <Shield className="w-4 h-4 text-accent-400" />
-                  <span className="text-sm font-medium">CQC Regulated</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
-                  <Lock className="w-4 h-4 text-accent-400" />
-                  <span className="text-sm font-medium">GDPR Compliant</span>
-                </div>
-                <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg border border-white/20">
-                  <Lock className="w-4 h-4 text-accent-400" />
-                  <span className="text-sm font-medium">256-bit SSL</span>
+                <div className="relative -mt-24 mx-3 sm:mx-6 lg:absolute lg:mt-0 lg:mx-0 lg:left-0 lg:bottom-10 lg:w-[360px]">
+                  <Card className="shadow-[var(--shadow-3)] border-[var(--line)]">
+                    <CardContent className="p-5">
+                      <div className="flex items-center justify-between gap-3 mb-4">
+                        <h2 className="text-base font-semibold text-[var(--ink)]">Book your slot</h2>
+                        <Badge variant="success">Available today</Badge>
+                      </div>
+
+                      <p className="label-mono mb-2">October 2025</p>
+                      <div className="grid grid-cols-7 gap-1 text-center mb-1.5" aria-hidden="true">
+                        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                          <span key={i} className="text-[11px] font-mono text-[var(--ink-3)]">{d}</span>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-1" role="group" aria-label="Day">
+                        {[...Array(7)].map((_, i) => {
+                          const isPast = i < 2
+                          const isSelected = selectedDay === i
+                          return (
+                            <button
+                              key={i}
+                              disabled={isPast}
+                              aria-pressed={isSelected}
+                              aria-label={`${DAY_NAMES[i]} ${25 + i} October${isPast ? ', unavailable' : ''}`}
+                              onClick={() => {
+                                if (!isPast) {
+                                  setSelectedDay(i)
+                                  toast.success(`Selected ${DAY_NAMES[i].slice(0, 3)}, Oct ${25 + i}`)
+                                }
+                              }}
+                              className={cn(
+                                'h-10 rounded-md figure text-sm transition-colors',
+                                isSelected && 'bg-[var(--pine)] text-[var(--on-pine)]',
+                                !isSelected && isPast && 'text-[var(--ink-3)] line-through decoration-[var(--line-strong)] cursor-not-allowed',
+                                !isSelected && !isPast && 'text-[var(--ink)] bg-[var(--paper)] hover:bg-[var(--pine-tint)]'
+                              )}
+                            >
+                              {i + 25}
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      <p className="mt-4 mb-2 text-sm font-medium text-[var(--ink-2)]">Times on {DAY_NAMES[selectedDay]}</p>
+                      <div className="grid grid-cols-4 gap-1.5" role="group" aria-label="Time">
+                        {TIMES.map(time => {
+                          const isSelected = selectedTime === time
+                          return (
+                            <button
+                              key={time}
+                              aria-pressed={isSelected}
+                              onClick={() => {
+                                setSelectedTime(time)
+                                toast.success(`Time slot ${time} selected`)
+                              }}
+                              className={cn(
+                                'h-9 rounded-md figure text-[0.8125rem] border transition-colors',
+                                isSelected
+                                  ? 'bg-[var(--pine-tint)] border-[var(--pine)] text-[var(--pine-hover)] font-medium'
+                                  : 'border-[var(--line)] text-[var(--ink)] hover:border-[var(--line-strong)]'
+                              )}
+                            >
+                              {time}
+                            </button>
+                          )
+                        })}
+                      </div>
+
+                      <Button variant="secondary" className="w-full mt-4" onClick={confirmSlot}>
+                        Hold <span className="figure">{selectedTime}</span> on <span className="figure">{25 + selectedDay} Oct</span>
+                      </Button>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
-            </div>
-
-            <div className="relative">
-              <Card className="bg-white shadow-2xl">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-900">Book Your Slot</h3>
-                    <Badge variant="success">Available Today</Badge>
-                  </div>
-                  
-                  <div className="space-y-3 mb-4">
-                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-gray-500 mb-2">
-                      <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
-                    </div>
-                    <div className="grid grid-cols-7 gap-1">
-                      {[...Array(7)].map((_, i) => {
-                        const isPast = i < 2
-                        const isSelected = selectedDay === i
-                        return (
-                          <button 
-                            key={i} 
-                            disabled={isPast}
-                            onClick={() => {
-                              if (!isPast) {
-                                setSelectedDay(i)
-                                const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-                                toast.success(`Selected ${dayNames[i]}, Oct ${25 + i}`)
-                              }
-                            }}
-                            className={`aspect-square rounded-lg text-sm font-medium transition-all ${
-                              isSelected ? 'bg-accent-600 text-white shadow-lg scale-105' : 
-                              isPast ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 
-                              'bg-gray-50 hover:bg-primary-100 text-gray-700 hover:scale-105 cursor-pointer'
-                            }`}
-                          >
-                            {i + 25}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-700">Available times for selected day:</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {['09:00', '10:00', '11:30', '13:00', '14:30', '16:00', '17:30', '19:00'].map(time => {
-                        const isSelected = selectedTime === time
-                        return (
-                          <button 
-                            key={time} 
-                            onClick={() => {
-                              setSelectedTime(time)
-                              toast.success(`Time slot ${time} selected`)
-                            }}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                              isSelected 
-                                ? 'bg-primary-600 text-white shadow-lg scale-105' 
-                                : 'bg-primary-50 text-primary-700 hover:bg-primary-100 hover:scale-105'
-                            }`}
-                          >
-                            {time}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  <Button 
-                    className="w-full mt-4" 
-                    onClick={() => {
-                      // Get date info for selected day
-                      const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-                      const selectedDayName = dayNames[selectedDay]
-                      const selectedDate = `October ${25 + selectedDay}, 2025`
-                      
-                      // Show success toast
-                      toast.success(`Booking confirmed! ${selectedDayName}, ${selectedDate} at ${selectedTime}`)
-                      
-                      // Navigate to categories with booking info in state
-                      setTimeout(() => {
-                        navigate('/categories', { 
-                          state: { 
-                            preselectedTime: selectedTime,
-                            preselectedDay: selectedDayName,
-                            preselectedDate: selectedDate
-                          } 
-                        })
-                      }, 800)
-                    }}
-                  >
-                    Confirm Booking → {selectedTime} on Oct {25 + selectedDay}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="mt-4 bg-white/95 backdrop-blur-sm border-2 border-accent-200">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <Badge className="bg-accent-600 text-white text-xs px-2 py-1">
-                      ✓ Verified Patient
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-700 italic font-medium leading-relaxed mb-3">
-                    "Booked in 2 minutes, treated the same week. Natural results I love!"
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-400 to-accent-600 flex items-center justify-center text-white font-bold">
-                      SJ
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">Sarah J.</p>
-                      <p className="text-xs text-gray-500">London • Botox Patient</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="mt-4 bg-white/95 backdrop-blur-sm border-2 border-accent-200">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                    </div>
-                    <Badge className="bg-accent-600 text-white text-xs px-2 py-1">
-                      ✓ Verified Patient
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-700 italic font-medium leading-relaxed mb-3">
-                    "Clear pricing upfront. Doctor was professional and results exceeded expectations!"
-                  </p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold">
-                      MK
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">Michael K.</p>
-                      <p className="text-xs text-gray-500">Manchester • Lip Filler Patient</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 pt-12 border-t border-primary-500/30">
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold">600K+</div>
-              <div className="text-primary-200 text-sm">Patients</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold">40+</div>
-              <div className="text-primary-200 text-sm">Treatments</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold">1,5M+</div>
-              <div className="text-primary-200 text-sm">Prescriptions</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl md:text-4xl font-bold">7+</div>
-              <div className="text-primary-200 text-sm">Years</div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Why Patients Choose DoktorABC for Botox
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Experience the future of aesthetic treatments with transparent pricing, proven results, and continuous care.
-            </p>
-          </div>
+      {/* Trust row */}
+      <section aria-label="Regulation and safety" className="border-y border-[var(--line)] bg-[var(--surface)]">
+        <ul className="container-page grid grid-cols-2 lg:grid-cols-4">
+          {[
+            { icon: BadgeCheck, title: 'GMC-registered doctors', text: 'Every prescriber checkable on the register' },
+            { icon: ShieldCheck, title: 'CQC-regulated', text: 'Inspected as a UK healthcare provider' },
+            { icon: Building2, title: 'UK and EU pharmacy', text: 'Dispensed by registered partner pharmacies' },
+            { icon: Lock, title: 'GDPR, encrypted', text: 'Medical data stays between you and your doctor' },
+          ].map(({ icon: Icon, title, text }, i) => (
+            <li
+              key={title}
+              className={cn(
+                'flex items-start gap-3 py-5 lg:py-6 pr-4',
+                i % 2 === 1 && 'pl-4 border-l border-[var(--line)]',
+                i >= 2 && 'border-t lg:border-t-0 border-[var(--line)]',
+                i === 2 && 'lg:pl-4 lg:border-l'
+              )}
+            >
+              <Icon className="size-5 mt-0.5 shrink-0 text-[var(--pine)]" strokeWidth={1.75} aria-hidden="true" />
+              <div>
+                <p className="text-sm font-semibold text-[var(--ink)]">{title}</p>
+                <p className="text-[0.8125rem] text-[var(--ink-3)] mt-0.5 hidden sm:block">{text}</p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <Card className="border-2 border-transparent hover:border-primary-600 transition-all duration-300 hover:shadow-xl">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Calendar className="w-8 h-8 text-primary-600" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Book Your Consult in Minutes</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Online scheduling with instant slot confirmation. No phone calls, no waiting. Choose your doctor, pick your time, and you're done.
-                </p>
-                <div className="mt-6">
-                  <Button variant="outline" size="sm" onClick={() => navigate('/categories')}>
-                    Schedule Now →
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-transparent hover:border-primary-600 transition-all duration-300 hover:shadow-xl">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-accent-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Heart className="w-8 h-8 text-accent-600" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Transparent Pricing & Proven Results</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  See before & after photos and clear treatment packages upfront. No hidden fees. No surprises. Just honest pricing.
-                </p>
-                <div className="mt-6">
-                  <Button variant="outline" size="sm" onClick={() => navigate('/treatment/botox-forehead')}>
-                    View Gallery →
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-transparent hover:border-primary-600 transition-all duration-300 hover:shadow-xl">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <MessageCircle className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Continuous Care</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Automated reminders for repeat treatments and secure follow-up messaging. Your doctor is always just a message away.
-                </p>
-                <div className="mt-6">
-                  <Button variant="outline" size="sm">
-                    Learn More →
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8">
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Real Results from Real Patients</h3>
-              <p className="text-gray-600">Natural-looking results that enhance your beauty</p>
+      {/* Why patients choose us: photo beside three plain reasons */}
+      <section className="py-20 md:py-28">
+        <div className="container-page grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+          <div className="lg:col-span-5 order-2 lg:order-1">
+            <div className="relative aspect-[4/3] lg:aspect-[4/5] rounded-2xl overflow-hidden bg-[var(--sunk)]">
+              <img src="/images/clinic-room.jpg" alt="A calm partner clinic treatment room with plants and natural light" loading="lazy" className="absolute inset-0 size-full object-cover" />
             </div>
-            
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
+          </div>
+          <div className="lg:col-span-7 order-1 lg:order-2">
+            <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)] max-w-[18ch]">
+              Why patients choose DoktorABC for Botox
+            </h2>
+            <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[52ch]">
+              Clear prices, a real doctor, and care that continues after the appointment.
+            </p>
+            <dl className="mt-10 divide-y divide-[var(--line)] border-t border-[var(--line)]">
               {[
-                { before: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=400&h=300&fit=crop&q=80', after: 'https://images.unsplash.com/photo-1560750588-73207b1ef5b8?w=400&h=300&fit=crop&q=80', area: 'Forehead Lines' },
-                { before: 'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=400&h=300&fit=crop&q=80', after: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400&h=300&fit=crop&q=80', area: 'Crow\'s Feet' },
-                { before: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400&h=300&fit=crop&q=80', after: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=300&fit=crop&q=80', area: 'Lip Enhancement' }
-              ].map((item, i) => (
-                <div key={i} className="bg-white rounded-xl p-4 shadow-lg">
-                  <div className="grid grid-cols-2 gap-2 mb-3">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-600 mb-1">Before</p>
-                      <img src={item.before} alt="Before treatment" className="aspect-[4/3] rounded-lg object-cover" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-600 mb-1">After</p>
-                      <img src={item.after} alt="After treatment" className="aspect-[4/3] rounded-lg object-cover" />
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-sm font-semibold text-gray-800">{item.area}</p>
-                    <p className="text-xs text-gray-500">3 months results</p>
+                { icon: Calendar, title: 'Book a consultation in minutes', text: "Online scheduling with instant confirmation. Choose your doctor, pick a time, and you're done.", link: 'Browse treatments', to: '/categories' },
+                { icon: ShieldCheck, title: 'The whole price, before you book', text: 'Consultation, treatment and aftercare are listed together. No hidden fees and no surprises.', link: "See what's included", to: '/treatment/botox-forehead' },
+                { icon: MessageCircle, title: 'Care that continues', text: 'Reminders when a repeat treatment is due, and secure messages with your doctor in between.', link: 'How aftercare works', to: '/how-it-works' },
+              ].map(({ icon: Icon, title, text, link, to }) => (
+                <div key={title} className="grid grid-cols-[auto_1fr] gap-x-5 py-6">
+                  <Icon className="size-6 mt-0.5 text-[var(--pine)]" strokeWidth={1.6} aria-hidden="true" />
+                  <div>
+                    <dt className="text-lg font-semibold text-[var(--ink)]">{title}</dt>
+                    <dd className="mt-1.5 text-[var(--ink-2)] max-w-[56ch]">{text}</dd>
+                    <dd className="mt-3">
+                      <button onClick={() => navigate(to)} className="inline-flex items-center gap-1 text-[0.9375rem] font-medium text-[var(--pine)] hover:text-[var(--pine-hover)] underline underline-offset-4 decoration-[var(--pine-tint)] hover:decoration-[var(--pine)]">
+                        {link}
+                        <ChevronRight className="size-4" aria-hidden="true" />
+                      </button>
+                    </dd>
                   </div>
                 </div>
               ))}
-            </div>
-
-            <div className="text-center">
-              <Button size="lg" onClick={() => navigate('/categories')}>
-                See Board-Certified Doctors & Real Patient Outcomes →
-              </Button>
-            </div>
+            </dl>
           </div>
         </div>
       </section>
 
-      {/* Transparent Pricing Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent-100 text-accent-700 px-4 py-2 text-sm font-semibold">
-              No Hidden Fees Guarantee
-            </Badge>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Transparent Pricing & Treatment Packages
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Know exactly what you'll pay before you book. All prices include consultation, treatment, and aftercare.
-            </p>
-          </div>
+      {/* What to expect: from the treatment records, not from photographs */}
+      <section className="py-20 md:py-24 bg-[var(--surface)] border-y border-[var(--line)]">
+        <div className="container-page">
+          <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)]">What to expect</h2>
+          <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[60ch]">
+            Your doctor explains what is realistic for you at the consultation. These are the typical facts for each treatment.
+          </p>
 
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            {/* Popular Treatments Pricing */}
-            <Card className="border-2 border-gray-200 hover:border-primary-600 hover:shadow-xl transition-all">
-              <CardContent className="p-6">
-                <div className="text-center mb-4">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Botox Forehead</h3>
-                  <div className="text-4xl font-bold text-primary-600 mb-2">€299</div>
-                  <p className="text-sm text-gray-600">+ €49 consultation</p>
-                </div>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Video consultation included</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Professional injection treatment</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Results last 3-4 months</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Follow-up support included</span>
-                  </li>
-                </ul>
-                <Button className="w-full" onClick={() => navigate('/treatment/botox-forehead')}>
-                  View Details →
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-primary-600 hover:shadow-2xl transition-all relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <Badge className="bg-accent-600 text-white px-4 py-1 text-xs font-bold shadow-lg">
-                  MOST POPULAR
-                </Badge>
-              </div>
-              <CardContent className="p-6">
-                <div className="text-center mb-4">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Crow's Feet</h3>
-                  <div className="text-4xl font-bold text-primary-600 mb-2">€279</div>
-                  <p className="text-sm text-gray-600">+ €49 consultation</p>
-                </div>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Video consultation included</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Eye area rejuvenation</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Natural-looking results</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>2-week touch-up guarantee</span>
-                  </li>
-                </ul>
-                <Button className="w-full bg-primary-600 hover:bg-primary-700" onClick={() => navigate('/treatment/botox-crowsfeet')}>
-                  Book Now →
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-gray-200 hover:border-primary-600 hover:shadow-xl transition-all">
-              <CardContent className="p-6">
-                <div className="text-center mb-4">
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Lip Fillers</h3>
-                  <div className="text-4xl font-bold text-primary-600 mb-2">€399</div>
-                  <p className="text-sm text-gray-600">+ €49 consultation</p>
-                </div>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Hyaluronic acid fillers</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>1ml premium product</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Results last 9-12 months</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-600 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Reversible if needed</span>
-                  </li>
-                </ul>
-                <Button className="w-full" onClick={() => navigate('/treatment/dermal-fillers-lips')}>
-                  View Details →
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Membership Benefit */}
-          <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl p-8 text-white text-center">
-            <div className="max-w-3xl mx-auto">
-              <Award className="w-16 h-16 mx-auto mb-4 text-accent-400" />
-              <h3 className="text-3xl font-bold mb-4">Save 15% with VIP Membership</h3>
-              <p className="text-lg text-primary-100 mb-6">
-                Join our VIP program for priority booking, exclusive discounts, and automatic treatment reminders. Only €249/month for unlimited consultations.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-accent-400" />
-                  <span>Priority booking</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-accent-400" />
-                  <span>15% off all treatments</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-accent-400" />
-                  <span>Touch-up reminders</span>
-                </div>
-              </div>
-              <Button size="lg" className="mt-6 bg-white text-primary-600 hover:bg-gray-100" onClick={() => navigate('/categories')}>
-                Join VIP Program →
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Meet Practitioners */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Meet Your Practitioners</h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Board-certified doctors with years of aesthetic experience
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {doctors.slice(0, 3).map((doctor, index) => {
-              const doctorPhotos = [
-                'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&h=200&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&h=200&fit=crop&q=80',
-                'https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&h=200&fit=crop&q=80'
-              ]
+          {/* Phones: one block per treatment */}
+          <ul className="mt-8 md:hidden divide-y divide-[var(--line)] border-y border-[var(--line)]">
+            {aesthetic.map(t => {
+              const find = (re) => t.benefits.find(b => re.test(b))
               return (
-                <Card key={doctor.id} className="hover:shadow-xl transition-all duration-300 border-2 border-gray-100">
-                  <CardContent className="p-6">
-                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-primary-100 shadow-lg overflow-hidden">
-                      <img 
-                        src={doctorPhotos[index]} 
-                        alt={doctor.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  
-                  <div className="text-center mb-4">
-                    <h3 className="text-xl font-bold text-gray-900 mb-1">{doctor.name}</h3>
-                    <p className="text-sm font-medium text-primary-600 mb-2">{doctor.title}</p>
-                    
-                    <div className="flex flex-wrap gap-2 justify-center mb-3">
-                      {doctor.specialization?.slice(0, 2).map((spec, idx) => (
-                        <Badge key={idx} variant="primary" className="text-xs">
-                          {spec}
-                        </Badge>
-                      ))}
-                    </div>
+                <li key={t.id} className="py-5">
+                  <button onClick={() => navigate(`/treatment/${t.id}`)} className="flex items-center gap-3 text-left">
+                    <TreatmentGlyph treatment={t} size={36} />
+                    <span className="font-semibold text-[var(--ink)]">{t.name}</span>
+                  </button>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                    <div><dt className="label-mono">On the day</dt><dd className="mt-0.5 text-[var(--ink-2)]">{find(/procedure|fast treatment|downtime/i) ?? 'Short appointment'}</dd></div>
+                    <div><dt className="label-mono">Results</dt><dd className="mt-0.5 text-[var(--ink-2)]">{find(/visible|immediate|long-lasting/i) ?? 'Discussed at consultation'}</dd></div>
+                    <div><dt className="label-mono">Lasts</dt><dd className="mt-0.5 figure text-[var(--ink)]">{t.duration}</dd></div>
+                    <div><dt className="label-mono">Suitable for</dt><dd className="mt-0.5 text-[var(--ink-2)]">{t.suitableFor.slice(0, 2).join(', ')}</dd></div>
+                  </dl>
+                </li>
+              )
+            })}
+          </ul>
 
-                    <div className="flex items-center justify-center gap-1 mb-3">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      ))}
-                      <span className="ml-2 text-sm font-semibold">{doctor.profile.rating}</span>
-                    </div>
+          <div className="mt-10 hidden md:block">
+            <table className="w-full text-left border-collapse">
+              <caption className="sr-only">Typical timings and suitability by treatment</caption>
+              <thead>
+                <tr className="border-b border-[var(--ink)]">
+                  <th scope="col" className="py-3 pr-4 text-sm font-semibold text-[var(--ink)] w-[30%]">Treatment</th>
+                  <th scope="col" className="py-3 pr-4 text-sm font-semibold text-[var(--ink)]">On the day</th>
+                  <th scope="col" className="py-3 pr-4 text-sm font-semibold text-[var(--ink)]">Results</th>
+                  <th scope="col" className="py-3 pr-4 text-sm font-semibold text-[var(--ink)]">Lasts</th>
+                  <th scope="col" className="py-3 text-sm font-semibold text-[var(--ink)]">Suitable for</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aesthetic.map(t => {
+                  const find = (re) => t.benefits.find(b => re.test(b))
+                  return (
+                    <tr key={t.id} className="border-b border-[var(--line)] align-top">
+                      <th scope="row" className="py-5 pr-4">
+                        <button onClick={() => navigate(`/treatment/${t.id}`)} className="flex items-center gap-3 text-left group">
+                          <TreatmentGlyph treatment={t} size={40} />
+                          <span className="font-semibold text-[var(--ink)] group-hover:text-[var(--pine)] group-hover:underline underline-offset-4">{t.name}</span>
+                        </button>
+                      </th>
+                      <td className="py-5 pr-4 text-[0.9375rem] text-[var(--ink-2)]">{find(/procedure|fast treatment|downtime/i) ?? 'Short appointment'}</td>
+                      <td className="py-5 pr-4 text-[0.9375rem] text-[var(--ink-2)]">{find(/visible|immediate|long-lasting/i) ?? 'Discussed at consultation'}</td>
+                      <td className="py-5 pr-4 figure text-[0.9375rem] text-[var(--ink)] whitespace-nowrap">{t.duration}</td>
+                      <td className="py-5 text-[0.9375rem] text-[var(--ink-2)]">{t.suitableFor.slice(0, 2).join(', ')}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-[0.8125rem] text-[var(--ink-3)]">Individual results vary. We do not show patient photographs.</p>
+        </div>
+      </section>
+
+      {/* Pricing: three price labels and the membership */}
+      <section id="pricing" className="py-20 md:py-28">
+        <div className="container-page">
+          <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)]">Prices and packages</h2>
+          <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[56ch]">
+            Know exactly what you will pay before you book. No hidden fees, guaranteed.
+          </p>
+
+          <div className="mt-10 grid md:grid-cols-3 bg-[var(--surface)] border border-[var(--line)] rounded-xl overflow-hidden">
+            {aesthetic.map((t, i) => {
+              const popular = t.id === 'botox-crowsfeet'
+              return (
+                <article key={t.id} className={cn('flex flex-col', i > 0 && 'border-t md:border-t-0 md:border-l border-[var(--line)]')}>
+                  <div className="flex items-center justify-between gap-3 px-6 h-12">
+                    <p className="label-mono">RX / {t.id.toUpperCase()}</p>
+                    {popular && <Badge variant="primary">Most popular</Badge>}
                   </div>
-
-                  <p className="text-sm text-gray-700 mb-4 line-clamp-2">{doctor.profile.bio}</p>
-
-                  <div className="space-y-2 text-xs text-gray-600 mb-4 bg-gray-50 p-3 rounded-lg">
-                    <div className="flex items-center">
-                      <Shield className="w-3 h-3 text-accent-600 mr-2 flex-shrink-0" />
-                      <span className="font-semibold">GMC: {doctor.licenseNumber}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="w-3 h-3 text-accent-600 mr-2 flex-shrink-0" />
-                      <span>{doctor.profile.yearsExperience}+ years experience</span>
-                    </div>
-                    <div className="flex items-center">
-                      <CheckCircle className="w-3 h-3 text-accent-600 mr-2 flex-shrink-0" />
-                      <span>{doctor.profile.totalConsultations.toLocaleString()} consultations</span>
-                    </div>
+                  <div className="perforation" />
+                  <div className="px-6 pt-5 pb-6 flex flex-col flex-1">
+                    <h3 className="text-xl font-semibold text-[var(--ink)]">{t.name}</h3>
+                    <p className="mt-4 flex items-baseline gap-2">
+                      <Euro value={t.price.treatment} className="text-[2.5rem] leading-none font-medium text-[var(--ink)] tracking-[-0.03em]" />
+                      <span className="text-sm text-[var(--ink-3)]">treatment</span>
+                    </p>
+                    <p className="mt-2 text-sm text-[var(--ink-2)]">
+                      plus <Euro value={t.price.consultation} /> consultation
+                      {t.price.subscription && <> · <Euro value={t.price.subscription} /> as a member</>}
+                    </p>
+                    <ul className="mt-6 space-y-2.5 flex-1">
+                      {[`Results last ${t.duration}`, ...(PACKAGE_NOTES[t.id] ?? [])].map(item => (
+                        <li key={item} className="flex items-start gap-2.5 text-[0.9375rem] text-[var(--ink-2)]">
+                          <Check className="size-4 mt-1 shrink-0 text-[var(--pine)]" aria-hidden="true" />
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button variant="secondary" className="w-full mt-7" onClick={() => navigate(`/treatment/${t.id}`)}>
+                      View details
+                    </Button>
                   </div>
-
-                  <Button variant="outline" size="sm" className="w-full hover:bg-primary-600 hover:text-white transition-all" onClick={() => navigate('/categories')}>
-                    Book with {doctor.name.split(' ')[1]} →
-                  </Button>
-                </CardContent>
-              </Card>
+                </article>
               )
             })}
           </div>
 
-          <div className="grid md:grid-cols-4 gap-6">
-            <Card className="bg-white">
-              <CardContent className="p-6 text-center">
-                <Shield className="w-8 h-8 text-primary-600 mx-auto mb-3" />
-                <h4 className="font-semibold mb-2">Verified Credentials</h4>
-                <p className="text-xs text-gray-600">All practitioners GMC-registered</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white">
-              <CardContent className="p-6 text-center">
-                <Lock className="w-8 h-8 text-primary-600 mx-auto mb-3" />
-                <h4 className="font-semibold mb-2">GDPR Compliant</h4>
-                <p className="text-xs text-gray-600">Your data is encrypted</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white">
-              <CardContent className="p-6 text-center">
-                <Award className="w-8 h-8 text-primary-600 mx-auto mb-3" />
-                <h4 className="font-semibold mb-2">Industry Awards</h4>
-                <p className="text-xs text-gray-600">Featured publications</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white">
-              <CardContent className="p-6 text-center">
-                <Heart className="w-8 h-8 text-primary-600 mx-auto mb-3" />
-                <h4 className="font-semibold mb-2">Patient-First</h4>
-                <p className="text-xs text-gray-600">Dedicated support</p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Booking Steps */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary-100 text-primary-700 px-4 py-2 text-sm font-semibold">
-              Fast Track Booking
-            </Badge>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              From Click to Treatment in 3 Days
-            </h2>
-            <p className="text-xl text-gray-600 mb-6">Simple 4-step process with instant booking confirmation</p>
-          </div>
-
-          {/* Step-by-step flow */}
-          <div className="max-w-5xl mx-auto mb-12">
-            <div className="grid md:grid-cols-4 gap-6">
-              <div className="relative">
-                <div className="absolute top-12 left-1/2 w-full h-1 bg-primary-200 -z-10 hidden md:block"></div>
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary-600 to-primary-700 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-3xl font-bold shadow-xl">
-                    1
-                  </div>
-                  <h3 className="font-bold text-lg mb-2">Choose Treatment</h3>
-                  <p className="text-sm text-gray-600">Browse treatments & view pricing</p>
-                  <p className="text-xs text-primary-600 font-semibold mt-2">30 seconds</p>
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute top-12 left-1/2 w-full h-1 bg-primary-200 -z-10 hidden md:block"></div>
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary-600 to-primary-700 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-3xl font-bold shadow-xl">
-                    2
-                  </div>
-                  <h3 className="font-bold text-lg mb-2">Free Consultation</h3>
-                  <p className="text-sm text-gray-600">Video call with doctor</p>
-                  <p className="text-xs text-primary-600 font-semibold mt-2">15 minutes</p>
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="absolute top-12 left-1/2 w-full h-1 bg-primary-200 -z-10 hidden md:block"></div>
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-primary-600 to-primary-700 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-3xl font-bold shadow-xl">
-                    3
-                  </div>
-                  <h3 className="font-bold text-lg mb-2">Book Slot</h3>
-                  <p className="text-sm text-gray-600">One-click appointment booking</p>
-                  <p className="text-xs text-primary-600 font-semibold mt-2">1 minute</p>
-                </div>
-              </div>
-
-              <div className="relative">
-                <div className="text-center">
-                  <div className="w-24 h-24 bg-gradient-to-br from-accent-600 to-accent-700 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-3xl font-bold shadow-xl">
-                    4
-                  </div>
-                  <h3 className="font-bold text-lg mb-2">Get Treated</h3>
-                  <p className="text-sm text-gray-600">Professional treatment</p>
-                  <p className="text-xs text-accent-600 font-semibold mt-2">Within 3 days</p>
-                </div>
-              </div>
+          {/* Membership */}
+          <div className="mt-6 grid md:grid-cols-12 gap-6 md:gap-10 items-center rounded-xl border border-[var(--pine-tint)] bg-[var(--pine-wash)] px-6 py-7 md:px-10 md:py-9">
+            <div className="md:col-span-5">
+              <h3 className="text-2xl font-semibold tracking-[-0.02em] text-[var(--ink)]">VIP membership</h3>
+              <p className="mt-2 text-[var(--ink-2)]">
+                Unlimited consultations for <Euro value={249} className="text-[var(--ink)] font-medium" /> a month, and 15% off every treatment.
+              </p>
             </div>
-          </div>
-
-          {/* CTA Cards */}
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            <Card className="border-2 border-primary-600 hover:shadow-2xl transition-all bg-gradient-to-br from-primary-50 to-white">
-              <CardContent className="p-8 text-center">
-                <Calendar className="w-16 h-16 text-primary-600 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4">Start Booking Now</h3>
-                <p className="text-gray-600 mb-2">Instant confirmation</p>
-                <p className="text-sm text-gray-500 mb-6">Next available slots starting today</p>
-                <Button size="lg" className="w-full bg-primary-600 hover:bg-primary-700" onClick={() => navigate('/categories')}>
-                  Book Treatment →
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-2 border-gray-200 hover:border-accent-600 hover:shadow-xl transition-all">
-              <CardContent className="p-8 text-center">
-                <MessageCircle className="w-16 h-16 text-accent-600 mx-auto mb-4" />
-                <h3 className="text-2xl font-bold mb-4">Questions First?</h3>
-                <p className="text-gray-600 mb-2">Chat with specialists</p>
-                <p className="text-sm text-gray-500 mb-6">Get expert advice before booking</p>
-                <Button size="lg" variant="outline" className="w-full hover:bg-accent-600 hover:text-white hover:border-accent-600">
-                  Start Chat →
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Reviews */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">Rated Excellent For Our Service</h2>
-            <div className="flex items-center justify-center gap-2 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400" />
+            <ul className="md:col-span-4 grid gap-2.5">
+              {['Priority booking', '15% off all treatments', 'Touch-up reminders', '3 treatments a year included'].map(item => (
+                <li key={item} className="flex items-center gap-2.5 text-[0.9375rem] text-[var(--ink)]">
+                  <Check className="size-4 shrink-0 text-[var(--pine)]" aria-hidden="true" />
+                  {item}
+                </li>
               ))}
-              <span className="text-xl font-bold ml-2">4.9/5</span>
-              <span className="text-gray-600">from 12,450+ reviews</span>
+            </ul>
+            <div className="md:col-span-3 md:text-right">
+              <Button variant="secondary" size="lg" className="w-full md:w-auto" onClick={() => navigate('/categories')}>
+                Join VIP
+              </Button>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="hover:shadow-xl transition-all">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+      {/* Practitioners: portraits */}
+      <section className="py-20 md:py-28 bg-[var(--surface)] border-y border-[var(--line)]">
+        <div className="container-page">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+            <div>
+              <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)]">Meet your doctors</h2>
+              <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[52ch]">Every prescriber is GMC-registered. Their numbers are printed here so you can check them.</p>
+            </div>
+            <Button variant="ghost" onClick={() => navigate('/about')} className="self-start md:self-auto">
+              Medical advisory board
+              <ArrowRight aria-hidden="true" />
+            </Button>
+          </div>
+
+          <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-12">
+            {doctors.slice(0, 3).map((doctor) => (
+              <article key={doctor.id} className="flex flex-col">
+                <div className="relative aspect-[4/3.6] rounded-xl overflow-hidden bg-[var(--sunk)]">
+                  <img
+                    src={DOCTOR_PHOTOS[doctor.id] ?? doctor.profile?.avatar}
+                    alt={`Portrait of ${doctor.name}`}
+                    loading="lazy"
+                    className="absolute inset-0 size-full object-cover object-[50%_25%]"
+                  />
+                </div>
+                <div className="pt-5 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-semibold text-[var(--ink)]">{doctor.name}</h3>
+                      <p className="text-sm text-[var(--ink-2)] mt-0.5">{doctor.title}</p>
+                    </div>
+                    <p className="flex items-center gap-1 text-sm shrink-0 mt-1">
+                      <Star className="size-4 fill-[var(--star)] text-[var(--star)]" aria-hidden="true" />
+                      <span className="figure text-[var(--ink)]">{doctor.profile.rating}</span>
+                      <span className="sr-only">out of 5</span>
+                    </p>
+                  </div>
+                  <p className="mt-3 text-[0.9375rem] text-[var(--ink-2)] line-clamp-2">{doctor.profile.bio}</p>
+                  <dl className="mt-4 grid grid-cols-3 gap-3 py-3 border-y border-[var(--line)]">
+                    <div>
+                      <dt className="label-mono">GMC</dt>
+                      <dd className="figure text-sm text-[var(--ink)] mt-0.5">{doctor.licenseNumber?.replace('GMC-', '')}</dd>
+                    </div>
+                    <div>
+                      <dt className="label-mono">Years</dt>
+                      <dd className="figure text-sm text-[var(--ink)] mt-0.5">{doctor.profile.yearsExperience}</dd>
+                    </div>
+                    <div>
+                      <dt className="label-mono">Consults</dt>
+                      <dd className="figure text-sm text-[var(--ink)] mt-0.5">{doctor.profile.totalConsultations.toLocaleString('en-GB')}</dd>
+                    </div>
+                  </dl>
+                  <div className="mt-4 flex flex-wrap gap-1.5">
+                    {doctor.specialization?.slice(0, 2).map((spec) => (
+                      <Badge key={spec} variant="outline">{spec}</Badge>
                     ))}
                   </div>
-                  <p className="text-gray-700 mb-4 leading-relaxed italic">"{testimonial.text}"</p>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-semibold text-gray-900">{testimonial.name}</span>
-                    <span className="text-gray-500">{testimonial.date}</span>
+                  <div className="mt-auto pt-5">
+                    <Button variant="secondary" className="w-full" onClick={() => navigate('/categories')}>
+                      Book with Dr. {doctor.name.split(' ').pop()}
+                    </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <ul className="mt-14 flex flex-wrap gap-x-8 gap-y-3 text-sm text-[var(--ink-2)]">
+            {[
+              [BadgeCheck, 'Verified credentials, all GMC-registered'],
+              [Lock, 'GDPR compliant, data encrypted'],
+              [Star, 'Featured in industry publications'],
+              [Headset, 'Dedicated patient support'],
+            ].map(([Icon, text]) => (
+              <li key={text} className="flex items-center gap-2">
+                <Icon className="size-4 text-[var(--pine)]" aria-hidden="true" />
+                {text}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* From click to treatment: a timeline */}
+      <section className="py-20 md:py-28">
+        <div className="container-page">
+          <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)] max-w-[20ch]">
+            From click to treatment in three days
+          </h2>
+
+          <ol className="mt-12 grid md:grid-cols-4 gap-y-10 md:gap-x-8 relative">
+            <span aria-hidden="true" className="hidden md:block absolute left-0 right-0 top-[19px] h-px bg-[var(--line-strong)] opacity-50" />
+            {steps.map(({ time, title, text, icon: Icon }, i) => (
+              <li key={title} className="relative grid grid-cols-[auto_1fr] md:block gap-x-5">
+                <span className={cn(
+                  'relative z-[1] grid place-items-center size-10 rounded-full border',
+                  i === steps.length - 1 ? 'bg-[var(--pine)] border-[var(--pine)] text-[var(--on-pine)]' : 'bg-[var(--paper)] border-[var(--line-strong)] text-[var(--ink)]'
+                )}>
+                  <Icon className="size-[18px]" strokeWidth={1.75} aria-hidden="true" />
+                </span>
+                <div className="md:mt-5">
+                  <p className="label-mono text-[var(--pine)]">{time}</p>
+                  <h3 className="mt-1 text-lg font-semibold text-[var(--ink)]">{title}</h3>
+                  <p className="mt-1.5 text-[0.9375rem] text-[var(--ink-2)] max-w-[30ch]">{text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-14 flex flex-col sm:flex-row gap-4 sm:items-center p-6 rounded-xl bg-[var(--surface)] border border-[var(--line)]">
+            <div className="flex-1">
+              <p className="font-semibold text-[var(--ink)]">Questions before you book?</p>
+              <p className="text-[0.9375rem] text-[var(--ink-2)] mt-0.5">Our clinical team answers by message, usually within a few hours.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="secondary" onClick={() => navigate('/contact')}>
+                <MessageCircle aria-hidden="true" />
+                Ask a doctor
+              </Button>
+              <Button onClick={() => navigate('/categories')}>Book a consultation</Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Reviews: one featured, four compact */}
+      <section className="py-20 md:py-24 bg-[var(--surface)] border-y border-[var(--line)]">
+        <div className="container-page grid lg:grid-cols-12 gap-10 lg:gap-14">
+          <div className="lg:col-span-5">
+            <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)]">Rated excellent by patients</h2>
+            <div className="mt-6 flex items-center gap-3">
+              <span className="tabular text-5xl font-semibold text-[var(--ink)] tracking-[-0.04em]">4.9</span>
+              <div>
+                <Stars value={5} />
+                <p className="text-sm text-[var(--ink-3)] mt-1">from 12,450 reviews</p>
+              </div>
+            </div>
+            <figure className="mt-10 border-l-2 border-[var(--pine)] pl-6">
+              <blockquote className="text-xl md:text-2xl leading-snug font-medium tracking-[-0.015em] text-[var(--ink)]">
+                “{testimonials[0].text}”
+              </blockquote>
+              <figcaption className="mt-4 text-sm text-[var(--ink-2)]">
+                <span className="font-semibold text-[var(--ink)]">{testimonials[0].name}</span>, {testimonials[0].place}. {testimonials[0].treatment} patient
+              </figcaption>
+            </figure>
+          </div>
+          <ul className="lg:col-span-7 grid sm:grid-cols-2 gap-px bg-[var(--line)] border border-[var(--line)] rounded-xl overflow-hidden self-start">
+            {testimonials.slice(1).map((t) => (
+              <li key={t.name} className="bg-[var(--surface)] p-6 flex flex-col">
+                <Stars value={5} size="size-3.5" />
+                <p className="mt-3 text-[0.9375rem] leading-relaxed text-[var(--ink)] line-clamp-3 flex-1">“{t.text}”</p>
+                <p className="mt-4 flex items-center justify-between gap-2 text-sm">
+                  <span className="font-semibold text-[var(--ink)]">{t.name}</span>
+                  <span className="label-mono">{t.date ?? t.place} / {t.treatment}</span>
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Offers for returning patients: plain two-up */}
+      <section className="py-16 md:py-20">
+        <div className="container-page grid md:grid-cols-2 gap-4">
+          <div className="flex items-start gap-5 p-6 md:p-8 rounded-xl border border-[var(--line)] bg-[var(--surface)]">
+            <Gift className="size-7 shrink-0 text-[var(--pine)]" strokeWidth={1.5} aria-hidden="true" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[var(--ink)]">Ready for your next session?</h3>
+              <p className="mt-1 text-[0.9375rem] text-[var(--ink-2)]">
+                <Euro value={50} className="text-[var(--ink)] font-medium" /> off when you rebook within six months.
+              </p>
+              <Button variant="secondary" size="sm" className="mt-4" onClick={() => toast.success('Offer saved: €50 off your next booking within 6 months')}>
+                Claim offer
+              </Button>
+            </div>
+          </div>
+          <div className="flex items-start gap-5 p-6 md:p-8 rounded-xl border border-[var(--line)] bg-[var(--surface)]">
+            <Share2 className="size-7 shrink-0 text-[var(--pine)]" strokeWidth={1.5} aria-hidden="true" />
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-[var(--ink)]">Refer a friend</h3>
+              <p className="mt-1 text-[0.9375rem] text-[var(--ink-2)]">
+                You both get <Euro value={50} className="text-[var(--ink)] font-medium" /> credit when they complete their first treatment.
+              </p>
+              <Button variant="secondary" size="sm" className="mt-4" onClick={shareReferral}>
+                Copy referral link
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Other categories: an index */}
+      <section className="pb-20 md:pb-28">
+        <div className="container-page">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 border-b border-[var(--ink)] pb-5">
+            <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)]">More than Botox</h2>
+            <Button variant="ghost" onClick={() => navigate('/categories')} className="self-start md:self-auto -ml-3 md:ml-0">
+              View all 40+ treatments
+              <ArrowRight aria-hidden="true" />
+            </Button>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((category) => (
+              <button
+                key={category.key}
+                onClick={() => navigate('/categories')}
+                className="group text-left flex gap-4 py-6 pr-4 border-b border-[var(--line)] hover:bg-[var(--surface)] transition-colors rounded-none"
+              >
+                <TreatmentGlyph category={category.glyph ?? category.key} size={40} />
+                <span className="flex-1 min-w-0">
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="text-lg font-semibold text-[var(--ink)] group-hover:text-[var(--pine)]">{category.title}</span>
+                    <ChevronRight className="size-5 text-[var(--ink-3)] group-hover:text-[var(--pine)] group-hover:translate-x-0.5 transition-transform" aria-hidden="true" />
+                  </span>
+                  <span className="block mt-1 text-[0.9375rem] text-[var(--ink-2)]">
+                    {category.items.slice(0, 3).join(', ')}
+                    {category.items.length > 3 && <span className="text-[var(--ink-3)]">, and {category.items.length - 3} more</span>}
+                  </span>
+                </span>
+              </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Retention Offers */}
-      <section className="py-16 bg-gradient-to-r from-accent-600 to-accent-700 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <Gift className="w-12 h-12 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-3">Ready for your next session?</h3>
-                <p className="text-sm text-accent-100 mb-4">Get €50 off when you rebook within 6 months</p>
-                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100">Claim Offer →</Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <Users className="w-12 h-12 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-3">Refer a Friend</h3>
-                <p className="text-sm text-accent-100 mb-4">Both get €50 credit when they complete their first treatment</p>
-                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100">Share Link →</Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-white">
-              <CardContent className="p-6 text-center">
-                <Award className="w-12 h-12 mx-auto mb-4" />
-                <h3 className="text-xl font-bold mb-3">Membership Plans</h3>
-                <p className="text-sm text-accent-100 mb-4">3 treatments/year for 15% off. Priority booking included.</p>
-                <Button variant="accent" className="bg-white text-accent-600 hover:bg-gray-100">Learn More →</Button>
-              </CardContent>
-            </Card>
+      {/* For professionals: figures beside portal rows */}
+      <section className="py-20 md:py-28 bg-[var(--surface)] border-y border-[var(--line)]">
+        <div className="container-page grid lg:grid-cols-12 gap-12 lg:gap-16">
+          <div className="lg:col-span-5">
+            <p className="label-mono mb-3">For healthcare professionals</p>
+            <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)]">Join our healthcare network</h2>
+            <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[44ch]">
+              Partner with DoktorABC to grow your practice and reach patients across the UK and Europe.
+            </p>
+            <dl className="mt-10 grid grid-cols-2 gap-x-6 gap-y-7">
+              {[['600K+', 'patients'], ['40+', 'treatments'], ['1.5M+', 'prescriptions'], ['7+', 'years']].map(([value, label]) => (
+                <div key={label} className="border-t border-[var(--line)] pt-3">
+                  <dt className="sr-only">{label}</dt>
+                  <dd className="figure text-3xl font-medium tracking-[-0.03em] text-[var(--ink)]">{value}</dd>
+                  <dd className="text-sm text-[var(--ink-3)] mt-1 capitalize">{label}</dd>
+                </div>
+              ))}
+            </dl>
+            <Button variant="secondary" className="mt-10" onClick={() => navigate('/contact')}>
+              Apply to join
+            </Button>
           </div>
-        </div>
-      </section>
 
-      {/* Categories */}
-      <section className="py-16 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">More Than Just Botox</h2>
-            <p className="text-gray-600">Explore our wide range of treatments across different health categories</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-6">
-            {categories.map((category, index) => (
-              <Card key={index} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate('/categories')}>
-                <CardContent className="p-6">
-                  <div className={`w-12 h-12 ${category.color} rounded-lg mb-4 flex items-center justify-center text-white text-xl font-bold`}>
-                    {category.title.charAt(0)}
-                  </div>
-                  <h3 className="text-xl font-semibold mb-3">{category.title}</h3>
-                  <ul className="space-y-2">
-                    {category.items.slice(0, 3).map((item, idx) => (
-                      <li key={idx} className="text-gray-600 text-sm flex items-center">
-                        <CheckCircle className="w-3 h-3 text-accent-600 mr-2" />
-                        {item}
+          <ul className="lg:col-span-7 flex flex-col gap-3">
+            {portals.map(({ role, icon: Icon, title, text, points, cta }) => (
+              <li key={role} className="grid sm:grid-cols-[auto_1fr_auto] gap-x-5 gap-y-4 items-start p-6 rounded-xl border border-[var(--line)] bg-[var(--paper)]">
+                <span className="grid place-items-center size-11 rounded-lg bg-[var(--surface)] border border-[var(--line)] text-[var(--ink)]">
+                  <Icon className="size-5" strokeWidth={1.75} aria-hidden="true" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-[var(--ink)]">For {title.toLowerCase()}</h3>
+                  <p className="mt-1 text-[0.9375rem] text-[var(--ink-2)]">{text}</p>
+                  <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1.5">
+                    {points.map(p => (
+                      <li key={p} className="flex items-center gap-1.5 text-sm text-[var(--ink-2)]">
+                        <Check className="size-3.5 text-[var(--pine)]" aria-hidden="true" />
+                        {p}
                       </li>
                     ))}
-                    {category.items.length > 3 && (
-                      <li className="text-primary-600 text-sm font-medium">+{category.items.length - 3} more...</li>
-                    )}
                   </ul>
-                </CardContent>
-              </Card>
+                </div>
+                <Button variant="secondary" size="sm" className="sm:mt-1" onClick={() => navigate('/login', { state: { role } })}>
+                  {cta}
+                </Button>
+              </li>
             ))}
-          </div>
-          
-          <div className="text-center mt-8">
-            <Button onClick={() => navigate('/categories')}>View All 40+ Treatments</Button>
-          </div>
+          </ul>
         </div>
       </section>
 
-      {/* For Healthcare Professionals */}
-      <section className="py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-        </div>
-
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-accent-600 text-white px-4 py-2 text-sm font-semibold">
-              For Healthcare Professionals
-            </Badge>
-            <h2 className="text-4xl font-bold mb-4">Join Our Healthcare Network</h2>
-            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Partner with DoktorABC to expand your practice and reach 600K+ patients nationwide
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {/* Doctor Portal */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 hover:border-white/40 transition-all">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Users className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">For Doctors</h3>
-                <p className="text-gray-300 mb-6 leading-relaxed">
-                  Flexible telemedicine platform. Set your own hours. Expand your aesthetic practice with comprehensive support.
-                </p>
-                <ul className="space-y-3 mb-6 text-left">
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Competitive consultation fees</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Full clinical support system</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Flexible scheduling tools</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Professional indemnity included</span>
-                  </li>
-                </ul>
-                <Button variant="outline" className="w-full bg-white text-gray-900 hover:bg-gray-100" onClick={() => navigate('/login')}>
-                  Doctor Portal Login →
+      {/* Final call to action */}
+      <section className="py-20 md:py-28">
+        <div className="container-page">
+          <div className="grid md:grid-cols-12 rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)]">
+            <div className="md:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
+              <h2 className="text-[2rem] md:text-[2.75rem] leading-[1.08] font-semibold tracking-[-0.03em] text-[var(--ink)] max-w-[16ch]">
+                Start with a free consultation
+              </h2>
+              <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[44ch]">
+                More than 600,000 patients have trusted DoktorABC with safe, effective treatment.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                <Button size="lg" onClick={() => navigate('/categories')}>
+                  <Calendar aria-hidden="true" />
+                  Book a consultation
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Pharmacy Portal */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 hover:border-white/40 transition-all">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-accent-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Heart className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">For Pharmacies</h3>
-                <p className="text-gray-300 mb-6 leading-relaxed">
-                  Streamlined prescription fulfillment. Integrated inventory management. Grow your aesthetic product sales.
-                </p>
-                <ul className="space-y-3 mb-6 text-left">
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Direct prescription feed</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Inventory management tools</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Delivery coordination system</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Guaranteed payment processing</span>
-                  </li>
-                </ul>
-                <Button variant="outline" className="w-full bg-white text-gray-900 hover:bg-gray-100" onClick={() => navigate('/login')}>
-                  Pharmacy Portal Login →
+                <Button size="lg" variant="secondary" onClick={() => navigate('/treatment/botox-forehead')}>
+                  See prices
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Support Portal */}
-            <Card className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 hover:border-white/40 transition-all">
-              <CardContent className="p-8 text-center">
-                <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <MessageCircle className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Support Team</h3>
-                <p className="text-gray-300 mb-6 leading-relaxed">
-                  Comprehensive support platform. Manage tickets, monitor systems, and ensure smooth patient experiences.
-                </p>
-                <ul className="space-y-3 mb-6 text-left">
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Unified ticket management</span>
+              </div>
+              <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-2.5 text-sm text-[var(--ink-2)] max-w-md">
+                {['No hidden fees', 'Free consultation', '30-day guarantee', '24/7 support', 'ISO 27001 certified', 'SSL encrypted'].map(item => (
+                  <li key={item} className="flex items-center gap-2">
+                    <Check className="size-4 text-[var(--pine)] shrink-0" aria-hidden="true" />
+                    {item}
                   </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Real-time system monitoring</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Patient communication tools</span>
-                  </li>
-                  <li className="flex items-start text-sm">
-                    <CheckCircle className="w-4 h-4 text-accent-400 mr-2 mt-0.5 flex-shrink-0" />
-                    <span>Performance analytics dashboard</span>
-                  </li>
-                </ul>
-                <Button variant="outline" className="w-full bg-white text-gray-900 hover:bg-gray-100" onClick={() => navigate('/login')}>
-                  Support Portal Login →
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
-          <div className="text-center">
-            <p className="text-lg text-gray-300 mb-6">
-              Interested in joining our healthcare network?
-            </p>
-            <Button size="lg" className="bg-accent-600 hover:bg-accent-700 text-white" onClick={() => navigate('/contact')}>
-              Apply to Join Network →
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-20 bg-gradient-to-br from-primary-700 via-primary-600 to-primary-800 text-white relative overflow-hidden">
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '40px 40px' }}></div>
-        </div>
-
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Unlock Your Natural Beauty?</h2>
-          <p className="text-xl md:text-2xl mb-8 text-primary-100 max-w-3xl mx-auto">
-            Join over 600,000 patients who trust DoktorABC for safe, effective aesthetic treatments
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button size="lg" variant="accent" onClick={() => navigate('/categories')} className="text-lg shadow-2xl">
-              <Calendar className="w-5 h-5 mr-2" />
-              Book Your Consultation Today
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => navigate('/treatment/botox-forehead')} className="bg-white/10 backdrop-blur-sm text-white border-2 border-white hover:bg-white hover:text-primary-600 text-lg">
-              View Pricing →
-            </Button>
-          </div>
-
-          <div className="flex flex-wrap gap-6 justify-center text-sm mb-8">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-accent-400" />
-              <span>No hidden fees</span>
+                ))}
+              </ul>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-accent-400" />
-              <span>Free consultation</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-accent-400" />
-              <span>30-day guarantee</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-accent-400" />
-              <span>24/7 support</span>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap gap-4 justify-center items-center pt-8 border-t border-primary-500/30">
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <Shield className="w-4 h-4 text-accent-400" />
-              <span className="text-xs font-medium">GMC Registered Doctors</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <Lock className="w-4 h-4 text-accent-400" />
-              <span className="text-xs font-medium">GDPR & CQC Compliant</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <Award className="w-4 h-4 text-accent-400" />
-              <span className="text-xs font-medium">ISO 27001 Certified</span>
-            </div>
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-4 py-2 rounded-lg">
-              <Lock className="w-4 h-4 text-accent-400" />
-              <span className="text-xs font-medium">SSL Encrypted</span>
+            <div className="md:col-span-5 relative min-h-[260px] bg-[var(--sunk)]">
+              <img src="/images/dropper.jpg" alt="A hand holding a small amber dropper bottle" loading="lazy" className="absolute inset-0 size-full object-cover" />
+              <div className="absolute left-4 bottom-4 right-4 sm:right-auto flex items-center gap-3 rounded-lg bg-[var(--surface)] px-4 py-3 shadow-[var(--shadow-2)]">
+                <Truck className="size-5 text-[var(--pine)] shrink-0" aria-hidden="true" />
+                <p className="text-sm text-[var(--ink)]">Repeat prescriptions delivered next day</p>
+              </div>
             </div>
           </div>
         </div>
@@ -1052,4 +787,3 @@ const Landing = () => {
 }
 
 export default Landing
-
