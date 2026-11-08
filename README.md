@@ -1,8 +1,8 @@
-# DoktorABC Mobile Mock - Training Demo
+# DoktorABC Portals - Concept Demo
 
 **Version:** v1.5-EA
 
-A comprehensive React-based mobile-first mock application simulating the complete DoktorABC platform treatment funnel across multiple personas (patients, doctors, pharmacies, support engineers, and customer service).
+A comprehensive React-based mobile-first concept simulating the complete DoktorABC platform treatment funnel across multiple personas (patients, doctors, pharmacies, support engineers, and customer service).
 
 ## Live Demo
 
@@ -362,7 +362,7 @@ The application comes with pre-configured demo accounts for all personas:
 - Complete comprehensive medical questionnaire
 - Book video consultations with doctors
 - Schedule treatment appointments at partner clinics
-- Secure payment processing (mock)
+- Secure payment processing (sample)
 - Treatment day check-in and photo documentation
 - Post-treatment aftercare guides
 - Follow-up consultation scheduling
@@ -371,7 +371,7 @@ The application comes with pre-configured demo accounts for all personas:
 
 ### Doctor Portal
 - Review patient medical questionnaires
-- Conduct video consultations (mock interface)
+- Conduct video consultations (sample interface)
 - Approve/reject treatment requests
 - Write and manage prescriptions
 - Monitor ongoing treatments
@@ -405,7 +405,7 @@ The application comes with pre-configured demo accounts for all personas:
 - **Routing**: React Router v6
 - **Styling**: Tailwind CSS
 - **State Management**: React Context API
-- **Data Persistence**: LocalStorage (mock)
+- **Data Persistence**: LocalStorage (sample data)
 - **Animations**: Framer Motion
 - **Icons**: Lucide React
 - **Build Tool**: Vite
