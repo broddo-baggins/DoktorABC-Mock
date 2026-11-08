@@ -313,7 +313,7 @@ const Landing = () => {
       </section>
 
       {/* Why patients choose us: photo beside three plain reasons */}
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-28">
         <div className="container-page grid lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           <div className="lg:col-span-5 order-2 lg:order-1">
             <div className="relative aspect-[4/3] lg:aspect-[4/5] rounded-2xl overflow-hidden bg-[var(--sunk)]">
@@ -420,7 +420,7 @@ const Landing = () => {
       </section>
 
       {/* Pricing: three price labels and the membership */}
-      <section id="pricing" className="py-20 md:py-28">
+      <section id="pricing" className="py-14 md:py-28">
         <div className="container-page">
           <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)]">Prices and packages</h2>
           <p className="mt-4 text-lg text-[var(--ink-2)] max-w-[56ch]">
@@ -490,7 +490,7 @@ const Landing = () => {
       </section>
 
       {/* Practitioners: portraits */}
-      <section className="py-20 md:py-28 bg-[var(--surface)] border-y border-[var(--line)]">
+      <section className="py-14 md:py-28 bg-[var(--surface)] border-y border-[var(--line)]">
         <div className="container-page">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6">
             <div>
@@ -511,6 +511,7 @@ const Landing = () => {
                     src={DOCTOR_PHOTOS[doctor.id] ?? doctor.profile?.avatar}
                     alt={`Portrait of ${doctor.name}`}
                     loading="lazy"
+                    decoding="async"
                     className="absolute inset-0 size-full object-cover object-[50%_25%]"
                   />
                 </div>
@@ -573,7 +574,7 @@ const Landing = () => {
       </section>
 
       {/* From click to treatment: a timeline */}
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-28">
         <div className="container-page">
           <h2 className="text-[2rem] md:text-[2.5rem] leading-[1.1] font-semibold tracking-[-0.03em] text-[var(--ink)] max-w-[20ch]">
             From click to treatment in three days
@@ -715,7 +716,7 @@ const Landing = () => {
       </section>
 
       {/* For professionals: figures beside portal rows */}
-      <section className="py-20 md:py-28 bg-[var(--surface)] border-y border-[var(--line)]">
+      <section className="py-14 md:py-28 bg-[var(--surface)] border-y border-[var(--line)]">
         <div className="container-page grid lg:grid-cols-12 gap-12 lg:gap-16">
           <div className="lg:col-span-5">
             <p className="label-mono mb-3">For healthcare professionals</p>
@@ -732,7 +733,8 @@ const Landing = () => {
                 </div>
               ))}
             </dl>
-            <Button variant="secondary" className="mt-10" onClick={() => navigate('/contact')}>
+            <p className="mt-4 text-sm text-[var(--ink-3)]">Sample figures for this concept.</p>
+            <Button variant="secondary" className="mt-8" onClick={() => navigate('/contact')}>
               Apply to join
             </Button>
           </div>
@@ -765,7 +767,7 @@ const Landing = () => {
       </section>
 
       {/* Final call to action */}
-      <section className="py-20 md:py-28">
+      <section className="py-14 md:py-28">
         <div className="container-page">
           <div className="grid md:grid-cols-12 rounded-2xl overflow-hidden border border-[var(--line)] bg-[var(--surface)]">
             <div className="md:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center">
