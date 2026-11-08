@@ -29,7 +29,7 @@ View the complete project presentation including:
 
 ## Purpose
 
-This is a **demo mock application for training purposes**. It demonstrates the complete user flow and workflows for:
+This is a **concept demo with sample data**. It demonstrates the complete user flow and workflows for:
 - **Patients**: Browse treatments → Complete questionnaire → Book consultation → Get treatment → Follow-up care
 - **Doctors**: Review patients → Conduct consultations → Prescribe treatments → Monitor progress
 - **Pharmacies**: Manage orders → Track inventory → Coordinate deliveries
@@ -447,7 +447,7 @@ src/
 
 ## Security Note
 
-This is a **mock/demo application** for training purposes:
+This is a **concept demo with sample data**:
 - No real database connections
 - No actual API calls
 - No real payment processing
@@ -525,15 +525,15 @@ This is a mock application with the following limitations:
 ## Support
 
 For issues or questions about this demo application:
-- This is a mock/training application
+- This is a concept demo with sample data
 - No real medical services provided
 - For demonstration purposes only
 
 ## License
 
-This is a demo/training application. All rights reserved.
+This is a concept demo. All rights reserved.
 
 ---
 
-**Note**: This application simulates the DoktorABC platform for training purposes. It does not connect to any real databases, APIs, or medical services. All data is mock data stored locally in the browser.
+**Note**: This application simulates the DoktorABC platform as a concept. It does not connect to any real databases, APIs, or medical services. All data is sample data stored locally in the browser.
 
