@@ -180,7 +180,7 @@ const Login = () => {
             <h2 id="demo-title" className="text-lg font-semibold">Demo access</h2>
             <p className="label-mono">password: demo123</p>
           </div>
-          <p className="mt-1.5 text-sm text-[var(--ink-3)]">This is a training mock. Pick an account to fill the form, or open a portal directly.</p>
+          <p className="mt-1.5 text-sm text-[var(--ink-3)]">This is a concept with sample data. Pick an account to fill the form, or open a portal directly.</p>
 
           <div className="mt-5">
             <Select

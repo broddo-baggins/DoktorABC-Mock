@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import Logo from '../brand/Logo'
+import ConceptBadge from '../ui/ConceptBadge'
 
 const linkClass = 'text-sm text-[var(--ink-on-dark-2)] hover:text-[var(--ink-on-dark)] underline-offset-4 hover:underline'
 const headClass = 'text-[var(--ink-on-dark)] text-sm font-semibold mb-4'
@@ -15,8 +16,9 @@ const Footer = () => {
     return (
       <footer className="mt-auto border-t border-[var(--line)] bg-[var(--surface)]">
         <div className="container-page flex flex-col sm:flex-row gap-2 sm:items-center justify-between py-5 text-sm text-[var(--ink-3)]">
-          <p>DoktorABC staff portal. Demo data only.</p>
-          <nav className="flex gap-5" aria-label="Footer">
+          <p>DoktorABC staff portal. Sample data only.</p>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Footer">
+            <ConceptBadge />
             <Link to="/contact" className="hover:text-[var(--ink)]">Support</Link>
             <Link to="/privacy" className="hover:text-[var(--ink)]">Privacy</Link>
             <Link to="/terms" className="hover:text-[var(--ink)]">Terms</Link>
@@ -92,8 +94,8 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-2 justify-between text-[0.8125rem]">
-          <p>&copy; 2025 DoktorABC.com. All rights reserved.</p>
-          <p>A demo mock for training purposes. No real prescriptions are issued.</p>
+          <p>&copy; 2026 DoktorABC. A concept with sample data. No real prescriptions are issued.</p>
+          <ConceptBadge className="self-start sm:self-auto" />
         </div>
       </div>
     </footer>

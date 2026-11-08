@@ -153,7 +153,7 @@ const Landing = () => {
       <section ref={heroRef} className="relative overflow-hidden">
         <div className="container-page pt-10 pb-14 md:pt-16 md:pb-20 lg:pt-20">
           <div className="grid lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            <div className="lg:col-span-6 xl:col-span-6">
+            <div className="rise lg:col-span-6 xl:col-span-6">
               <p className="inline-flex items-center gap-2 mb-6 text-sm text-[var(--ink-2)]">
                 <Stars value={5} size="size-3.5" />
                 <span><span className="figure font-medium text-[var(--ink)]">4.9</span> from 12,450 patient reviews</span>
